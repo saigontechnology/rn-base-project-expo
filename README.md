@@ -143,13 +143,8 @@ Thanks goes to these wonderful people
   <tr>
     <td align="center"><a href="https://github.com/honghoangsts/"><img src="https://avatars.githubusercontent.com/u/63329049?v=4" width="100px;" alt="Hong Hoang" style="border-radius: 10%;"/><br /><sub><b>Hong Hoang</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/huydosgtech/"><img src="https://avatars.githubusercontent.com/u/105196859?v=4" width="100px;" alt="Huy Do" style="border-radius: 10%;"/><br /><sub><b>Huy Do</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/baonguyenhsts/"><img src="https://avatars.githubusercontent.com/u/62632321?v=4" width="100px;" alt="Bao Nguyenh" style="border-radius: 10%;"/><br /><sub><b>Bao Nguyenh</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/TranQuangPhi/"><img src="https://avatars.githubusercontent.com/u/105619840?v=4" width="100px;" alt="Phi Tran" style="border-radius: 10%;"/><br /><sub><b>Phi Tran</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/nghoangchung/"><img src="https://avatars.githubusercontent.com/u/39869268?v=4" width="100px;" alt="Chung Nguyenh" style="border-radius: 10%;"/><br /><sub><b>Chung Nguyenh</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/vunguyendhSTS/"><img src="https://avatars.githubusercontent.com/u/117509324?v=4" width="100px;" alt="Vu NguyenDH" style="border-radius: 10%;"/><br /><sub><b>Vu NguyenDH</b></sub></a><br /></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/anhle10051996/"><img src="https://avatars.githubusercontent.com/u/88309815?v=4" width="100px;" alt="Anh Lehoang" style="border-radius: 10%;"/><br /><sub><b>Anh Lehoang</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/ThinhKimVo/"><img src="https://avatars.githubusercontent.com/u/104345392?v=4" width="100px;" alt="Thinh Vo" style="border-radius: 10%;"/><br /><sub><b>Thinh Vo</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/loc-nguyenthien/"><img src="https://avatars.githubusercontent.com/u/114563576?v=4" width="100px;" alt="Loc NguyenT" style="border-radius: 10%;"/><br /><sub><b>Loc NguyenT</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/hoangSTS/"><img src="https://avatars.githubusercontent.com/u/117052298?v=4" width="100px;" alt="Hoang Dinh Tien" style="border-radius: 10%;"/><br /><sub><b>Hoang Dinh Tien</b></sub></a><br /></td>
