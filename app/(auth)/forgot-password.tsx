@@ -2,9 +2,11 @@ import React from 'react'
 import {Link, Stack} from 'expo-router'
 import {StyleSheet} from 'react-native'
 
-import {ThemedText, ThemedView} from '@/components'
+import {ThemedText} from '@/components/ThemedText'
+import {ThemedView} from '@/components/ThemedView'
+import {metrics} from '@/themes'
 
-export default function NotFoundScreen() {
+export default function ForgotPasswordScreen() {
   return (
     <>
       <Stack.Screen options={{title: 'Oops!'}} />
@@ -23,10 +25,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: metrics.medium,
   },
   link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    marginTop: metrics.small,
+    paddingVertical: metrics.small,
   },
 })
