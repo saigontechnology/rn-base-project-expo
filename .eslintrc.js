@@ -36,4 +36,4 @@ module.exports = {
     },
   },
   ignorePatterns: ['node_modules/', '.expo/', 'scripts/', 'jest.config.js'],
-};
+}

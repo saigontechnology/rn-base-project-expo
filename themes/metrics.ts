@@ -47,6 +47,7 @@ const metrics = {
   span: responsiveFont(14),
 
   // spacing
+  zero: responsiveHeight(0),
   tiny: responsiveHeight(4),
   xxs: responsiveHeight(8),
   xs: responsiveHeight(12),

@@ -1,3 +1,6 @@
+const tintColorLight = '#0a7ea4'
+const tintColorDark = '#fff'
+
 const colors = {
   primary: '#65c8c6',
   black: '#1F1F1F',
@@ -8,6 +11,22 @@ const colors = {
   success: '#23C16B',
   warning: '#FFB323',
   info: '#48A7F8',
+  light: {
+    text: '#11181C',
+    background: '#fff',
+    tint: tintColorLight,
+    icon: '#687076',
+    tabIconDefault: '#687076',
+    tabIconSelected: tintColorLight,
+  },
+  dark: {
+    text: '#ECEDEE',
+    background: '#151718',
+    tint: tintColorDark,
+    icon: '#9BA1A6',
+    tabIconDefault: '#9BA1A6',
+    tabIconSelected: tintColorDark,
+  },
 } as const
 
 const getColorOpacity = (color: string, opacity: number): string => {
