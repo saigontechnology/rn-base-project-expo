@@ -5,14 +5,15 @@ import {StyleSheet} from 'react-native'
 import {ThemedText} from '@/components/ThemedText'
 import {ThemedView} from '@/components/ThemedView'
 import {metrics} from '@/themes'
+import {RouteKeys} from '@/routes/RouteKeys'
 
-export default function SignInScreen() {
+export default function SignUpScreen() {
   return (
     <>
       <Stack.Screen options={{title: 'Oops!'}} />
       <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen doesnt exist</ThemedText>
-        <Link href="/" style={styles.link}>
+        <ThemedText type="title">Sign Up Screen</ThemedText>
+        <Link href={RouteKeys.Home} style={styles.link}>
           <ThemedText type="link">Go to home screen!</ThemedText>
         </Link>
       </ThemedView>
