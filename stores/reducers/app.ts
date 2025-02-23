@@ -26,6 +26,9 @@ const appSlice = createSlice({
     setApiUrl: (state, action: PayloadAction<string>) => {
       state.apiUrl = action.payload
     },
+    setCodePushKey: (state, action: PayloadAction<string>) => {
+      // state.codepushKey = action.payload
+    },
   },
 })
 
