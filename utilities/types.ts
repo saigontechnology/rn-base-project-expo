@@ -1,6 +1,6 @@
 interface IDataRefs {
   eventName: string
-  callback: (param: any) => void
+  callback: (param: unknown) => void
 }
 
 export type IRefs = {[key: string]: IDataRefs}

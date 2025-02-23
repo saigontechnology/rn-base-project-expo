@@ -6,4 +6,6 @@ export const RouteKeys = {
 
   // protected app
   Home: '/home',
+  AuthStack: '/auth-stack',
+  SplashScreen: '/splash-screen',
 } as const
