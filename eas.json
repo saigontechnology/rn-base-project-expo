@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 15.0.12",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development",
+        "SCHEME": "RNBaseProjectExpoDevelopment",
+        "APP_NAME": "RNBaseProjectExpoDevelopment",
+        "APP_BUNDLE_ID": "com.saigontechnology.rnbaseprojectexpo.development"
+      }
+    },
+    "staging": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "staging",
+        "SCHEME": "RNBaseProjectExpoStaging",
+        "APP_NAME": "RNBaseProjectExpoStaging",
+        "APP_BUNDLE_ID": "com.saigontechnology.rnbaseprojectexpo.staging"
+      },
+      "channel": "staging"
+    },
+    "production": {
+      "channel": "production",
+      "env": {
+        "APP_VARIANT": "production",
+        "SCHEME": "RNBaseProjectExpo",
+        "APP_NAME": "RNBaseProjectExpo",
+        "APP_BUNDLE_ID": "com.saigontechnology.rnbaseprojectexpo"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
