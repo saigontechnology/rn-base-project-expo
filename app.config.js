@@ -1,20 +1,27 @@
 const {version: APP_VERSION} = require('./package.json')
-
-const APP_NAME = process.env.APP_NAME
-const APP_BUNDLE_ID = process.env.APP_BUNDLE_ID
-const SCHEME = process.env.SCHEME
+const APP_ID = process.env.APP_ID
 
 export default ({config}) => ({
   ...config,
-  name: APP_NAME,
-  scheme: SCHEME,
+  name: process.env.APP_NAME,
+  scheme: process.env.APP_SCHEME,
   version: APP_VERSION,
   ios: {
     ...config.ios,
-    bundleIdentifier: APP_BUNDLE_ID,
+    bundleIdentifier: APP_ID,
   },
   android: {
     ...config.android,
-    package: APP_BUNDLE_ID,
+    package: APP_ID,
   },
+  extra: {
+    ...config.extra,
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID,
+    },
+  },
+  updates: {
+    url: process.env.EAS_PROJECT_URL,
+  },
+  owner: process.env.EAS_PROJECT_OWNER,
 })

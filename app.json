@@ -43,17 +43,10 @@
     "extra": {
       "router": {
         "origin": false
-      },
-      "eas": {
-        "projectId": "f74e11cc-72ae-4e49-a09f-eb29bf21abca"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/f74e11cc-72ae-4e49-a09f-eb29bf21abca"
-    },
-    "owner": "hangnguyensaigontech"
+    }
   }
 }

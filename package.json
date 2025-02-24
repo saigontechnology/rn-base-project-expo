@@ -4,14 +4,14 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
     "dev": "APP_VARIANT=development npx expo start",
-    "build": "bash ./scripts/build-app.sh"
+    "build": "bash ./scripts/build-app.sh",
+    "upload": "bash ./scripts/upload-app.sh"
   },
   "repository": "https://github.com/saigontechnology/rn-base-project-expo.git",
   "author": "React Native Team <SaiGon Technology Solutions>",
