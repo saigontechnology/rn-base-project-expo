@@ -9,7 +9,6 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "dev": "APP_VARIANT=development npx expo start",
     "build": "bash ./scripts/build-app.sh",
     "upload": "bash ./scripts/upload-app.sh"
   },

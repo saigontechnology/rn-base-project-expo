@@ -9,6 +9,9 @@
       "distribution": "internal",
       "env": {
         "extends": "production"
+      },
+      "ios": {
+        "simulator": true
       }
     },
     "staging": {
