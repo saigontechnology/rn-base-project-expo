@@ -1,12 +1,17 @@
 #!bin/bash
 
+# Script will be showed below:
+
 # prompt
-prompt="Please select profile to build: "
+prompt="Please select profile to build and upload: "
 OPTIONS=(
     "development"
     "preview"
     "production"
 )
+
+# Reset
+Color_Off='\033[0m'       # Text Reset
 
 # Regular Colors
 Red='\033[0;31m'          # Red
@@ -14,27 +19,13 @@ Green='\033[0;32m'        # Green
 
 PROFILE=$1
 
-function buildApp() {
-  export $(grep -v '^#' .env.$1 | xargs)
-  OUTPUT_DIR="build"
-  mkdir -p $OUTPUT_DIR
-
-  VERSION=$(jq -r '.version' package.json)
-  FILE_NAME="app-$1-$VERSION"
-  FILE_NAME_IOS="$FILE_NAME.ipa"
-
-  if [ $1 == "development" ]
-  then
-    FILE_NAME_ANDROID="$FILE_NAME.apk"
-  else 
-    FILE_NAME_ANDROID="$FILE_NAME.aab"
-  fi
-
-  # eas build -p ios --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_IOS"
-  eas build -p android --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_ANDROID"
+function buildAndUploadApp() {
+  fastlane ios build type:build --env $1
+  fastlane android build type:build --env $1
 }
 
 function main() {
+
   PS3="$prompt"
   select opt in "${OPTIONS[@]}"; do
       if [ "$opt" == "quit" ]
@@ -51,9 +42,8 @@ function main() {
       fi
   done
 
-  buildApp $PROFILE
-
-  # increaseVersion
+  buildAndUploadApp $PROFILE
+  
   if [ $? -eq 0 ]; then
     printf "\n$Green Build App Successful\n"
   else
