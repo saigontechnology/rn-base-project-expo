@@ -1,5 +1,6 @@
 {
   "expo": {
+    "name": "rn-base-project-expo",
     "slug": "rn-base-project-expo",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -45,8 +46,6 @@
         "origin": false
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "runtimeVersion": "1.0.0"
   }
 }

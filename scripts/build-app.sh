@@ -8,11 +8,19 @@ OPTIONS=(
     "production"
 )
 
+prompt_platform="Please select platform to build: "
+PLATFORM_OPTIONS=(
+    "ios"
+    "android"
+    "both"
+)
+
 # Regular Colors
 Red='\033[0;31m'          # Red
 Green='\033[0;32m'        # Green
 
 PROFILE=$1
+PLATFORM=$2
 
 function buildApp() {
   export $(grep -v '^#' .env.$1 | xargs)
@@ -30,8 +38,14 @@ function buildApp() {
     FILE_NAME_ANDROID="$FILE_NAME.aab"
   fi
 
-  # eas build -p ios --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_IOS"
-  eas build -p android --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_ANDROID"
+  if [ $2 == "both" ]
+  then
+    eas build -p ios --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_IOS"
+    eas build -p android --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_ANDROID"
+  else
+    eas build -p $2 --local --profile $1 --output "$OUTPUT_DIR/$FILE_NAME_IOS"
+  fi
+
 }
 
 function main() {
@@ -51,7 +65,23 @@ function main() {
       fi
   done
 
-  buildApp $PROFILE
+  PS3="$prompt_platform"
+  select opt in "${PLATFORM_OPTIONS[@]}"; do
+      if [ "$opt" == "quit" ]
+      then
+          break
+      fi
+      if [ "$opt" == "" ]
+      then
+          echo "Invalid"
+      else
+          echo "Platform: $opt"
+          PLATFORM=$opt
+          break
+      fi
+  done
+
+  buildApp $PROFILE $PLATFORM
 
   # increaseVersion
   if [ $? -eq 0 ]; then
