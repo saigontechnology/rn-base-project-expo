@@ -10,17 +10,17 @@
 
 <p align="center">
   <a href="https://choosealicense.com/licenses/mit/">
-    <img src="https://img.shields.io/github/license/saigon-technology/rn-base-project-typescript"
+    <img src="https://img.shields.io/github/license/saigon-technology/rn-base-project-expo"
          alt="MIT">
   </a>
-  <img src="https://img.shields.io/npm/v/rn-base-project-ts">
-  <a href="https://www.npmjs.com/package/rn-base-project-ts">
-      <img src="https://img.shields.io/npm/dm/rn-base-project-ts">
+  <img src="https://img.shields.io/npm/v/rn-base-project-expo">
+  <a href="https://www.npmjs.com/package/rn-base-project-expo">
+      <img src="https://img.shields.io/npm/dm/rn-base-project-expo">
   </a>
-  <img src="https://img.shields.io/github/release-date/saigon-technology/rn-base-project-typescript">
-  <img src="https://img.shields.io/github/stars/saigon-technology/rn-base-project-typescript">
-  <img src="https://img.shields.io/github/languages/top/saigon-technology/rn-base-project-typescript">
-  <img src="https://img.shields.io/github/contributors/saigon-technology/rn-base-project-typescript">
+  <img src="https://img.shields.io/github/release-date/saigon-technology/rn-base-project-expo">
+  <img src="https://img.shields.io/github/stars/saigon-technology/rn-base-project-expo">
+  <img src="https://img.shields.io/github/languages/top/saigon-technology/rn-base-project-expo">
+  <img src="https://img.shields.io/github/contributors/saigon-technology/rn-base-project-expo">
 </p>
 
 <p align="center">
@@ -51,8 +51,8 @@ v16.19.0
 
 > **Note**
 > You also need to install the dependencies required by React Native.  
-Go to the [React Native environment setup](https://reactnative.dev/docs/environment-setup), then select `React Native CLI Quickstart` tab.  
-Follow instructions for your given `development OS` and `target OS`.
+> Go to the [React Native environment setup](https://reactnative.dev/docs/environment-setup)
+> Follow instructions for your given `development OS` and `target OS`.
 
 > **Note**
 > If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
@@ -61,28 +61,44 @@ Follow instructions for your given `development OS` and `target OS`.
 
 1. Init project
 
-    ```sh
-    npx create-expo-app@latest YourApp --template rn-base-project-expo
-    ```
+   ```sh
+   npx create-expo-app@latest YourApp --template rn-base-project-expo
+   ```
 
 2. Install node_modules
 
-    ```sh
-    yarn install
-    ```
+   ```sh
+   yarn install
+   ```
 
-    > **Note**
-    > Pod install automatically after run `yarn install`  
+   > **Note**
+   > Pod install automatically after run `yarn install`
 
-3. Run `Android` or `Ios` via package.json
+3. Run `Android` or `Ios` via package.json with debug mode
 
-    ```sh
-    # Run android
-    yarn android
+   ```sh
+   # Run with Expo Go
+   yarn start --go
 
-    # Run ios
-    yarn ios
-    ```
+   # Run with development build
+   yarn start --dev-client
+   ```
+
+4. Build `Android` or `Ios` locally via package.json
+
+   ```sh
+   yarn build
+
+   # Steps during command run
+   # select profile: `development` `staging` `production
+   # select platform: `ios` `android` or `both`
+   ```
+
+## Documents
+
+- [Multiple schemes](docs/config-scheme.md)
+- [Redux persist](docs/config-redux-persist.md)
+- [Bitbucket Pipelines](/docs/bitbucket-pipelines.md)
 
 ## ⭐ Features
 
@@ -92,69 +108,57 @@ Follow instructions for your given `development OS` and `target OS`.
 - 🦊 Husky for Git Hooks, to automate your git hooks and enforce code standards.
 - 💡 State management with [Redux Toolkit](https://redux-toolkit.js.org) along with [Redux Saga](https://redux-saga.js.org).
 - 🚫 Lint-staged to ensure that your code is always up to standards.
-- ☂️ Pre-installed [React Navigation](https://reactnavigation.org) to provide a comprehensive navigation solution for your app.
 - 💫 [@react-native-async-storage/async-storage](https://github.com/react-native-async-storage/async-storage) as a storage solution to save sensitive data.
 - 🛠 A simple workflow for building, releasing, and distributing your app using [fastlane](https://fastlane.tools).
 - 🔥 [axios](https://github.com/axios/axios) for fetching data, to help you build efficient and performant apps.
-- 🧵 [CodePush](https://github.com/microsoft/react-native-code-push) to deploy mobile app updates directly to their users’ devices.
 - 🎯 Localization with [i18n-js](https://github.com/fnando/i18n).
 
 ## Dependencies
 
 Our template is ship with the following rock-solid technical decisions out of the box:
 
-| Library           | Category             | Version | Description                                    |
-| ----------------- | -------------------- | ------- | ---------------------------------------------- |
-| React Native      | Mobile Framework     | v0.70   | The best cross-platform mobile framework       |
-| React             | UI Framework         | v18     | The most popular UI framework in the world     |                         |
-| React Native Code Push      | CI/CD     | v7   | Easily add a dynamic update experience to your React Native app       |
-| React Native Config            | ENV Configuration         | v18     | The most popular UI framework in the world     |                         |
-| React Navigation  | Navigation           | v1      | Expose config variables to your javascript code |                |             |                         |
-| i18n-js     | Translation           | v4      | Provide the i18n translations on the JavaScript            |
-| RN Reanimated     | Animations           | v2      | Beautiful and performant animations            |
-| Async-storage      | Persistence          | v1     | State persistence                              |
-| React Native SVG      | SVG Image          | v13     | Provides SVG support to React Native                              |
-| Axios      | Network Services          | v1     | Provides promise based HTTP client                              |
-| Redux / Redux-toolkit      | State Management          | v8     | Provides state container for JavaScript apps                              |
-| Redux Saga      | Redux side-effect          | v1     | Provides Redux side effect manager                              |
-| ESLint              | Code Formater          | v8     | Tool for identifying and reporting on patterns Javascript              |
-| Jest              | Test Runner          | v26     | Standard test runner for JS apps               |
-| Husky             | Native Git Hook    | v8     | Improves your commits and more testing                     |
-
-## Documents
-
-- [Networking](docs/networking.md)
-- [Multiple schemes](docs/config-scheme.md)
-- [Redux persist](docs/config-redux-persist.md)
-- [Config redux persist](docs/config-redux-persist.md)
-- [Check out the full documentation!](#documents)
+| Library               | Category          | Version | Description                                               |
+| --------------------- | ----------------- | ------- | --------------------------------------------------------- |
+| React Native          | Mobile Framework  | v0.76   | The best cross-platform mobile framework                  |
+| React                 | UI Framework      | v18     | The most popular UI framework in the world                |
+| i18n-js               | Translation       | v4      | Provide the i18n translations on the JavaScript           |
+| RN Reanimated         | Animations        | v2      | Beautiful and performant animations                       |
+| Async-storage         | Persistence       | v1      | State persistence                                         |
+| React Native SVG      | SVG Image         | v13     | Provides SVG support to React Native                      |
+| Axios                 | Network Services  | v1      | Provides promise based HTTP client                        |
+| Redux / Redux-toolkit | State Management  | v8      | Provides state container for JavaScript apps              |
+| Redux Saga            | Redux side-effect | v1      | Provides Redux side effect manager                        |
+| ESLint                | Code Formater     | v8      | Tool for identifying and reporting on patterns Javascript |
+| Jest                  | Test Runner       | v26     | Standard test runner for JS apps                          |
+| Husky                 | Native Git Hook   | v8      | Improves your commits and more testing                    |
 
 ## Scripts
 
-| Script | Description | Syntax |
-| ------ | ----------- | ------ |
-| [Generate images](template/scripts/genimg.js) | Get all images from [src/assets/images](template/src/assets/images/) and require images in [src/themes/images](template/src/themes/images.js) | ```yarn generateimages``` |
-| [Run App](template/scripts/run-app.sh) | Run app in Android or iOS with selected variants | ```yarn android```<br /> ```yarn ios``` |
+| Script                                       | Description                                         | Syntax        |
+| -------------------------------------------- | --------------------------------------------------- | ------------- |
+| [Build App](template/scripts/build-app.sh)   | Build app in Android or iOS with selected variants  | `yarn build`  |
+| [Upload App](template/scripts/upload-app.sh) | Upload app in Android or iOS with selected variants | `yarn upload` |
 
 ## Contributors ✨
 
 Thanks goes to these wonderful people
+
 <table>
-  <tr>
-    <td align="center"><a href="https://github.com/honghoangsts/"><img src="https://avatars.githubusercontent.com/u/63329049?v=4" width="100px;" alt="Hong Hoang" style="border-radius: 10%;"/><br /><sub><b>Hong Hoang</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/huydosgtech/"><img src="https://avatars.githubusercontent.com/u/105196859?v=4" width="100px;" alt="Huy Do" style="border-radius: 10%;"/><br /><sub><b>Huy Do</b></sub></a><br /></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/ThinhKimVo/"><img src="https://avatars.githubusercontent.com/u/104345392?v=4" width="100px;" alt="Thinh Vo" style="border-radius: 10%;"/><br /><sub><b>Thinh Vo</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/loc-nguyenthien/"><img src="https://avatars.githubusercontent.com/u/114563576?v=4" width="100px;" alt="Loc NguyenT" style="border-radius: 10%;"/><br /><sub><b>Loc NguyenT</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/hoangSTS/"><img src="https://avatars.githubusercontent.com/u/117052298?v=4" width="100px;" alt="Hoang Dinh Tien" style="border-radius: 10%;"/><br /><sub><b>Hoang Dinh Tien</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/loido/"><img src="https://avatars.githubusercontent.com/u/117077260?v=4" width="100px;" alt="Loi Do" style="border-radius: 10%;"/><br /><sub><b>Loi Do</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/ngochuyduong/"><img src="https://avatars.githubusercontent.com/u/124558477?v=4" width="100px;" alt="Huy Duong" style="border-radius: 10%;"/><br /><sub><b>Huy Duong</b></sub></a><br /></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/hangnguyensaigontech/"><img src="https://avatars.githubusercontent.com/u/124117862?v=4" width="100px;" alt="Hang Nguyen" style="border-radius: 10%;"/><br /><sub><b>Hang Nguyen</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/tuledu/"><img src="https://avatars.githubusercontent.com/u/111717882?v=4" width="100px;" alt="Tung Le" style="border-radius: 10%;"/><br /><sub><b>Tung Le</b></sub></a><br /></td>
-  </tr>
+<tr>
+  <td align="center"><a href="https://github.com/honghoangsts/"><img src="https://avatars.githubusercontent.com/u/63329049?v=4" width="100px;" alt="Hong Hoang" style="border-radius: 10%;"/><br /><sub><b>Hong Hoang</b></sub></a><br /></td>
+  <td align="center"><a href="https://github.com/huydosgtech/"><img src="https://avatars.githubusercontent.com/u/105196859?v=4" width="100px;" alt="Huy Do" style="border-radius: 10%;"/><br /><sub><b>Huy Do</b></sub></a><br /></td>
+</tr>
+<tr>
+  <td align="center"><a href="https://github.com/ThinhKimVo/"><img src="https://avatars.githubusercontent.com/u/104345392?v=4" width="100px;" alt="Thinh Vo" style="border-radius: 10%;"/><br /><sub><b>Thinh Vo</b></sub></a><br /></td>
+  <td align="center"><a href="https://github.com/loc-nguyenthien/"><img src="https://avatars.githubusercontent.com/u/114563576?v=4" width="100px;" alt="Loc NguyenT" style="border-radius: 10%;"/><br /><sub><b>Loc NguyenT</b></sub></a><br /></td>
+  <td align="center"><a href="https://github.com/hoangSTS/"><img src="https://avatars.githubusercontent.com/u/117052298?v=4" width="100px;" alt="Hoang Dinh Tien" style="border-radius: 10%;"/><br /><sub><b>Hoang Dinh Tien</b></sub></a><br /></td>
+  <td align="center"><a href="https://github.com/loido/"><img src="https://avatars.githubusercontent.com/u/117077260?v=4" width="100px;" alt="Loi Do" style="border-radius: 10%;"/><br /><sub><b>Loi Do</b></sub></a><br /></td>
+  <td align="center"><a href="https://github.com/ngochuyduong/"><img src="https://avatars.githubusercontent.com/u/124558477?v=4" width="100px;" alt="Huy Duong" style="border-radius: 10%;"/><br /><sub><b>Huy Duong</b></sub></a><br /></td>
+</tr>
+<tr>
+  <td align="center"><a href="https://github.com/hangnguyensaigontech/"><img src="https://avatars.githubusercontent.com/u/124117862?v=4" width="100px;" alt="Hang Nguyen" style="border-radius: 10%;"/><br /><sub><b>Hang Nguyen</b></sub></a><br /></td>
+  <td align="center"><a href="https://github.com/tuledu/"><img src="https://avatars.githubusercontent.com/u/111717882?v=4" width="100px;" alt="Tung Le" style="border-radius: 10%;"/><br /><sub><b>Tung Le</b></sub></a><br /></td>
+</tr>
 </table>
 
 ## Contributing
@@ -174,7 +178,7 @@ Our mission is to create the best library for implementing project stucture easi
 
 ### History
 
-My library was founded on Oct 2022 with the goal of making productivity library more accessible to everyone. Since then, we've been working tirelessly to improve the library and add new features.
+My library was founded on Feb 2025 with the goal of making productivity library more accessible to everyone. Since then, we've been working tirelessly to improve the library and add new features.
 
 ### Contact Us
 
