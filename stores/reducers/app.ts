@@ -6,8 +6,7 @@ export const appInitialState: IApp = {
   showGlobalIndicator: false,
   appState: RouteKeys.Home,
   showSearchBar: false,
-  // apiUrl: Config.API_URL,
-  apiUrl: '',
+  apiUrl: process.env.API_URL,
 }
 
 const appSlice = createSlice({

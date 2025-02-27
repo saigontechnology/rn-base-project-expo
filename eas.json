@@ -30,7 +30,8 @@
         "APP_ID": "$APP_ID",
         "EAS_PROJECT_ID": "$EAS_PROJECT_ID",
         "EAS_PROJECT_URL": "$EAS_PROJECT_URL",
-        "EAS_PROJECT_OWNER": "$EAS_PROJECT_OWNER"
+        "EAS_PROJECT_OWNER": "$EAS_PROJECT_OWNER",
+        "API_URL": "$API_URL"
       }
     }
   },
