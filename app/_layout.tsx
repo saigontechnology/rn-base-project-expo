@@ -1,4 +1,6 @@
+import {configureLocalization} from '@/locale/I18nConfig'
 import {NO_HEADER} from '@/routes/ScreenOptions'
+import {injectStore} from '@/services/networking/axios'
 import {persistor, store} from '@/stores/store'
 import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
 import {useFonts} from 'expo-font'
@@ -13,6 +15,9 @@ import {PersistGate} from 'redux-persist/integration/react'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
+
+injectStore(store)
+configureLocalization('en')
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
