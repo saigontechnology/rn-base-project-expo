@@ -1,28 +1,33 @@
 import {configureLocalization} from '@/locale/I18nConfig'
-import {NO_HEADER} from '@/routes/ScreenOptions'
-import {injectStore} from '@/services/networking/axios'
 import {persistor, store} from '@/stores/store'
 import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
 import {useFonts} from 'expo-font'
-import {Stack} from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import {StatusBar} from 'expo-status-bar'
 import React, {useEffect} from 'react'
-import {useColorScheme} from 'react-native'
+import {StyleSheet, useColorScheme} from 'react-native'
 import 'react-native-reanimated'
 import {Provider} from 'react-redux'
 import {PersistGate} from 'redux-persist/integration/react'
+import {injectStore} from '@/services/networking/axios'
+import {BaseProvider} from 'rn-base-component'
+import {theme} from '@/themes'
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet'
+import {GestureHandlerRootView} from 'react-native-gesture-handler'
+import {RootNavigation} from '@/routes/AppNavigation'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
 
 injectStore(store)
-configureLocalization('en')
+configureLocalization('vi')
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    RobotoRegular: require('../assets/fonts/Roboto-Regular.ttf'),
+    RobotoMedium: require('../assets/fonts/Roboto-Medium.ttf'),
+    RobotoBold: require('../assets/fonts/Roboto-Bold.ttf'),
   })
 
   useEffect(() => {
@@ -36,17 +41,25 @@ export default function RootLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={NO_HEADER}>
-            <Stack.Screen name="(auth)" options={NO_HEADER} />
-            <Stack.Screen name="(app)" options={NO_HEADER} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </PersistGate>
-    </Provider>
+    <GestureHandlerRootView style={styles.flex}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <BaseProvider theme={theme}>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              <BottomSheetModalProvider>
+                <RootNavigation />
+                <StatusBar style="auto" />
+              </BottomSheetModalProvider>
+            </ThemeProvider>
+          </BaseProvider>
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   )
 }
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+})

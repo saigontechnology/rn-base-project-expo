@@ -16,3 +16,10 @@ export const TOKEN_TYPE: ITokenType = {
 }
 
 export const AXIOS_TIMEOUT = 6000
+
+export const DATE_FORMAT = {
+  date: 'DD/MM/YYYY',
+  ddMMyyyyHHmmss: 'dd/MM/yyyy HH:mm:ss',
+  ddMMyyyy: 'dd/MM/yyyy',
+  MMyyyy: 'MM-yyyy',
+} as const

@@ -6,11 +6,11 @@ import {ThemedView} from '@/components/ThemedView'
 import {IconSymbol} from '@/components/ui/IconSymbol'
 import {colors, metrics} from '@/themes'
 
-interface CollapsibleProps {
+interface ICollapsibleProps {
   title: string
 }
 
-export const Collapsible: React.FC<PropsWithChildren<CollapsibleProps>> = ({children, title}) => {
+export const Collapsible: React.FC<PropsWithChildren<ICollapsibleProps>> = ({children, title}) => {
   const [isOpen, setIsOpen] = useState(false)
   const theme = useColorScheme() ?? 'light'
 
@@ -18,7 +18,7 @@ export const Collapsible: React.FC<PropsWithChildren<CollapsibleProps>> = ({chil
     <ThemedView>
       <TouchableOpacity style={styles.heading} onPress={() => setIsOpen(value => !value)} activeOpacity={0.8}>
         <IconSymbol
-          name="chevron.right"
+          name="chevron-right"
           size={18}
           weight="medium"
           color={theme === 'light' ? colors.light.icon : colors.dark.icon}

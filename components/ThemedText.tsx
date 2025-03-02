@@ -2,6 +2,7 @@ import React from 'react'
 import {Text, type TextProps, StyleSheet} from 'react-native'
 
 import {useThemeColor} from '@/hooks/useThemeColor'
+import {fontSizes, fontWeights, metrics} from '@/themes'
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string
@@ -36,26 +37,25 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
 
 const styles = StyleSheet.create({
   default: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: fontSizes.body,
+    lineHeight: metrics.large,
   },
   defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
+    fontSize: fontSizes.body,
+    lineHeight: metrics.large,
+    fontWeight: fontWeights.semiBold,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
+    fontSize: fontSizes.title,
+    fontWeight: fontWeights.bold,
+    lineHeight: metrics.xxl,
   },
   subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: fontSizes.large,
+    fontWeight: fontWeights.bold,
   },
   link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+    lineHeight: metrics.xxl,
+    fontSize: fontSizes.body,
   },
 })

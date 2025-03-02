@@ -60,6 +60,7 @@ const metrics = {
   huge: responsiveHeight(48),
   massive: responsiveHeight(64),
 
+  borderWidth: responsiveHeight(1),
   borderRadius: responsiveHeight(5),
   borderRadiusLarge: responsiveHeight(10),
   borderRadiusHuge: responsiveHeight(20),
@@ -74,9 +75,10 @@ const metrics = {
   logoHeight: responsiveHeight(70),
   icon: responsiveHeight(30),
   toast: responsiveHeight(44),
+  textInputHeight: responsiveHeight(44),
 } as const
 
-const FontSizes = {
+const fontSizes = {
   small: responsiveFont(12),
   span: responsiveFont(14),
   body: responsiveFont(16),
@@ -84,9 +86,15 @@ const FontSizes = {
   title: responsiveFont(20),
 } as const
 
+const fontWeights = {
+  bold: '700',
+  semiBold: '600',
+} as const
+
 export {
   metrics,
-  FontSizes,
+  fontSizes,
+  fontWeights,
   isIOS,
   shadow,
   hitSlop,

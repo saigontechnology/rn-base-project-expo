@@ -4,8 +4,8 @@ import {colors} from '@/themes'
 import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs'
 import {ColorSchemeName, Platform} from 'react-native'
 
-export const getTabScreenOptions = (colorScheme: ColorSchemeName = 'light'): BottomTabNavigationOptions => ({
-  tabBarActiveTintColor: colors?.[colorScheme ?? 'light'].tint as string,
+export const getTabScreenOptions = (_: ColorSchemeName = 'light'): BottomTabNavigationOptions => ({
+  tabBarActiveTintColor: colors.primary,
   headerShown: false,
   tabBarButton: HapticTab,
   tabBarBackground: TabBarBackground,
@@ -18,4 +18,4 @@ export const getTabScreenOptions = (colorScheme: ColorSchemeName = 'light'): Bot
   }),
 })
 
-export const NO_HEADER = {headerShown: false}
+export const NO_HEADER = {headerShown: false, title: ''}

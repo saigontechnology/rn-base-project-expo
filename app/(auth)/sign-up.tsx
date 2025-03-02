@@ -1,35 +1,6 @@
 import React from 'react'
-import {Link, Stack} from 'expo-router'
-import {StyleSheet} from 'react-native'
+import {SignUpScreen} from '@/screens/auth/SignUpScreen'
 
-import {ThemedText} from '@/components/ThemedText'
-import {ThemedView} from '@/components/ThemedView'
-import {metrics} from '@/themes'
-import {RouteKeys} from '@/routes/RouteKeys'
-
-export default function SignUpScreen() {
-  return (
-    <>
-      <Stack.Screen options={{title: 'Oops!'}} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">Sign Up Screen</ThemedText>
-        <Link href={RouteKeys.Home} style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
-        </Link>
-      </ThemedView>
-    </>
-  )
+export default function SignUpRoute() {
+  return <SignUpScreen />
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: metrics.medium,
-  },
-  link: {
-    marginTop: metrics.small,
-    paddingVertical: metrics.small,
-  },
-})
