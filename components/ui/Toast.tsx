@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react'
 import {Animated, Image, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import Emitter from '../../utilities/Emitter'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {colors, FontSizes, hitSlop, Images, metrics} from '@/themes'
+import {colors, fontSizes, hitSlop, Images, metrics} from '@/themes'
 
 export const TOAST_TYPE = {
   SUCCESS: 'SUCCESS',
@@ -166,11 +166,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleStyle: {
-    fontSize: FontSizes.title,
+    fontSize: fontSizes.title,
     color: colors.white,
   },
   textStyle: {
-    fontSize: FontSizes.body,
+    fontSize: fontSizes.body,
     color: colors.white,
   },
   icon: {

@@ -1,9 +1,10 @@
 import {AnyAction} from 'redux'
-import {call, put, takeLatest} from 'redux-saga/effects'
+import {call, takeLatest} from 'redux-saga/effects'
 import {appActions} from '../reducers'
 import {getData} from '../../utilities/storage'
 import {TOKEN} from '../../constants'
 import {RouteKeys} from '@/routes/RouteKeys'
+import {router} from 'expo-router'
 
 function* getAppSettingSaga(): IterableIterator<AnyAction> {
   try {
@@ -13,7 +14,7 @@ function* getAppSettingSaga(): IterableIterator<AnyAction> {
     }
   } catch (e) {
     console.log(e)
-    yield put(appActions.setAppStack(RouteKeys.AuthStack))
+    router.navigate(RouteKeys.SignIn)
   }
 }
 

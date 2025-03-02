@@ -46,3 +46,6 @@ export function isDarkMode(): boolean {
 export function isObject<T>(val: T): boolean {
   return typeof val === 'object' && val?.constructor !== FormData && val !== null
 }
+
+export const formatWithSeparator = (value?: string | number, isUsedCommand = false) =>
+  value?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, isUsedCommand ? ',' : '.')

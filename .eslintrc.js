@@ -27,6 +27,8 @@ module.exports = {
         '@typescript-eslint/no-empty-interface': 'warn',
         '@typescript-eslint/no-require-imports': 'off',
         'react/no-unescaped-entities': 'off',
+        'react/prop-types': 'off',
+        '@typescript-eslint/no-empty-object-type': 'off',
       },
     },
   ],
