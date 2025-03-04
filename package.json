@@ -11,7 +11,8 @@
     "test:coverage": "yarn test -- --coverage",
     "lint": "expo lint",
     "build": "bash ./scripts/build-app.sh",
-    "upload": "bash ./scripts/upload-app.sh"
+    "upload": "bash ./scripts/upload-app.sh",
+    "push-env": "bash ./scripts/push-eas-env.sh"
   },
   "repository": "https://github.com/saigontechnology/rn-base-project-expo.git",
   "author": "React Native Team <SaiGon Technology Solutions>",
