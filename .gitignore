@@ -39,3 +39,6 @@ app-example
 ios/
 android/
 coverage/
+
+.env.*
+!.env.sample
