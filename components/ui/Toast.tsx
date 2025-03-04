@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {Animated, Image, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import Emitter from '../../utilities/Emitter'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
@@ -62,32 +62,35 @@ export const Toast: React.FC = () => {
     outputRange: [0, 1],
   })
 
-  const displayMessage = (param?: unknown): void => {
-    const args = param as IToastState
-    animation.setValue(0)
-    setState(args)
-    animationRef.current?.stop()
-    setTimeout(() => {
-      animationRef.current = Animated.sequence([
-        // Fade In
-        Animated.timing(animation, {
-          toValue: 1,
-          duration: args.option?.duration || DEFAULT_DURATION,
-          useNativeDriver: true,
-        }),
-        Animated.delay(args.option?.delay || DEFAULT_DELAY),
-        // Fade Out
-        Animated.timing(animation, {
-          toValue: 0,
-          duration: args.option?.duration || DEFAULT_DURATION,
-          useNativeDriver: true,
-        }),
-      ])
-      animationRef.current.start(() => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-      })
-    }, 100)
-  }
+  const displayMessage = useCallback(
+    (param?: unknown): void => {
+      const args = param as IToastState
+      animation.setValue(0)
+      setState(args)
+      animationRef.current?.stop()
+      setTimeout(() => {
+        animationRef.current = Animated.sequence([
+          // Fade In
+          Animated.timing(animation, {
+            toValue: 1,
+            duration: args.option?.duration || DEFAULT_DURATION,
+            useNativeDriver: true,
+          }),
+          Animated.delay(args.option?.delay || DEFAULT_DELAY),
+          // Fade Out
+          Animated.timing(animation, {
+            toValue: 0,
+            duration: args.option?.duration || DEFAULT_DURATION,
+            useNativeDriver: true,
+          }),
+        ])
+        animationRef.current.start(() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+        })
+      }, 100)
+    },
+    [animation],
+  )
 
   const dismiss = () => {
     animationRef.current?.stop()
@@ -104,7 +107,7 @@ export const Toast: React.FC = () => {
     return () => {
       Emitter.rm(TOAST_EVENTS.showToastMessage)
     }
-  }, [])
+  }, [displayMessage])
 
   return (
     <Animated.View

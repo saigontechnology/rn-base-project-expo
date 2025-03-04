@@ -2014,6 +2014,17 @@
   resolved "https://registry.yarnpkg.com/@standard-schema/utils/-/utils-0.3.0.tgz#3d5e608f16c2390c10528e98e59aef6bf73cae7b"
   integrity sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==
 
+"@testing-library/react-native@^13.1.0":
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/@testing-library/react-native/-/react-native-13.1.0.tgz#1afecca5e4d37e15371a433874a19bc3fb3d3f48"
+  integrity sha512-JDHDbhsBu6Q7tYGLQJcwZjI2qVoT8tnu+Vfg/48cZdYsnEJKwlE20CW6hZcSsZM/nzVQjFmLiW/SbnwQadW3sw==
+  dependencies:
+    chalk "^4.1.2"
+    jest-matcher-utils "^29.7.0"
+    pretty-format "^29.7.0"
+    react-native-gesture-handler "^2.23.1"
+    redent "^3.0.0"
+
 "@tootallnate/once@2":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
@@ -5748,6 +5759,16 @@ jest-haste-map@^29.7.0:
   optionalDependencies:
     fsevents "^2.3.2"
 
+jest-junit@^16.0.0:
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/jest-junit/-/jest-junit-16.0.0.tgz#d838e8c561cf9fdd7eb54f63020777eee4136785"
+  integrity sha512-A94mmw6NfJab4Fg/BlvVOUXzXgF0XIH6EmTgJ5NDPp4xoKq0Kr7sErb+4Xs9nZvu58pJojz5RFGpqnZYJTrRfQ==
+  dependencies:
+    mkdirp "^1.0.4"
+    strip-ansi "^6.0.1"
+    uuid "^8.3.2"
+    xml "^1.0.1"
+
 jest-leak-detector@^29.7.0:
   version "29.7.0"
   resolved "https://registry.yarnpkg.com/jest-leak-detector/-/jest-leak-detector-29.7.0.tgz#5b7ec0dadfdfec0ca383dc9aa016d36b5ea4c728"
@@ -6657,6 +6678,11 @@ mimic-fn@^2.1.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
+min-indent@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/min-indent/-/min-indent-1.0.1.tgz#a63f681673b30571fbe8bc25686ae746eefa9869"
+  integrity sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==
+
 minimatch@^3.0.2, minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
@@ -7483,6 +7509,15 @@ react-native-device-info@^14.0.4:
   resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-14.0.4.tgz#56b24ace9ff29a66bdfc667209086421ed6cfdce"
   integrity sha512-NX0wMAknSDBeFnEnSFQ8kkAcQrFHrG4Cl0mVjoD+0++iaKrOupiGpBXqs8xR0SeJyPC5zpdPl4h/SaBGly6UxA==
 
+react-native-gesture-handler@^2.23.1:
+  version "2.24.0"
+  resolved "https://registry.yarnpkg.com/react-native-gesture-handler/-/react-native-gesture-handler-2.24.0.tgz#b6e1f13ec9bf8dfa5f4911854b6e0d73d882a81a"
+  integrity sha512-ZdWyOd1C8axKJHIfYxjJKCcxjWEpUtUWgTOVY2wynbiveSQDm8X/PDyAKXSer/GOtIpjudUbACOndZXCN3vHsw==
+  dependencies:
+    "@egjs/hammerjs" "^2.0.17"
+    hoist-non-react-statics "^3.3.0"
+    invariant "^2.2.4"
+
 react-native-gesture-handler@~2.20.2:
   version "2.20.2"
   resolved "https://registry.yarnpkg.com/react-native-gesture-handler/-/react-native-gesture-handler-2.20.2.tgz#73844c8e9c417459c2f2981bc4d8f66ba8a5ee66"
@@ -7691,6 +7726,14 @@ recast@^0.21.0:
     esprima "~4.0.0"
     source-map "~0.6.1"
     tslib "^2.0.1"
+
+redent@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/redent/-/redent-3.0.0.tgz#e557b7998316bb53c9f1f56fa626352c6963059f"
+  integrity sha512-6tDA8g98We0zd0GvVeMT9arEOnTw9qM03L9cJXaCjrip1OO764RDBLBfrB4cwzNGDj5OA5ioymC9GkizgWJDUg==
+  dependencies:
+    indent-string "^4.0.0"
+    strip-indent "^3.0.0"
 
 redux-persist@^6.0.0:
   version "6.0.0"
@@ -8568,6 +8611,13 @@ strip-final-newline@^2.0.0:
   resolved "https://registry.yarnpkg.com/strip-final-newline/-/strip-final-newline-2.0.0.tgz#89b852fb2fcbe936f6f4b3187afb0a12c1ab58ad"
   integrity sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==
 
+strip-indent@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/strip-indent/-/strip-indent-3.0.0.tgz#c32e1cee940b6b3432c771bc2c54bcce73cd3001"
+  integrity sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==
+  dependencies:
+    min-indent "^1.0.0"
+
 strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
@@ -9410,6 +9460,11 @@ xml2js@0.6.0:
   dependencies:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
+
+xml@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/xml/-/xml-1.0.1.tgz#78ba72020029c5bc87b8a81a3cfcd74b4a2fc1e5"
+  integrity sha512-huCv9IH9Tcf95zuYCsQraZtWnJvBtLVE0QHMOs8bWyZAFZNDcYjsPq1nEx8jKA9y+Beo9v+7OBPRisQTjinQMw==
 
 xmlbuilder@^14.0.0:
   version "14.0.0"

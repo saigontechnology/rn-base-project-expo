@@ -30,7 +30,7 @@ type TranslateRecord = typeof en
 
 type TranslateKey = keyof TranslateRecord
 
-type TranslateStr<O extends Record<string, any>, Key extends keyof O> = Key extends string
+type TranslateStr<O extends Record<string, unknown>, Key extends keyof O> = Key extends string
   ? O[Key] extends string
     ? Key
     : `${Key}${TranslateStr<O[Key], keyof O[Key]> extends string
