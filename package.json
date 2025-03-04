@@ -101,5 +101,15 @@
     "react-test-renderer": "18.3.1",
     "typescript": "^5.3.3"
   },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false,
+        "exclude": [
+          "redux-persist"
+        ]
+      }
+    }
+  },
   "packageManager": "yarn@1.22.22"
 }
