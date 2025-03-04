@@ -36,3 +36,5 @@ yarn-error.*
 build/
 
 app-example
+ios/
+android/
