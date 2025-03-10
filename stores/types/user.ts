@@ -1,6 +1,3 @@
-import {ActionCreatorWithoutPayload} from '@reduxjs/toolkit'
-import {IActionDispatch} from './action'
-
 export type IUserInfo = object
 
 export type ITokenData = object
@@ -12,8 +9,7 @@ export interface IUser {
   contentFlagged?: string
 }
 
-export interface IUserActions {
-  userLogin: IActionDispatch
-  userSignUp: IActionDispatch
-  logout: ActionCreatorWithoutPayload
+export interface IUserSignInPayload {
+  email: string
+  password: string
 }

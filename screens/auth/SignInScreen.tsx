@@ -6,24 +6,25 @@ import {ThemedView} from '@/components/ThemedView'
 import {Images, metrics} from '@/themes'
 import {getString} from '@/locale/I18nConfig'
 import {useForm} from 'react-hook-form'
-import {ISignInForm, SignInSchema} from '@/schemas/auth'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {Form} from '@/components/form'
 import {SIGNIN_FIELDS} from './constants'
 import {ButtonPrimary} from 'rn-base-component'
 import {useAppDispatch} from '@/stores/store'
 import {userActions} from '@/stores/reducers'
+import {IUserSignInPayload} from '@/stores/types'
+import {SignInSchema} from './sign-in.schema'
 
 export const SignInScreen: React.FC = () => {
   const dispatch = useAppDispatch()
-  const {control, handleSubmit} = useForm<ISignInForm>({
+  const {control, handleSubmit} = useForm<IUserSignInPayload>({
     defaultValues: {},
     mode: 'onChange',
     resolver: zodResolver(SignInSchema),
   })
 
   const onSubmit = useCallback(
-    (data: ISignInForm) => {
+    (data: IUserSignInPayload) => {
       dispatch(userActions.userLogin())
     },
     [dispatch],
@@ -35,7 +36,7 @@ export const SignInScreen: React.FC = () => {
       <ThemedText type="title" style={styles.title}>
         {getString('auth.title')}
       </ThemedText>
-      <Form<ISignInForm> fields={SIGNIN_FIELDS} control={control} />
+      <Form<IUserSignInPayload> fields={SIGNIN_FIELDS} control={control} />
       <ButtonPrimary onPress={() => handleSubmit(onSubmit)()}>{getString('auth.signIn')}</ButtonPrimary>
     </ThemedView>
   )

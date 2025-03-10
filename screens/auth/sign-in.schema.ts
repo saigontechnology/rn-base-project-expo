@@ -1,12 +1,8 @@
 import {getString} from '@/locale/I18nConfig'
-import {z, ZodType} from 'zod'
+import {IUserSignInPayload} from '@/stores/types'
+import {ZodType, z} from 'zod'
 
-export interface ISignInForm {
-  email: string
-  password: string
-}
-
-export const SignInSchema: ZodType<ISignInForm> = z.object({
+export const SignInSchema: ZodType<IUserSignInPayload> = z.object({
   email: z
     .string({message: getString('validations.required', {field: getString('auth.email')})})
     .email({message: getString('auth.validation.email')}),
