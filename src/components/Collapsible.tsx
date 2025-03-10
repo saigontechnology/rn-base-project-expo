@@ -3,7 +3,7 @@ import {StyleSheet, TouchableOpacity, useColorScheme} from 'react-native'
 
 import {ThemedText} from '@/components/ThemedText'
 import {ThemedView} from '@/components/ThemedView'
-import {IconSymbol} from '@/components/ui/IconSymbol'
+import {IconSymbol} from '@/components/IconSymbol'
 import {colors, metrics} from '@/themes'
 
 interface ICollapsibleProps {

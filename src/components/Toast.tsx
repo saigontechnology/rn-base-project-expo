@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {Animated, Image, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import Emitter from '../../utilities/Emitter'
+import Emitter from '../utilities/Emitter'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {colors, fontSizes, hitSlop, Images, metrics} from '@/themes'
 

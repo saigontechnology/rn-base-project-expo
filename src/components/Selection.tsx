@@ -4,8 +4,8 @@ import {Text, TextInput} from 'rn-base-component'
 import {BottomSheet, BottomSheetMethods} from './BottomSheet'
 import {colors, fonts, fontSizes, metrics} from '../themes'
 import {IOptions, ISelectionProps} from '@/constants/interface/selection'
-import {IconSymbol} from './ui'
 import {getString} from '@/locale/I18nConfig'
+import {IconSymbol} from './IconSymbol'
 
 export const Selection = <T extends object>({
   data,

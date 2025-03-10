@@ -4,7 +4,7 @@ import {Text} from 'rn-base-component'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import {colors, fonts, fontSizes, metrics} from '../themes'
 import dayjs from 'dayjs'
-import {IconSymbol} from './ui'
+import {IconSymbol} from '.'
 import {DATE_FORMAT} from '@/constants'
 
 export interface IDatePickerProps {
