@@ -1,5 +1,5 @@
 import {HapticTab} from '@/components'
-import TabBarBackground from '@/components/ui/TabBarBackground'
+import TabBarBackground from '@/components/TabBarBackground'
 import {colors} from '@/themes'
 import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs'
 import {ColorSchemeName, Platform} from 'react-native'
