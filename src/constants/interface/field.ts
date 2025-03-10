@@ -2,8 +2,8 @@ import {TranslationKey} from '../../locale/I18nConfig'
 import {Path} from 'react-hook-form'
 import {TextInputProps} from 'rn-base-component'
 import {IDatePickerProps} from '@/components'
-import {ValueOf} from '@/custom-types'
 import {IOptions, ISelectionProps} from './selection'
+import {ValueOf} from '../../../custom-types'
 
 export const FIELD_TYPES = {
   input: 'input',
