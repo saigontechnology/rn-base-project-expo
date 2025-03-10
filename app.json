@@ -3,7 +3,7 @@
     "name": "rn-base-project-expo",
     "slug": "rn-base-project-expo",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./src/assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/sts.png",
+        "foregroundImage": "./src/assets/images/sts.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.saigontechnology.rnbaseprojectexpo"
@@ -23,14 +23,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/sts.png",
+          "image": "./src/assets/images/sts.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
