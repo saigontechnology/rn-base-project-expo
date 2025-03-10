@@ -13,7 +13,7 @@ import {ButtonPrimary} from 'rn-base-component'
 import {useAppDispatch} from '@/stores/store'
 import {userActions} from '@/stores/reducers'
 import {IUserSignInPayload} from '@/stores/types'
-import {SignInSchema} from './sign-in.schema'
+import {SignInSchema} from './signin.schema'
 
 export const SignInScreen: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -29,7 +29,6 @@ export const SignInScreen: React.FC = () => {
     },
     [dispatch],
   )
-
   return (
     <ThemedView style={styles.container}>
       <Image source={Images.sts} style={styles.logo} />

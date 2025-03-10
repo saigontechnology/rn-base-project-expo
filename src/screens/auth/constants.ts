@@ -1,7 +1,7 @@
 import {FIELD_TYPES, IFormField} from '@/constants/interface/field'
-import {ISignInForm} from '@/schemas/auth'
+import {IUserSignInPayload} from '@/stores/types'
 
-export const SIGNIN_FIELDS: IFormField<ISignInForm>[] = [
+export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
   {
     key: 'email',
     label: 'auth.email',
