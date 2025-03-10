@@ -1,0 +1,163 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+require 'dotenv'
+
+package_json_content = File.read('../package.json')
+package_json = JSON.parse(package_json_content)
+version = package_json['version']
+
+default_platform(:ios)
+
+owner_name = "STS-ReactNative" # Update this value if you are not work on Saigon Technology Solutions
+
+teamId = ENV["APPLE_TEAM_ID"]
+envs = ['development', 'staging', 'production']
+env = ''
+
+
+my_ios_app = ENV["APPCENTER_APP_NAME_IOS"]
+my_android_app = ENV["APPCENTER_APP_NAME_ANDROID"]
+
+
+
+platform :ios do
+  before_all do |lane, options|
+      env = assert_environment(**options)
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :upload do |options|
+    projectName = ENV["PROJECT_NAME"]
+    xcodeproj = "./ios/#{projectName}.xcodeproj"
+
+    scheme = case env
+    when "development"
+      "#{projectName}Dev"
+    when "staging"
+      "#{projectName}Stg"
+    when "production"
+      projectName
+    else
+      raise "Invalid environment: #{env}"
+    end
+
+    if options[:ci]
+      increment_version_number(xcodeproj: xcodeproj, version_number: version)
+      build_number = increment_build_number(xcodeproj: xcodeproj, build_number: options[:buildNumber])
+
+      cert
+      sigh(
+        force: true,
+        app_identifier: ENV["APP_ID"],
+        team_id: teamId,
+      )
+
+      update_code_signing_settings(
+        use_automatic_signing: false,
+        team_id: teamId,
+        bundle_identifier: ENV["APP_ID"],
+        profile_name: ENV["APP_ID"] + " AppStore",
+        targets: [projectName],
+        code_sign_identity: 'Apple Distribution',
+        path: xcodeproj
+      )
+
+      # Uncomment the line if your app have OneSignalNotificationServiceExtension
+      # sigh(
+      #   force: true,
+      #   app_identifier: ENV["APP_ID"] + ".OneSignalNotificationServiceExtension",
+      #   team_id: teamId,
+      # )
+      # update_code_signing_settings(
+      #   use_automatic_signing: false,
+      #   team_id: teamId,
+      #   bundle_identifier: ENV["APP_ID"] + ".OneSignalNotificationServiceExtension",
+      #   profile_name: ENV["APP_ID"] + ".OneSignalNotificationServiceExtension AppStore",
+      #   targets: ["OneSignalNotificationServiceExtension"]
+      # )
+
+      unlock_keychain(
+        password: ENV["KEYCHAIN_PASSWORD"]
+      )
+    end
+
+    # Run EAS Build locally
+    output_path = "build/app_#{build_number}.ipa"
+    sh "eas build --platform ios --local --profile #{env} --output #{output_path}"
+
+    # Locate the built IPA file
+    ipa_path = Dir.glob(output_path).first
+    raise "IPA file not found! Check the EAS build output." unless ipa_path
+
+    upload_to_testflight(
+        skip_waiting_for_build_processing: true,
+        app_identifier: ENV["APP_ID"],
+        changelog: "#{ENV["APPCENTER_RELEASE_NOTE"]}",
+        itc_provider: teamId
+    )
+  end
+
+  upload(env:options[:env], buildNumber: options[:buildNumber], ci: options[:ci])
+end
+
+
+
+platform :android do
+
+  before_all do |lane, options|
+    env = assert_environment(**options)
+  end
+
+  desc "Build file apk and upload to appcenter"
+  lane :upload do |options|
+    # Run EAS Build locally
+    if env === 'development' 
+      output_path = "build/app_#{build_number}.apk"
+    else
+      output_path = "build/app_#{build_number}.aab"
+    end
+    sh "eas build --platform ios --local --profile #{env} --output #{output_path}"
+
+    # Locate the built AAB file
+    apk_or_aab_path = Dir.glob(output_path).first
+    raise "APK/AAB file not found! Check the EAS build output." unless apk_or_aab_path
+
+    appcenter_upload(
+      api_token: ENV["APPCENTER_TOKEN_ANDROID"],
+      owner_name: owner_name,
+      app_name: ENV["APPCENTER_APP_NAME_ANDROID"],
+      app_display_name: ENV["APPCENTER_APP_DISPLAY_NAME"],
+      app_os: "Android",
+      file: apk_or_aab_path,
+      release_notes: ENV["APPCENTER_RELEASE_NOTE"],
+      destinations: ENV["APPCENTER_DISTRIBUTE_DESTINATIONS"],
+      notify_testers: true
+    )
+  end
+
+  upload(env: options[:env], buildNumber: options[:buildNumber])
+end
+
+private_lane :assert_environment do |options|
+  env = if options[:env] != nil
+    options[:env].downcase
+  elsif ENV.key?('APP_ENV')
+    ENV['APP_ENV']
+  else
+    UI.user_error!('Whoops, missing environment: Use `fastlane --env VALUE` where VALUE can be: ' + envs.inspect)
+    prompt_for_environment
+  end
+end

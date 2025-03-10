@@ -1,0 +1,41 @@
+{
+  "cli": {
+    "version": ">= 15.0.12",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "extends": "production"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "staging": {
+      "distribution": "internal",
+      "env": {
+        "extends": "production"
+      },
+      "channel": "staging"
+    },
+    "production": {
+      "channel": "production",
+      "env": {
+        "APP_ENV": "$APP_ENV",
+        "APP_SCHEME": "$APP_SCHEME",
+        "APP_NAME": "$APP_NAME",
+        "APP_ID": "$APP_ID",
+        "EAS_PROJECT_ID": "$EAS_PROJECT_ID",
+        "EAS_PROJECT_URL": "$EAS_PROJECT_URL",
+        "EAS_PROJECT_OWNER": "$EAS_PROJECT_OWNER",
+        "API_URL": "$API_URL"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

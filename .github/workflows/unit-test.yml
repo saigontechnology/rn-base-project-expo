@@ -1,0 +1,31 @@
+name: Unit Test
+
+on:
+  pull_request:
+    branches: [dev]
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Run Unit Tests
+        run: yarn test:coverage | tee ./coverage.txt
+
+      - name: Jest Coverage Comment
+        id: coverageComment
+        uses: MishaKav/jest-coverage-comment@main
+        with:
+          github_token: '${{ secrets.GITHUB_TOKEN }}'
+          coverage-summary-path: ./coverage/coverage-summary.json
+          summary-title: 'Coverage Unit Test Report'
+          title: 'Coverage Unit Test Report'
+          badge-title: Coverage
+          junitxml-title: JUnit Unit Test Report
+          junitxml-path: ./coverage/junit.xml
+          coverage-title: Coverage Unit Test
+          coverage-path: ./coverage.txt
