@@ -4,8 +4,8 @@ import {Text} from 'rn-base-component'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import {colors, fonts, fontSizes, metrics} from '../themes'
 import dayjs from 'dayjs'
-import {DATE_FORMAT} from '../constants'
 import {IconSymbol} from './ui'
+import {DATE_FORMAT} from '@/constants'
 
 export interface IDatePickerProps {
   onConfirm?: (item: Date) => void

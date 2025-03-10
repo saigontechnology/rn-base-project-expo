@@ -1,5 +1,5 @@
 import {getBundleId} from 'react-native-device-info'
-import packageJSON from '../package.json'
+import packageJSON from '../../package.json'
 
 const AppEnv = {
   DEV: 'dev',

@@ -4,9 +4,9 @@ import {ZodType, z} from 'zod'
 
 export const SignInSchema: ZodType<IUserSignInPayload> = z.object({
   email: z
-    .string({message: getString('validations.required', {field: getString('auth.email')})})
+    .string({required_error: getString('validations.required', {field: getString('auth.email')})})
     .email({message: getString('auth.validation.email')}),
   password: z
-    .string({message: getString('validations.required', {field: getString('auth.password')})})
+    .string({required_error: getString('validations.required', {field: getString('auth.password')})})
     .min(8, {message: getString('auth.validation.password')}),
 })
