@@ -1,10 +1,11 @@
 import {PayloadAction, createSlice} from '@reduxjs/toolkit'
 import {IApp} from '../types/app'
+import configs from '@/constants/configs'
 
 export const appInitialState: IApp = {
   showGlobalIndicator: false,
   showSearchBar: false,
-  apiUrl: process.env.API_URL,
+  apiUrl: configs.API_URL,
 }
 
 const appSlice = createSlice({

@@ -96,4 +96,45 @@ If you want to add more env variables, here is steps to create new variables ins
 NEW_VARIABLE=NEW_VARIABLE_VALUES
 ```
 
-4. To use it, simply call `process.env.NEW_VARIABLE`
+4. Define variable in app.config.js
+
+```bash
+export default ({config}) => ({
+...
+extra: {
+    ...config.extra,
+    API_URL: process.env.API_URL,
+    APP_ENV: process.env.APP_ENV,
+    APP_ID: process.env.APP_ID,
+    APP_NAME: process.env.APP_NAME,
+    APP_SCHEME: process.env.APP_SCHEME,
+    PROJECT_NAME: process.env.PROJECT_NAME,
+    # new variable here
+    NEW_VARIABLE: process.env.NEW_VARIABLE
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID,
+    }
+  }
+...
+```
+
+4. To use it, go to src/constants/configs.ts folder, add variable in configs to use new variable
+
+```bash
+export const EXPO_ENV_VARIABLES = Constants.expoConfig?.extra
+
+const configs = {
+  appVersion: packageJSON.version,
+  APP_ENV: EXPO_ENV_VARIABLES?.APP_ENV ?? 'dev',
+  DEBUG_ENABLED: EXPO_ENV_VARIABLES?.APP_ENV !== AppEnv.PRODUCTION,
+  API_URL: EXPO_ENV_VARIABLES?.API_URL,
+  buildEvn: EXPO_ENV_VARIABLES?.APP_ENV,
+  projectName: EXPO_ENV_VARIABLES?.PROJECT_NAME,
+  # add new variable
+  newVar: EXPO_ENV_VARIABLES?.NEW_VARIABLE
+}
+
+  # Simply import `@/constants/configs` and call `configs.newVar` to use it
+```
+
+5. Another wait is use directly with `EXPO_ENV_VARIABLES?.NEW_VARIABLE`

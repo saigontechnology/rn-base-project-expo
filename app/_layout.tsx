@@ -25,9 +25,9 @@ configureLocalization('vi')
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const [loaded] = useFonts({
-    RobotoRegular: require('../assets/fonts/Roboto-Regular.ttf'),
-    RobotoMedium: require('../assets/fonts/Roboto-Medium.ttf'),
-    RobotoBold: require('../assets/fonts/Roboto-Bold.ttf'),
+    RobotoRegular: require('../src/assets/fonts/Roboto-Regular.ttf'),
+    RobotoMedium: require('../src/assets/fonts/Roboto-Medium.ttf'),
+    RobotoBold: require('../src/assets/fonts/Roboto-Bold.ttf'),
   })
 
   useEffect(() => {

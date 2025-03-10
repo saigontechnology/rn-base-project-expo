@@ -12,7 +12,7 @@ import {
 import {getApplicationName, getBuildNumber, getDeviceId} from 'react-native-device-info'
 import {Draggable} from './Draggable'
 
-import Config, {EXTRA_QA_ENVS} from '../../constants/configs'
+import Config, {EXTRA_QA_ENVS} from '../../../constants/configs'
 
 import {InfoMenu, InfoMenuLink, InfoMenuRow} from './InfoMenu'
 

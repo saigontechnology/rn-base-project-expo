@@ -16,6 +16,12 @@ export default ({config}) => ({
   },
   extra: {
     ...config.extra,
+    API_URL: process.env.API_URL,
+    APP_ENV: process.env.APP_ENV,
+    APP_ID: process.env.APP_ID,
+    APP_NAME: process.env.APP_NAME,
+    APP_SCHEME: process.env.APP_SCHEME,
+    PROJECT_NAME: process.env.PROJECT_NAME,
     eas: {
       projectId: process.env.EAS_PROJECT_ID,
     },

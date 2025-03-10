@@ -5,11 +5,12 @@ import {getData, setData, clearAllData} from '../../utilities/storage'
 import {AUTH_API} from '../api/api'
 import {userActions} from '@/stores/reducers'
 import {RootState} from '@/stores/store'
+import configs from '@/constants/configs'
 
 let store: Store<RootState, AnyAction>
 
 const instance = axios.create({
-  baseURL: process.env.API_URL,
+  baseURL: configs.API_URL,
   timeout: AXIOS_TIMEOUT,
   withCredentials: false,
   responseType: 'json',

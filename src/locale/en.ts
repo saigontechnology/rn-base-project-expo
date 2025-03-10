@@ -27,6 +27,9 @@ const en = {
       },
     },
   },
+  home: {
+    title: 'Home',
+  },
   validations: {
     required: '{{field}} is required',
     invalid: '{{field}} is invalid',
@@ -38,13 +41,6 @@ const en = {
   notExist: `This screen doesn't exist`,
   goToHome: 'Go to home screen!',
   search: 'Search...',
-  demoForm: {
-    name: 'Name',
-    date: 'Date',
-    selectItem: 'Select Item',
-    chipSelect: 'Chip Select',
-    title: 'Demo form components',
-  },
 }
 
 export type StringsObject = typeof en
