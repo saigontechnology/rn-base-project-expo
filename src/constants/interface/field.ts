@@ -20,7 +20,7 @@ export interface IFormField<T extends object> {
   label: TranslationKey
   fieldType: FieldType
   placeholder?: TranslationKey
-  editable?: boolean
+  disabled?: boolean
   isRequire?: boolean
   data?: IOptions[]
   componentProps?: TextInputProps | IDatePickerProps | ISelectionProps<T>

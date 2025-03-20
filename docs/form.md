@@ -10,7 +10,7 @@
 
 ## 1. How to use `Form` component
 
-First, define which inputs the form will needs into a constant like this
+First, define which inputs the form will need into a constant like this
 
 ```tsx
 export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
@@ -19,7 +19,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.email',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       autoCapitalize: 'none',
     },
@@ -29,7 +29,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.password',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       secureTextEntry: true,
       autoCapitalize: 'none',
@@ -91,7 +91,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.email',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       autoCapitalize: 'none',
     },
@@ -107,7 +107,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.password',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       secureTextEntry: true,
       autoCapitalize: 'none',
@@ -122,7 +122,7 @@ This will display the `MiddleView` component between the two inputs.
 
 ## 3. Placing multiple inputs on the same line
 
-To align two inputs in the same row, use `{flexDirection: 'row', flexWrap: 'wrap'}` inside our `Form`'s parent view`:
+To align two inputs in the same row, use `{flexDirection: 'row', flexWrap: 'wrap'}` inside our `Form`'s parent view:
 
 ```tsx
 <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
@@ -139,7 +139,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.email',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       autoCapitalize: 'none',
       containerStyle: {{
@@ -152,7 +152,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.password',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       secureTextEntry: true,
       autoCapitalize: 'none',
