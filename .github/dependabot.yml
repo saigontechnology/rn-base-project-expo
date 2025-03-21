@@ -23,5 +23,5 @@ updates:
     rebase-strategy: "auto"
     # Raise pull requests for version updates
     # to pip against the `develop` branch
-    target-branch: "develop"
+    target-branch: "dev"
     versioning-strategy: increase
