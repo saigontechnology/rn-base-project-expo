@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import React from 'react'
 import {FormSelection} from './FormSelection'
 import {FIELD_TYPES, IFormField} from '@/constants/interface/field'
@@ -52,6 +53,7 @@ export const Form = <T extends FieldValues>({control, fields}: IProps<T>) => (
               id={item.key}
               key={item.key}
               control={control}
+              editable={!item.disabled}
               label={getString(item.label)}
               placeholder={item.placeholder ? getString(item.placeholder) : ''}
             />
@@ -69,7 +71,8 @@ export const Form = <T extends FieldValues>({control, fields}: IProps<T>) => (
             />
           )
         default:
-          return
+          const {CustomComponent} = item
+          return CustomComponent ? <CustomComponent key={item.key} control={control} /> : null
       }
     })}
   </>

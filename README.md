@@ -99,6 +99,7 @@ v16.19.0
 - [Multiple schemes](docs/config-scheme.md)
 - [Redux persist](docs/config-redux-persist.md)
 - [Bitbucket Pipelines](/docs/bitbucket-pipelines.md)
+- [Form](/docs/form.md)
 
 ## ⭐ Features
 

@@ -7,7 +7,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.email',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       autoCapitalize: 'none',
     },
@@ -17,7 +17,7 @@ export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
     label: 'auth.password',
     fieldType: FIELD_TYPES.input,
     isRequire: true,
-    editable: true,
+    disabled: false,
     componentProps: {
       secureTextEntry: true,
       autoCapitalize: 'none',
