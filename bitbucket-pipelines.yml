@@ -1,4 +1,16 @@
 pipelines:
+  pull-requests:
+    develop:
+      - step:
+          name: 'Run Unit Tests'
+          runs-on:
+            - 'self.hosted'
+            - 'macos'
+          script:
+            - echo "Installing dependencies..."
+            - yarn install --frozen-lockfile
+            - echo "Running unit tests..."
+            - yarn test:coverage
   branches:
     develop:
       - step:
@@ -16,6 +28,7 @@ pipelines:
                 - '*.env.*'
           script:
             - yarn install
+            - npx expo prebuild --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env development
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER --env development
     staging:
@@ -27,6 +40,7 @@ pipelines:
             - 'macos'
           script:
             - yarn install
+            - npx expo prebuild --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env staging
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER --env staging
     production:
@@ -38,6 +52,7 @@ pipelines:
             - 'macos'
           script:
             - yarn install
+            - npx expo prebuild --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env production
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER --env production
   custom:
@@ -50,8 +65,9 @@ pipelines:
           deployment: Test
           script:
             - yarn install
-            - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env development
+            - npx expo prebuild --clean
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER --env development
+            - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env development
     buildStaging:
       - step:
           name: 'Build - Staging'
@@ -61,6 +77,7 @@ pipelines:
           deployment: Staging
           script:
             - yarn install
+            - npx expo prebuild --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env staging
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER --env staging
     buildProduction:
@@ -72,5 +89,6 @@ pipelines:
           deployment: Production
           script:
             - yarn install
+            - npx expo prebuild --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER --env production
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER --env production
