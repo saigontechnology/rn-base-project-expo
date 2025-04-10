@@ -1,7 +1,7 @@
 {
   "name": "rn-base-project-expo",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -13,7 +13,9 @@
     "build": "bash ./scripts/build-app.sh",
     "upload": "bash ./scripts/upload-app.sh",
     "push:env": "bash ./scripts/push-env-eas.sh",
-    "pull:env": "bash ./scripts/push-env-eas.sh"
+    "pull:env": "bash ./scripts/push-env-eas.sh",
+    "doctor": "npx expo-doctor",
+    "review-lib": "npx expo install --check"
   },
   "repository": "https://github.com/saigontechnology/rn-base-project-expo.git",
   "author": "React Native Team <SaiGon Technology Solutions>",
