@@ -1,5 +1,5 @@
 import {TranslationKey} from '../../locale/I18nConfig'
-import {Path} from 'react-hook-form'
+import {Control, Path} from 'react-hook-form'
 import {TextInputProps} from 'rn-base-component'
 import {IDatePickerProps} from '@/components'
 import {IOptions, ISelectionProps} from './selection'
@@ -10,6 +10,7 @@ export const FIELD_TYPES = {
   date: 'date',
   select: 'select',
   chip_select: 'chip_select',
+  custom: 'custom',
 } as const
 
 export type FieldType = ValueOf<typeof FIELD_TYPES>
@@ -19,8 +20,9 @@ export interface IFormField<T extends object> {
   label: TranslationKey
   fieldType: FieldType
   placeholder?: TranslationKey
-  editable?: boolean
+  disabled?: boolean
   isRequire?: boolean
   data?: IOptions[]
   componentProps?: TextInputProps | IDatePickerProps | ISelectionProps<T>
+  CustomComponent?: React.FC<{control: Control<T>}>
 }
