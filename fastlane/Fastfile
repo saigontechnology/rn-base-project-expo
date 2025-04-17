@@ -27,12 +27,6 @@ teamId = ENV["APPLE_TEAM_ID"]
 envs = ['development', 'staging', 'production']
 env = ''
 
-
-my_ios_app = ENV["APPCENTER_APP_NAME_IOS"]
-my_android_app = ENV["APPCENTER_APP_NAME_ANDROID"]
-
-
-
 platform :ios do
   before_all do |lane, options|
     env = assert_environment(**options)
@@ -46,7 +40,6 @@ platform :ios do
     appName = appName.gsub(" ", "")
     workspace ="./ios/#{appName}.xcworkspace"
     xcodeproj = "./ios/#{appName}.xcodeproj"
-
     increment_version_number(xcodeproj: xcodeproj, version_number: version)
 
     if options[:ci]
@@ -75,68 +68,79 @@ platform :ios do
     end
 
     build_app(
-    workspace: workspace,
-    scheme: appName,
-    clean: true,
-    xcargs: "-allowProvisioningUpdates",
-    export_method: "app-store",
-    export_options: {
-      uploadBitcode: false,
-      compileBitcode: false,
-    })
+      workspace: workspace,
+      scheme: appName,
+      clean: true,
+      xcargs: "-allowProvisioningUpdates",
+      export_method: "app-store",
+      export_options: {
+        uploadBitcode: false,
+        compileBitcode: false,
+      }
+    )
 
     # Upload to TestFlight
     UI.message("Uploading to TestFlight...")
     upload_to_testflight(
       skip_waiting_for_build_processing: true,
       app_identifier: ENV["APP_ID"],
-      changelog: ENV["APPCENTER_RELEASE_NOTE"],
+      changelog: options[:changelog],
       itc_provider: teamId
     )
   end
 
   desc "Build iOS app"
   lane :build do |options|
-    upload(env: options[:env], buildNumber: options[:buildNumber], ci: options[:ci])
+    upload(env: options[:env], buildNumber: options[:buildNumber], ci: options[:ci], changelog: options[:changelog])
   end
 end
 
 
 
 platform :android do
-
   before_all do |lane, options|
     env = assert_environment(**options)
   end
 
-  desc "Build file apk and upload to appcenter"
+  desc "Build file apk and upload to firebase app distribution"
+
   lane :upload do |options|
     # Run EAS Build locally
-    if env === 'development' 
-      output_path = "build/app_#{build_number}.apk"
+    if env === 'production'
+      build_type = "AAB"
+      task = "bundle"
     else
-      output_path = "build/app_#{build_number}.aab"
+      build_type = "APK"
+      task = "assemble"
     end
-    sh "eas build --platform ios --local --profile #{env} --output #{output_path}"
-
-    # Locate the built AAB file
-    apk_or_aab_path = Dir.glob(output_path).first
-    raise "APK/AAB file not found! Check the EAS build output." unless apk_or_aab_path
-
-    appcenter_upload(
-      api_token: ENV["APPCENTER_TOKEN_ANDROID"],
-      owner_name: owner_name,
-      app_name: ENV["APPCENTER_APP_NAME_ANDROID"],
-      app_display_name: ENV["APPCENTER_APP_DISPLAY_NAME"],
-      app_os: "Android",
-      file: apk_or_aab_path,
-      release_notes: ENV["APPCENTER_RELEASE_NOTE"],
-      destinations: ENV["APPCENTER_DISTRIBUTE_DESTINATIONS"],
-      notify_testers: true
+    gradle(
+      task: task,
+      build_type: "Release",
+      project_dir: "./android",
+#       properties: {
+#         "VERSION_NAME" => version,
+#         "versionCode" => options[:buildNumber]
+#       }
+    )
+    if env === 'production'
+      output_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+    else
+      output_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+    end
+    firebase_app_distribution(
+        app: ENV["FIREBASE_APP_ID"],
+        release_notes: options[:changelog],
+        groups: ENV["DISTRIBUTE_GROUP"],
+        android_artifact_type: build_type,
+        android_artifact_path: output_path,
+        firebase_cli_token: ENV["FIREBASE_TOKEN"],
     )
   end
 
-  upload(env: options[:env], buildNumber: options[:buildNumber])
+  desc "Build Android app"
+  lane :build do |options|
+    upload(env: options[:env], buildNumber: options[:buildNumber], changelog: options[:changelog])
+  end
 end
 
 private_lane :assert_environment do |options|
