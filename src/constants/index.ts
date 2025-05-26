@@ -1,4 +1,4 @@
-import {IResponseCode, IToken, ITokenType} from './interface/services/axios'
+import { IResponseCode, IToken, ITokenType } from './interface/services/axios'
 
 export const TOKEN: IToken = {
   token: 'TOKEN_KEY',

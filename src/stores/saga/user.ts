@@ -1,9 +1,9 @@
-import {AnyAction} from 'redux'
-import {delay, put, takeLatest} from 'redux-saga/effects'
+import { AnyAction } from 'redux'
+import { delay, put, takeLatest } from 'redux-saga/effects'
 // import {Toast} from '../../components'
-import {appActions, userActions} from '../reducers'
-import {RouteKeys} from '@/routes/RouteKeys'
-import {router} from 'expo-router'
+import { appActions, userActions } from '../reducers'
+import { RouteKeys } from '@/routes/RouteKeys'
+import { router } from 'expo-router'
 
 function* userLoginSaga(): IterableIterator<AnyAction> {
   try {

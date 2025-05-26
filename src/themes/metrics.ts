@@ -1,8 +1,8 @@
-import {Dimensions, Platform} from 'react-native'
+import { Dimensions, Platform } from 'react-native'
 
 const DESIGN_WIDTH = 375
 const DESIGN_HEIGHT = 812
-const {width, height} = Dimensions.get('window')
+const { width, height } = Dimensions.get('window')
 
 function responsiveWidth<T extends number>(value: T) {
   return ((width * value) / DESIGN_WIDTH) as T
@@ -31,7 +31,7 @@ const shadow = {
   shadowRadius: 5,
   elevation: 5,
   shadowOpacity: 0.2,
-  shadowOffset: {width: 0, height: 3},
+  shadowOffset: { width: 0, height: 3 },
 } as const
 
 const hitSlop = {

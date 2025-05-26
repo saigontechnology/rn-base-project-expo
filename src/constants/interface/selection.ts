@@ -1,6 +1,6 @@
-import {IBottomSheetProps} from '@/components/BottomSheet'
-import {ReactNode} from 'react'
-import {StyleProp, ViewStyle} from 'react-native'
+import { IBottomSheetProps } from '@/components/BottomSheet'
+import { ReactNode } from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
 
 export interface IOptions {
   label: string

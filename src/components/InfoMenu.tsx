@@ -1,6 +1,15 @@
-import {colors, metrics} from '@/themes'
-import React, {FC, ReactNode} from 'react'
-import {View, Text, Switch, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle} from 'react-native'
+import { colors, metrics } from '@/themes'
+import React, { FC, ReactNode } from 'react'
+import {
+  View,
+  Text,
+  Switch,
+  TouchableOpacity,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native'
 
 interface Props {
   title: string
@@ -45,23 +54,23 @@ const InfoMenu: FC<Props> = ({
   </View>
 )
 
-const InfoMenuRow: FC<Props> = ({...rest}) => <InfoMenu {...rest} horizontal />
+const InfoMenuRow: FC<Props> = ({ ...rest }) => <InfoMenu {...rest} horizontal />
 
-const InfoMenuLink: FC<LinkProps> = ({linkTitle, onPress, linkTitleStyle, ...rest}) => (
+const InfoMenuLink: FC<LinkProps> = ({ linkTitle, onPress, linkTitleStyle, ...rest }) => (
   <InfoMenu
     {...rest}
     action={
       <TouchableOpacity onPress={onPress}>
-        <Text style={[{color: colors.primary}, linkTitleStyle]}>{linkTitle}</Text>
+        <Text style={[{ color: colors.primary }, linkTitleStyle]}>{linkTitle}</Text>
       </TouchableOpacity>
     }
   />
 )
-const InfoMenuToggle: FC<ToggleProps> = ({value, onValueChange, disabled = false, ...rest}) => (
+const InfoMenuToggle: FC<ToggleProps> = ({ value, onValueChange, disabled = false, ...rest }) => (
   <InfoMenu {...rest} action={<Switch onValueChange={onValueChange} value={value} disabled={disabled} />} />
 )
 
-export {InfoMenu, InfoMenuRow, InfoMenuLink, InfoMenuToggle}
+export { InfoMenu, InfoMenuRow, InfoMenuLink, InfoMenuToggle }
 
 const styles = StyleSheet.create({
   container: {
@@ -77,5 +86,5 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
   },
-  infoMenuText: {color: colors.gray},
+  infoMenuText: { color: colors.gray },
 })

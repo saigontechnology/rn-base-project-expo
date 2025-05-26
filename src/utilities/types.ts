@@ -3,7 +3,7 @@ interface IDataRefs {
   callback: (param: unknown) => void
 }
 
-export type IRefs = {[key: string]: IDataRefs}
+export type IRefs = { [key: string]: IDataRefs }
 
 export type EmitterListener = {
   count: number

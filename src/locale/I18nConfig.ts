@@ -1,5 +1,5 @@
 import i18n from 'i18next'
-import {getI18n, initReactI18next} from 'react-i18next'
+import { getI18n, initReactI18next } from 'react-i18next'
 
 import en from './en'
 

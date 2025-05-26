@@ -1,8 +1,8 @@
-import {PayloadAction, Reducer} from '@reduxjs/toolkit'
-import {ILoading} from '../types'
+import { PayloadAction, Reducer } from '@reduxjs/toolkit'
+import { ILoading } from '../types'
 
 const loadingReducer = (state: ILoading = {}, action: PayloadAction<unknown>): ILoading => {
-  const {type} = action
+  const { type } = action
   // remove module name when create from createSlice
   // cause by create type by createSlice it auto add prefix module
   // this cause action param pass in will not match with type dispatch to store

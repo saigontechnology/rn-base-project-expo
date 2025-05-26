@@ -10,4 +10,4 @@ const Images = {
   eyeHide: require('@/assets/images/eye-hide.png'),
 }
 
-export {Images}
+export { Images }

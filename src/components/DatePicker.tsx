@@ -1,11 +1,11 @@
-import React, {ReactNode, useCallback, useState} from 'react'
-import {StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle} from 'react-native'
-import {Text} from 'rn-base-component'
+import React, { ReactNode, useCallback, useState } from 'react'
+import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native'
+import { Text } from 'rn-base-component'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import {colors, fonts, fontSizes, metrics} from '../themes'
+import { colors, fonts, fontSizes, metrics } from '../themes'
 import dayjs from 'dayjs'
-import {DATE_FORMAT} from '@/constants'
-import {IconSymbol} from './IconSymbol'
+import { DATE_FORMAT } from '@/constants'
+import { IconSymbol } from './IconSymbol'
 
 export interface IDatePickerProps {
   onConfirm?: (item: Date) => void

@@ -1,4 +1,4 @@
-import {all} from 'redux-saga/effects'
+import { all } from 'redux-saga/effects'
 // Saga Imports
 import appSaga from './app'
 import userSaga from './user'

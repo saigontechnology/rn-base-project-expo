@@ -1,9 +1,9 @@
-import {TranslationKey} from '../../locale/I18nConfig'
-import {Control, Path} from 'react-hook-form'
-import {TextInputProps} from 'rn-base-component'
-import {IDatePickerProps} from '@/components'
-import {IOptions, ISelectionProps} from './selection'
-import {ValueOf} from '../../../custom-types'
+import { TranslationKey } from '../../locale/I18nConfig'
+import { Control, Path } from 'react-hook-form'
+import { TextInputProps } from 'rn-base-component'
+import { IDatePickerProps } from '@/components'
+import { IOptions, ISelectionProps } from './selection'
+import { ValueOf } from '../../../custom-types'
 
 export const FIELD_TYPES = {
   input: 'input',
@@ -24,5 +24,5 @@ export interface IFormField<T extends object> {
   isRequire?: boolean
   data?: IOptions[]
   componentProps?: TextInputProps | IDatePickerProps | ISelectionProps<T>
-  CustomComponent?: React.FC<{control: Control<T>}>
+  CustomComponent?: React.FC<{ control: Control<T> }>
 }

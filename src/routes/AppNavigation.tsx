@@ -1,10 +1,10 @@
-import {IconSymbol} from '@/components'
-import {getTabScreenOptions, NO_HEADER} from './ScreenOptions'
-import {Stack, Tabs} from 'expo-router'
+import { IconSymbol } from '@/components'
+import { getTabScreenOptions, NO_HEADER } from './ScreenOptions'
+import { Stack, Tabs } from 'expo-router'
 import React from 'react'
-import {useColorScheme} from 'react-native'
-import {RouteNames} from './RouteKeys'
-import {metrics} from '@/themes'
+import { useColorScheme } from 'react-native'
+import { RouteNames } from './RouteKeys'
+import { metrics } from '@/themes'
 
 export const RootNavigation: React.FC = () => (
   <Stack screenOptions={NO_HEADER}>
@@ -32,14 +32,14 @@ export const TabNavigation: React.FC = () => {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({color}) => <IconSymbol size={metrics.xl} name="house" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={metrics.xl} name="house" color={color} />,
         }}
       />
       <Tabs.Screen
         name="about"
         options={{
           title: 'About',
-          tabBarIcon: ({color}) => <IconSymbol size={metrics.xl} name="info" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={metrics.xl} name="info" color={color} />,
         }}
       />
     </Tabs>

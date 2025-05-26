@@ -38,7 +38,7 @@ interface IProps {
   onPressIn?: (event: GestureResponderEvent) => void
   onPressOut?: (event: GestureResponderEvent) => void
   onRelease?: (event: GestureResponderEvent, wasDragging: boolean) => void
-  onReverse?: () => {x: number; y: number}
+  onReverse?: () => { x: number; y: number }
   x?: number
   y?: number
   // z/elevation should be removed because it doesn't sync up visually and haptically
@@ -95,11 +95,11 @@ export function Draggable(props: IProps) {
   // The Animated object housing our xy value so that we can spring back
   const pan = React.useRef(new Animated.ValueXY())
   // Always set to xy value of pan, would like to remove
-  const offsetFromStart = React.useRef({x: 0, y: 0})
+  const offsetFromStart = React.useRef({ x: 0, y: 0 })
   // Width/Height of Draggable (renderSize is arbitrary if children are passed in)
-  const childSize = React.useRef({x: renderSize, y: renderSize})
+  const childSize = React.useRef({ x: renderSize, y: renderSize })
   // Top/Left/Right/Bottom location on screen from start of most recent touch
-  const startBounds = React.useRef({top: 0, bottom: 0, left: 0, right: 0})
+  const startBounds = React.useRef({ top: 0, bottom: 0, left: 0, right: 0 })
   // Whether we're currently dragging or not
   const isDragging = React.useRef(false)
 
@@ -121,7 +121,7 @@ export function Draggable(props: IProps) {
 
   const reversePosition = React.useCallback(() => {
     Animated.spring(pan.current, {
-      toValue: {x: 0, y: 0},
+      toValue: { x: 0, y: 0 },
       useNativeDriver: false,
     }).start()
   }, [pan])
@@ -148,7 +148,7 @@ export function Draggable(props: IProps) {
       isDragging.current = true
       if (!shouldReverse) {
         pan.current.setOffset(offsetFromStart.current)
-        pan.current.setValue({x: 0, y: 0})
+        pan.current.setValue({ x: 0, y: 0 })
       }
     },
     [getBounds, shouldReverse],
@@ -156,8 +156,8 @@ export function Draggable(props: IProps) {
 
   const handleOnDrag = React.useCallback(
     (e: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      const {dx, dy} = gestureState
-      const {top, right, left, bottom} = startBounds.current
+      const { dx, dy } = gestureState
+      const { top, right, left, bottom } = startBounds.current
       const far = 999999999
       const changeX = clamp(
         dx,
@@ -169,7 +169,7 @@ export function Draggable(props: IProps) {
         Number.isFinite(minY ?? -far) ? (minY ?? -far) - top : -far,
         Number.isFinite(maxY ?? far) ? (maxY ?? far) - bottom : far,
       )
-      pan.current.setValue({x: changeX, y: changeY})
+      pan.current.setValue({ x: changeX, y: changeY })
       onDrag(e, gestureState)
     },
     [maxX, maxY, minX, minY, onDrag],
@@ -242,15 +242,15 @@ export function Draggable(props: IProps) {
     if (children) {
       return children
     } else if (imageSource) {
-      return <Image style={{width: renderSize, height: renderSize}} source={imageSource} />
+      return <Image style={{ width: renderSize, height: renderSize }} source={imageSource} />
     } else {
       return <Text style={styles.text}>{renderText}</Text>
     }
   }, [children, imageSource, renderSize, renderText])
 
   const handleOnLayout = React.useCallback((event: LayoutChangeEvent) => {
-    const {height, width} = event.nativeEvent.layout
-    childSize.current = {x: width, y: height}
+    const { height, width } = event.nativeEvent.layout
+    childSize.current = { x: width, y: height }
   }, [])
 
   const handlePressOut = React.useCallback(
@@ -264,7 +264,7 @@ export function Draggable(props: IProps) {
   )
 
   const getDebugView = React.useCallback(() => {
-    const {width, height} = Dimensions.get('window')
+    const { width, height } = Dimensions.get('window')
     const far = 9999
     const constrained = minX || maxX || minY || maxY
     if (!constrained) {
@@ -274,7 +274,7 @@ export function Draggable(props: IProps) {
     const right = maxX ? width - maxX : -far
     const top = minY || -far
     const bottom = maxY ? height - maxY : -far
-    return <View pointerEvents="box-none" style={{left, right, top, bottom, ...styles.debugView}} />
+    return <View pointerEvents="box-none" style={{ left, right, top, bottom, ...styles.debugView }} />
   }, [maxX, maxY, minX, minY])
 
   return (
@@ -302,7 +302,7 @@ export function Draggable(props: IProps) {
 }
 
 const styles = StyleSheet.create({
-  text: {color: '#fff', textAlign: 'center'},
+  text: { color: '#fff', textAlign: 'center' },
   debugView: {
     backgroundColor: '#ff000044',
     position: 'absolute',

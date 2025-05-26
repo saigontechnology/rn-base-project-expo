@@ -1,5 +1,5 @@
-import {createSlice} from '@reduxjs/toolkit'
-import {IUser} from '../types'
+import { createSlice } from '@reduxjs/toolkit'
+import { IUser } from '../types'
 
 export const userInitialState: IUser = {
   userInfo: {},

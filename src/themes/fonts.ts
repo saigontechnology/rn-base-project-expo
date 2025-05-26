@@ -4,4 +4,4 @@ const fonts = {
   medium: 'Roboto-Medium',
 } as const
 
-export {fonts}
+export { fonts }

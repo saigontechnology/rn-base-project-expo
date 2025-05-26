@@ -18,7 +18,7 @@ module.exports = {
   collectCoverageFrom: ['**/*.{js,jsx,ts,tsx}'],
   coverageDirectory: 'coverage',
   coverageReporters: ['html', 'json-summary', 'text', 'text-summary'],
-  reporters: ['default', ['jest-junit', {outputDirectory: 'coverage'}]],
+  reporters: ['default', ['jest-junit', { outputDirectory: 'coverage' }]],
   verbose: true,
   moduleFileExtensions: ['js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'json', 'node', 'mts', 'cts', 'svg'],
   coveragePathIgnorePatterns: [],

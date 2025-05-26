@@ -1,6 +1,6 @@
 import React from 'react'
-import {SymbolView, SymbolViewProps, SymbolWeight} from 'expo-symbols'
-import {StyleProp, ViewStyle} from 'react-native'
+import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols'
+import { StyleProp, ViewStyle } from 'react-native'
 
 interface Props {
   name: SymbolViewProps['name']
@@ -10,7 +10,7 @@ interface Props {
   weight?: SymbolWeight
 }
 
-export const IconSymbol: React.FC<Props> = ({name, size = 24, color, style, weight = 'regular'}) => (
+export const IconSymbol: React.FC<Props> = ({ name, size = 24, color, style, weight = 'regular' }) => (
   <SymbolView
     weight={weight}
     tintColor={color}

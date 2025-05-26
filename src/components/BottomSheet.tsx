@@ -1,13 +1,13 @@
-import React, {ReactNode, forwardRef, useCallback, useImperativeHandle, useRef} from 'react'
+import React, { ReactNode, forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetProps as RNBottomSheetProps,
 } from '@gorhom/bottom-sheet'
-import {StyleSheet, View} from 'react-native'
-import {colors, isIOS, metrics} from '../themes'
-import {FullWindowOverlay} from 'react-native-screens'
+import { StyleSheet, View } from 'react-native'
+import { colors, isIOS, metrics } from '../themes'
+import { FullWindowOverlay } from 'react-native-screens'
 
 const SNAP_POINTS = ['50%']
 
@@ -27,7 +27,7 @@ export interface IBottomSheetProps extends RNBottomSheetProps {
 }
 
 export const BottomSheet = forwardRef<BottomSheetMethods, IBottomSheetProps>(
-  ({children, snapPoints = SNAP_POINTS, onClose, ...rest}, ref) => {
+  ({ children, snapPoints = SNAP_POINTS, onClose, ...rest }, ref) => {
     const sheetRef = useRef<BottomSheetModal>(null)
 
     useImperativeHandle(ref, () => ({
@@ -54,7 +54,7 @@ export const BottomSheet = forwardRef<BottomSheetMethods, IBottomSheetProps>(
     )
 
     const renderContainerComponent: React.ComponentType<React.PropsWithChildren> = useCallback(
-      ({children: containerChildren}) => <FullWindowOverlay>{containerChildren}</FullWindowOverlay>,
+      ({ children: containerChildren }) => <FullWindowOverlay>{containerChildren}</FullWindowOverlay>,
       [],
     )
 

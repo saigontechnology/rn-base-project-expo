@@ -1,10 +1,10 @@
-import {AnyAction, Store} from '@reduxjs/toolkit'
-import axios, {AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig} from 'axios'
-import {AXIOS_TIMEOUT, RESPONSE_CODE, TOKEN, TOKEN_TYPE} from '../../constants'
-import {getData, setData, clearAllData} from '../../utilities/storage'
-import {AUTH_API} from '../api/api'
-import {userActions} from '@/stores/reducers'
-import {RootState} from '@/stores/store'
+import { AnyAction, Store } from '@reduxjs/toolkit'
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { AXIOS_TIMEOUT, RESPONSE_CODE, TOKEN, TOKEN_TYPE } from '../../constants'
+import { getData, setData, clearAllData } from '../../utilities/storage'
+import { AUTH_API } from '../api/api'
+import { userActions } from '@/stores/reducers'
+import { RootState } from '@/stores/store'
 import configs from '@/constants/configs'
 
 let store: Store<RootState, AnyAction>

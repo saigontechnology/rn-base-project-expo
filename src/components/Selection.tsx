@@ -1,11 +1,11 @@
-import React, {useCallback, useMemo, useRef, useState} from 'react'
-import {FlatList, StyleSheet, TouchableOpacity, View} from 'react-native'
-import {Text, TextInput} from 'rn-base-component'
-import {BottomSheet, BottomSheetMethods} from './BottomSheet'
-import {colors, fonts, fontSizes, metrics} from '../themes'
-import {IOptions, ISelectionProps} from '@/constants/interface/selection'
-import {getString} from '@/locale/I18nConfig'
-import {IconSymbol} from './IconSymbol'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Text, TextInput } from 'rn-base-component'
+import { BottomSheet, BottomSheetMethods } from './BottomSheet'
+import { colors, fonts, fontSizes, metrics } from '../themes'
+import { IOptions, ISelectionProps } from '@/constants/interface/selection'
+import { getString } from '@/locale/I18nConfig'
+import { IconSymbol } from './IconSymbol'
 
 export const Selection = <T extends object>({
   data,
@@ -31,7 +31,7 @@ export const Selection = <T extends object>({
   const [searchText, setSearchText] = useState('')
 
   const renderDefaultItem = useCallback(
-    ({item}: {item: T | IOptions}) => (
+    ({ item }: { item: T | IOptions }) => (
       <TouchableOpacity
         style={styles.itemContainer}
         onPress={() => {

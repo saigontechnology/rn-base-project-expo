@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
-import {Appearance, Dimensions, Platform, StatusBar} from 'react-native'
-import {isIOS} from '../themes'
+import { Appearance, Dimensions, Platform, StatusBar } from 'react-native'
+import { isIOS } from '../themes'
 
 export function getStatusBarHeight(skipAndroid = false): number {
   if (isIOS) {
@@ -14,7 +14,7 @@ export function getStatusBarHeight(skipAndroid = false): number {
 }
 
 export function isIphoneX(): boolean {
-  const {width, height} = Dimensions.get('window')
+  const { width, height } = Dimensions.get('window')
   return (
     Platform.OS === 'ios' &&
     !Platform.isPad &&

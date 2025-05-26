@@ -1,10 +1,10 @@
-import {combineReducers} from '@reduxjs/toolkit'
+import { combineReducers } from '@reduxjs/toolkit'
 
 // Reducer Imports
-import app, {appInitialState} from './app'
+import app, { appInitialState } from './app'
 import loading from './loading'
-import user, {userInitialState} from './user'
-import {persistReducer} from 'redux-persist'
+import user, { userInitialState } from './user'
+import { persistReducer } from 'redux-persist'
 import INITIAL_STATE from '../initialState'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 

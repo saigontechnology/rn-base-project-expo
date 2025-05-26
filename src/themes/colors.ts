@@ -42,4 +42,4 @@ const getColorOpacity = (color: string, opacity: number): string => {
   return color
 }
 
-export {colors, getColorOpacity}
+export { colors, getColorOpacity }

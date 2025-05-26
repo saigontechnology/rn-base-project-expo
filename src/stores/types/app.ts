@@ -3,4 +3,5 @@ export interface IApp {
   showSearchBar?: boolean
   codePushKey?: string
   apiUrl?: string
+  appState?: string
 }

@@ -1,14 +1,14 @@
 import React from 'react'
-import {Link, Stack} from 'expo-router'
-import {StyleSheet} from 'react-native'
+import { Link, Stack } from 'expo-router'
+import { StyleSheet } from 'react-native'
 
-import {ThemedText, ThemedView} from '@/components'
-import {getString} from '@/locale/I18nConfig'
-import {metrics} from '@/themes'
+import { ThemedText, ThemedView } from '@/components'
+import { getString } from '@/locale/I18nConfig'
+import { metrics } from '@/themes'
 
 export const ForgotPasswordScreen: React.FC = () => (
   <>
-    <Stack.Screen options={{title: 'Oops!'}} />
+    <Stack.Screen options={{ title: 'Oops!' }} />
     <ThemedView style={styles.container}>
       <ThemedText type="title">{getString('auth.forgotPassword')}</ThemedText>
       <Link href="/" style={styles.link}>

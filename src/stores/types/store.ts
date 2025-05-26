@@ -1,7 +1,7 @@
 // Import Type
-import {IApp} from './app'
-import {ILoading} from './loading'
-import {IUser} from './user'
+import { IApp } from './app'
+import { ILoading } from './loading'
+import { IUser } from './user'
 
 export interface IInitialState {
   // State

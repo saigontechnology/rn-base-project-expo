@@ -1,6 +1,6 @@
 import React from 'react'
-import type {PropsWithChildren, ReactElement} from 'react'
-import {StyleSheet, useColorScheme} from 'react-native'
+import type { PropsWithChildren, ReactElement } from 'react'
+import { StyleSheet, useColorScheme } from 'react-native'
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -8,18 +8,18 @@ import Animated, {
   useScrollViewOffset,
 } from 'react-native-reanimated'
 
-import {ThemedView} from '@/components/ThemedView'
-import {useBottomTabOverflow} from '@/components/TabBarBackground'
-import {metrics} from '@/themes'
+import { ThemedView } from '@/components/ThemedView'
+import { useBottomTabOverflow } from '@/components/TabBarBackground'
+import { metrics } from '@/themes'
 
 const HEADER_HEIGHT = 250
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement
-  headerBackgroundColor: {dark: string; light: string}
+  headerBackgroundColor: { dark: string; light: string }
 }>
 
-export const ParallaxScrollView: React.FC<Props> = ({children, headerImage, headerBackgroundColor}) => {
+export const ParallaxScrollView: React.FC<Props> = ({ children, headerImage, headerBackgroundColor }) => {
   const colorScheme = useColorScheme() ?? 'light'
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const scrollOffset = useScrollViewOffset(scrollRef)
@@ -44,10 +44,14 @@ export const ParallaxScrollView: React.FC<Props> = ({children, headerImage, head
       <Animated.ScrollView
         ref={scrollRef}
         scrollEventThrottle={16}
-        scrollIndicatorInsets={{bottom}}
-        contentContainerStyle={{paddingBottom: bottom}}>
+        scrollIndicatorInsets={{ bottom }}
+        contentContainerStyle={{ paddingBottom: bottom }}>
         <Animated.View
-          style={[styles.header, {backgroundColor: headerBackgroundColor[colorScheme]}, headerAnimatedStyle]}>
+          style={[
+            styles.header,
+            { backgroundColor: headerBackgroundColor[colorScheme] },
+            headerAnimatedStyle,
+          ]}>
           {headerImage}
         </Animated.View>
         <ThemedView style={styles.content}>{children}</ThemedView>

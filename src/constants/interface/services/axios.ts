@@ -1,4 +1,4 @@
-import {AxiosRequestHeaders, HeadersDefaults, RawAxiosRequestHeaders} from 'axios'
+import { AxiosRequestHeaders, HeadersDefaults, RawAxiosRequestHeaders } from 'axios'
 
 export interface IToken {
   token: string

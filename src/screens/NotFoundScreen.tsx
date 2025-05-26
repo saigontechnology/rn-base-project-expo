@@ -1,15 +1,15 @@
 import React from 'react'
-import {Link, Stack} from 'expo-router'
-import {StyleSheet} from 'react-native'
+import { Link, Stack } from 'expo-router'
+import { StyleSheet } from 'react-native'
 
-import {ThemedText, ThemedView} from '@/components'
-import {getString} from '@/locale/I18nConfig'
-import {metrics} from '@/themes'
-import {RouteKeys} from '@/routes/RouteKeys'
+import { ThemedText, ThemedView } from '@/components'
+import { getString } from '@/locale/I18nConfig'
+import { metrics } from '@/themes'
+import { RouteKeys } from '@/routes/RouteKeys'
 
 export const NotFoundScreen: React.FC = () => (
   <>
-    <Stack.Screen options={{title: 'Oops!'}} />
+    <Stack.Screen options={{ title: 'Oops!' }} />
     <ThemedView style={styles.container}>
       <ThemedText type="title">{getString('notExist')}</ThemedText>
       <Link href={RouteKeys.Home} style={styles.link}>

@@ -1,7 +1,7 @@
-import {colors} from './colors'
-import {metrics} from './metrics'
-import {fonts} from './fonts'
-import {extendTheme} from 'rn-base-component'
+import { colors } from './colors'
+import { metrics } from './metrics'
+import { fonts } from './fonts'
+import { extendTheme } from 'rn-base-component'
 
 export const theme = extendTheme({
   fonts: fonts,

@@ -1,10 +1,10 @@
-import {AnyAction} from 'redux'
-import {call, takeLatest} from 'redux-saga/effects'
-import {appActions} from '../reducers'
-import {getData} from '../../utilities/storage'
-import {TOKEN} from '../../constants'
-import {RouteKeys} from '@/routes/RouteKeys'
-import {router} from 'expo-router'
+import { AnyAction } from 'redux'
+import { call, takeLatest } from 'redux-saga/effects'
+import { appActions } from '../reducers'
+import { getData } from '../../utilities/storage'
+import { TOKEN } from '../../constants'
+import { RouteKeys } from '@/routes/RouteKeys'
+import { router } from 'expo-router'
 
 function* getAppSettingSaga(): IterableIterator<AnyAction> {
   try {

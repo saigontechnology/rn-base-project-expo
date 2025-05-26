@@ -1,5 +1,5 @@
-import {FIELD_TYPES, IFormField} from '@/constants/interface/field'
-import {IUserSignInPayload} from '@/stores/types'
+import { FIELD_TYPES, IFormField } from '@/constants/interface/field'
+import { IUserSignInPayload } from '@/stores/types'
 
 export const SIGNIN_FIELDS: IFormField<IUserSignInPayload>[] = [
   {

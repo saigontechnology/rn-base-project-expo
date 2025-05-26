@@ -1,9 +1,9 @@
 import React from 'react'
-import {KeyboardAvoidingView, StyleSheet, View, type ViewProps} from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, View, type ViewProps } from 'react-native'
 
-import {useThemeColor} from '@/hooks/useThemeColor'
-import {isIOS} from '@/themes'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import { useThemeColor } from '@/hooks/useThemeColor'
+import { isIOS } from '@/themes'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type ThemedViewProps = ViewProps & {
   lightColor?: string
@@ -20,14 +20,14 @@ export const ThemedView: React.FC<ThemedViewProps> = ({
   ...otherProps
 }) => {
   const insets = useSafeAreaInsets()
-  const backgroundColor = useThemeColor({light: lightColor, dark: darkColor}, 'background')
+  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background')
 
   return (
     <View
       style={[
         styles.flex,
-        {backgroundColor},
-        !full && {paddingTop: insets.top, paddingBottom: insets.bottom},
+        { backgroundColor },
+        !full && { paddingTop: insets.top, paddingBottom: insets.bottom },
       ]}
       {...otherProps}>
       <KeyboardAvoidingView behavior={isIOS ? 'padding' : 'height'} style={[styles.flex, style]}>

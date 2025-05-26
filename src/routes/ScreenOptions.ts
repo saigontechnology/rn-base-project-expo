@@ -1,10 +1,9 @@
-import {HapticTab} from '@/components'
+import { HapticTab } from '@/components'
 import TabBarBackground from '@/components/TabBarBackground'
-import {colors} from '@/themes'
-import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs'
-import {ColorSchemeName, Platform} from 'react-native'
+import { colors } from '@/themes'
+import { ColorSchemeName, Platform } from 'react-native'
 
-export const getTabScreenOptions = (_: ColorSchemeName = 'light'): BottomTabNavigationOptions => ({
+export const getTabScreenOptions = (_: ColorSchemeName = 'light') => ({
   tabBarActiveTintColor: colors.primary,
   headerShown: false,
   tabBarButton: HapticTab,
@@ -12,10 +11,10 @@ export const getTabScreenOptions = (_: ColorSchemeName = 'light'): BottomTabNavi
   tabBarStyle: Platform.select({
     ios: {
       // Use a transparent background on iOS to show the blur effect
-      position: 'absolute',
+      position: 'absolute' as const,
     },
     default: {},
   }),
 })
 
-export const NO_HEADER = {headerShown: false, title: ''}
+export const NO_HEADER = { headerShown: false, title: '' }

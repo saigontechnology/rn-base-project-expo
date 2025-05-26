@@ -1,22 +1,22 @@
 /* eslint-disable no-case-declarations */
 import React from 'react'
-import {FormSelection} from './FormSelection'
-import {FIELD_TYPES, IFormField} from '@/constants/interface/field'
-import {getString} from '@/locale/I18nConfig'
-import {Control, FieldValues} from 'react-hook-form'
-import {FormInput} from './FormInput'
-import {FormDatePicker} from './FormDatePicker'
-import {FormChipSelection} from './FormChipSelection'
-import {ISelectionProps} from '@/constants/interface/selection'
-import {TextInputProps} from 'rn-base-component'
-import {IDatePickerProps} from '../DatePicker'
+import { FormSelection } from './FormSelection'
+import { FIELD_TYPES, IFormField } from '@/constants/interface/field'
+import { getString } from '@/locale/I18nConfig'
+import { Control, FieldValues } from 'react-hook-form'
+import { FormInput } from './FormInput'
+import { FormDatePicker } from './FormDatePicker'
+import { FormChipSelection } from './FormChipSelection'
+import { ISelectionProps } from '@/constants/interface/selection'
+import { TextInputProps } from 'rn-base-component'
+import { IDatePickerProps } from '../DatePicker'
 
 interface IProps<T extends FieldValues> {
   control: Control<T>
   fields: IFormField<T>[]
 }
 
-export const Form = <T extends FieldValues>({control, fields}: IProps<T>) => (
+export const Form = <T extends FieldValues>({ control, fields }: IProps<T>) => (
   <>
     {fields.map(item => {
       switch (item.fieldType) {
@@ -71,7 +71,7 @@ export const Form = <T extends FieldValues>({control, fields}: IProps<T>) => (
             />
           )
         default:
-          const {CustomComponent} = item
+          const { CustomComponent } = item
           return CustomComponent ? <CustomComponent key={item.key} control={control} /> : null
       }
     })}

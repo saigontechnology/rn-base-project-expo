@@ -1,8 +1,8 @@
 import React from 'react'
-import {StyleSheet, TouchableOpacity, View} from 'react-native'
-import {Text} from 'rn-base-component'
-import {colors, fontSizes, fonts, metrics} from '../themes'
-import {IOptions} from '@/constants/interface/selection'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Text } from 'rn-base-component'
+import { colors, fontSizes, fonts, metrics } from '../themes'
+import { IOptions } from '@/constants/interface/selection'
 
 export interface IChipSelectionProps {
   data?: IOptions[]
@@ -11,7 +11,7 @@ export interface IChipSelectionProps {
   onSelected?: (value: string) => void
 }
 
-export const ChipSelection: React.FC<IChipSelectionProps> = ({data, label, value, onSelected}) => (
+export const ChipSelection: React.FC<IChipSelectionProps> = ({ data, label, value, onSelected }) => (
   <View style={styles.container}>
     <Text fontSize={fontSizes.span} fontFamily={fonts.medium}>
       {label}

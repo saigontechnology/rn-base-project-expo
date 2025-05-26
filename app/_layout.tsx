@@ -1,10 +1,10 @@
-import {persistor, store} from '@/stores/store'
+import { persistor, store } from '@/stores/store'
 import React from 'react'
-import {StyleSheet} from 'react-native'
+import { StyleSheet } from 'react-native'
 import 'react-native-reanimated'
-import {Provider} from 'react-redux'
-import {PersistGate} from 'redux-persist/integration/react'
-import {GestureHandlerRootView} from 'react-native-gesture-handler'
+import { Provider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import MainLayout from '@/screens/MainLayout'
 
 export default function RootLayout() {

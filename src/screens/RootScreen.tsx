@@ -1,11 +1,11 @@
-import React, {useEffect} from 'react'
-import {Redirect} from 'expo-router'
-import {ActivityIndicator, StyleSheet} from 'react-native'
+import React, { useEffect } from 'react'
+import { Redirect } from 'expo-router'
+import { ActivityIndicator, StyleSheet } from 'react-native'
 
-import {ThemedText, ThemedView} from '@/components'
-import {RouteKeys} from '@/routes/RouteKeys'
-import {metrics} from '@/themes'
-import {getString} from '@/locale/I18nConfig'
+import { ThemedText, ThemedView } from '@/components'
+import { RouteKeys } from '@/routes/RouteKeys'
+import { metrics } from '@/themes'
+import { getString } from '@/locale/I18nConfig'
 
 export const RootScreen: React.FC = () => {
   const [isMockVerify, setIsMockVerify] = React.useState(true)

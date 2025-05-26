@@ -1,12 +1,12 @@
 import React from 'react'
-import {Link, RelativePathString} from 'expo-router'
-import {openBrowserAsync} from 'expo-web-browser'
-import {type ComponentProps} from 'react'
-import {Platform} from 'react-native'
+import { Link, RelativePathString } from 'expo-router'
+import { openBrowserAsync } from 'expo-web-browser'
+import { type ComponentProps } from 'react'
+import { Platform } from 'react-native'
 
-type Props = Omit<ComponentProps<typeof Link>, 'href'> & {href: string}
+type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: string }
 
-export const ExternalLink: React.FC<Props> = ({href, ...rest}) => (
+export const ExternalLink: React.FC<Props> = ({ href, ...rest }) => (
   <Link
     target="_blank"
     {...rest}

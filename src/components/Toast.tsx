@@ -1,8 +1,8 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react'
-import {Animated, Image, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Animated, Image, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Emitter from '../utilities/Emitter'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {colors, fontSizes, hitSlop, Images, metrics} from '@/themes'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { colors, fontSizes, hitSlop, Images, metrics } from '@/themes'
 
 export const TOAST_TYPE = {
   SUCCESS: 'SUCCESS',
@@ -51,7 +51,7 @@ export const Toast: React.FC = () => {
   const insets = useSafeAreaInsets()
   const [state, setState] = useState<IToastState>(initState)
   const HEIGHT = insets.bottom + metrics.toast
-  const animationRef = useRef<Animated.CompositeAnimation>()
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null)
   const animation = useRef(new Animated.Value(0)).current
   const offset = animation.interpolate({
     inputRange: [0, 1],
@@ -114,7 +114,7 @@ export const Toast: React.FC = () => {
       style={[
         styles.container,
         {
-          transform: [{translateY: offset}],
+          transform: [{ translateY: offset }],
           opacity: opacity,
           paddingBottom: insets.bottom,
         },

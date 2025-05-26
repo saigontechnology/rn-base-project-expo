@@ -1,7 +1,7 @@
-import {TextInput as BaseTextInput, TextInputProps} from 'rn-base-component'
-import React, {useCallback, useState} from 'react'
-import {StyleSheet, TouchableOpacity, Image} from 'react-native'
-import {colors, fonts, fontSizes, Images, metrics} from '../themes'
+import { TextInput as BaseTextInput, TextInputProps } from 'rn-base-component'
+import React, { useCallback, useState } from 'react'
+import { StyleSheet, TouchableOpacity, Image } from 'react-native'
+import { colors, fonts, fontSizes, Images, metrics } from '../themes'
 
 export const TextInput: React.FC<TextInputProps> = ({
   secureTextEntry,
@@ -51,7 +51,7 @@ export const TextInput: React.FC<TextInputProps> = ({
       placeholderTextColor={colors.black}
       onFocus={() => setFocus(true)}
       onBlur={() => setFocus(false)}
-      errorProps={{style: styles.error}}
+      errorProps={{ style: styles.error }}
       selectionColor={errorText ? colors.red : colors.primary}
     />
   )

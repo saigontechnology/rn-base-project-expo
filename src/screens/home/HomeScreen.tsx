@@ -1,9 +1,9 @@
 import React from 'react'
-import {StyleSheet} from 'react-native'
+import { StyleSheet } from 'react-native'
 
-import {ThemedText, ThemedView} from '@/components'
-import {metrics} from '@/themes'
-import {getString} from '@/locale/I18nConfig'
+import { ThemedText, ThemedView } from '@/components'
+import { metrics } from '@/themes'
+import { getString } from '@/locale/I18nConfig'
 
 export const HomeScreen: React.FC = () => (
   <>

@@ -1,8 +1,8 @@
-import {ExpoConfig} from 'expo/config'
+import { ExpoConfig } from 'expo/config'
 
-const {version: APP_VERSION} = require('./package.json')
+const { version: APP_VERSION } = require('./package.json')
 
-export default ({config}: {config: ExpoConfig}) => ({
+export default ({ config }: { config: ExpoConfig }) => ({
   ...config,
   name: process.env.APP_NAME || '',
   scheme: process.env.APP_SCHEME,
