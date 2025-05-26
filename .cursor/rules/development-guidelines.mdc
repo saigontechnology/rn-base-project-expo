@@ -1,0 +1,50 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Development Guidelines
+
+## Navigation with Expo Router
+
+- Use file-based routing in the `app/` directory
+- Route files should export a default React component
+- Use `(group)` folders for route groups (e.g., `(auth)`, `(app)`)
+- Navigation configuration is in [src/routes/AppNavigation.tsx](mdc:src/routes/AppNavigation.tsx)
+- Route constants are defined in [src/routes/RouteKeys.ts](mdc:src/routes/RouteKeys.ts)
+
+## State Management
+
+- Redux store configuration: [src/stores/store.ts](mdc:src/stores/store.ts)
+- Type definitions: [src/stores/types/](mdc:src/stores/types)
+- Selectors: [src/stores/selectors/](mdc:src/stores/selectors)
+- Use Redux Toolkit for state management
+- Persist state using redux-persist
+
+## Component Development
+
+- Main layout component: [src/screens/MainLayout.tsx](mdc:src/screens/MainLayout.tsx)
+- Reusable components in [src/components/](mdc:src/components)
+- Use TypeScript interfaces for props
+- Follow React functional component patterns
+
+## Styling and Theming
+
+- Theme configuration in [src/themes/](mdc:src/themes)
+- Use styled-components or React Native StyleSheet
+- Support both light and dark themes
+- Responsive design with metrics
+
+## Assets Management
+
+- Fonts: [src/assets/fonts/](mdc:src/assets/fonts) (Roboto family)
+- Images: [src/assets/images/](mdc:src/assets/images)
+- Use require() for static assets
+- Optimize images for different screen densities
+
+## TypeScript Best Practices
+
+- Strict mode enabled in [tsconfig.json](mdc:tsconfig.json)
+- Use path aliases (@/* for src/*)
+- Define interfaces in appropriate type files
+- Avoid `any` type when possible

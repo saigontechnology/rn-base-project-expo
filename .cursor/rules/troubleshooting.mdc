@@ -1,0 +1,76 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Troubleshooting Guide
+
+## Common Issues and Solutions
+
+### Expo Doctor Checks
+
+Run `npx expo-doctor` to check for configuration issues:
+- Ensures package versions match Expo SDK requirements
+- Validates native module compatibility
+- Checks for common configuration problems
+
+### TypeScript Errors
+
+Current known issues:
+- I18n configuration has complex generic type constraints (non-critical)
+- Use `npx tsc --noEmit` to check for type errors
+- Path aliases configured: `@/*` maps to `src/*`
+
+### Font Loading Issues
+
+Font files location: [src/assets/fonts/](mdc:src/assets/fonts)
+- Ensure correct relative paths in [src/screens/MainLayout.tsx](mdc:src/screens/MainLayout.tsx)
+- Use `require('../assets/fonts/FontName.ttf')` syntax
+- Available fonts: Roboto-Regular, Roboto-Medium, Roboto-Bold
+
+### Navigation Type Conflicts
+
+- Use Expo Router types instead of standalone React Navigation
+- Avoid mixing `@react-navigation/bottom-tabs` types with Expo Router
+- Let TypeScript infer types when possible for tab navigation
+
+### Build Failures
+
+1. **Babel Configuration**
+   - Ensure [babel.config.js](mdc:babel.config.js) uses `babel-preset-expo`
+   - Remove deprecated `expo-router/babel` plugin
+   - Keep `react-native-reanimated/plugin` as last plugin
+
+2. **Metro Configuration**
+   - Use [metro.config.js](mdc:metro.config.js) with Expo defaults
+   - Avoid custom Metro configurations unless necessary
+
+3. **Dependency Issues**
+   - Run `npx expo install --check` to fix version mismatches
+   - Use `yarn` as the package manager (configured in package.json)
+
+### Environment Variables
+
+- Set in EAS project settings, not in local .env files
+- Access via `process.env.EXPO_PUBLIC_*` for client-side variables
+- Server-side variables available in [app.config.ts](mdc:app.config.ts)
+
+### Development Server Issues
+
+```bash
+# Clear Metro cache
+npx expo start --clear
+
+# Reset Expo cache
+npx expo start --reset-cache
+
+# Check for port conflicts
+npx expo start --port 8081
+```
+
+### Testing Issues
+
+- Jest configuration: [jest.config.js](mdc:jest.config.js)
+- Uses `jest-expo` preset
+- Transform ignore patterns configured for Expo modules
+- Coverage reports in `coverage/` directory

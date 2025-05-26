@@ -1,0 +1,44 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Expo Project Structure Guide
+
+This is an Expo Router project with TypeScript support. Follow these guidelines for development:
+
+## Core Configuration Files
+
+- [app.config.ts](mdc:app.config.ts) - Main Expo configuration with environment variables
+- [babel.config.js](mdc:babel.config.js) - Babel configuration with expo-preset and reanimated plugin
+- [metro.config.js](mdc:metro.config.js) - Metro bundler configuration using Expo defaults
+- [expo-env.d.ts](mdc:expo-env.d.ts) - TypeScript environment declarations for Expo
+- [eas.json](mdc:eas.json) - EAS Build and Submit configuration
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration extending expo/tsconfig.base
+
+## Project Structure
+
+```
+├── app/                    # Expo Router app directory (file-based routing)
+│   ├── _layout.tsx        # Root layout component
+│   ├── index.tsx          # Home route
+│   ├── (app)/             # App stack routes
+│   └── (auth)/            # Auth stack routes
+├── src/                   # Source code
+│   ├── components/        # Reusable components
+│   ├── screens/           # Screen components
+│   ├── routes/            # Navigation configuration
+│   ├── stores/            # Redux store and state management
+│   ├── assets/            # Static assets (fonts, images)
+│   ├── themes/            # Theme and styling
+│   └── locale/            # Internationalization
+```
+
+## Key Dependencies
+
+- **Expo SDK 53** - Main framework
+- **Expo Router** - File-based navigation
+- **React Native Reanimated** - Animations
+- **Redux Toolkit** - State management
+- **TypeScript** - Type safety
+- **Jest + Expo** - Testing framework
