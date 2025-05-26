@@ -62,7 +62,7 @@ v16.19.0
 1. Init project
 
    ```sh
-   npx create-expo-app@latest YourApp --template rn-base-project-expo
+   npx create-expo-app@latest YourApp --template rn-base-expo
    ```
 
 2. Install node_modules
