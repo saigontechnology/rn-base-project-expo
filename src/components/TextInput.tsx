@@ -1,7 +1,7 @@
 import { TextInput as BaseTextInput, TextInputProps } from 'rn-base-component'
 import React, { useCallback, useState } from 'react'
 import { StyleSheet, TouchableOpacity, Image } from 'react-native'
-import { colors, fonts, fontSizes, Images, metrics } from '../themes'
+import { colors, fonts, fontSizes, Images, metrics } from '@/themes'
 
 export const TextInput: React.FC<TextInputProps> = ({
   secureTextEntry,
