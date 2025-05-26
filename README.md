@@ -40,13 +40,13 @@
 
 ## Requirements
 
-NodeJS (version 16 or later) and NPM is required.
+NodeJS (version 20.18.1 or later) and NPM is required.
 To make sure you have them available on your machine, try running the following command
 
 ```sh
 $ npm -v && node -v
 9.2.0
-v16.19.0
+v20.18.1
 ```
 
 > **Note**
