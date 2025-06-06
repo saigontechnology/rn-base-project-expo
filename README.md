@@ -26,6 +26,7 @@
 <p align="center">
   <a href="#requirements">Requirements</a> •
   <a href="#quick-start">Quick Start</a> •
+  <a href="#rn-firebase-chat-setup">RN Firebase Chat Setup</a> •
   <a href="#features">Features</a> •
   <a href="#dependencies">Dependencies</a> •
   <a href="#documents">Documents</a> •
@@ -100,6 +101,177 @@ v16.19.0
 - [Redux persist](docs/config-redux-persist.md)
 - [Bitbucket Pipelines](/docs/bitbucket-pipelines.md)
 - [Form](/docs/form.md)
+
+## 🔥 [RN Firebase Chat Setup](https://github.com/saigontechnology/rn-firebase-chat)
+
+The `rn-firebase-chat` library is already included in this template for building chat functionality with Firebase. Here's what you need to know to get it working:
+
+### Core Dependencies (Already Included)
+
+The following dependencies are **already installed** in this template:
+
+| Library                           | Version | Status     | Description                                              |
+| --------------------------------- | ------- | ---------- | -------------------------------------------------------- |
+| rn-firebase-chat                  | ^0.5.0  | ✅ Included | Main chat library                                        |
+| @react-native-firebase/app        | ^22.2.0 | ✅ Included | Firebase core module                                     |
+| @react-native-firebase/auth       | ^22.2.0 | ✅ Included | Firebase Authentication                                  |
+| @react-native-firebase/firestore  | ^22.2.0 | ✅ Included | Cloud Firestore for chat data storage                   |
+| @react-native-firebase/storage    | ^22.2.0 | ✅ Included | Cloud Storage for file uploads                           |
+| react-native-aes-crypto           | ^3.2.1  | ✅ Included | Message encryption                                       |
+| react-native-fast-image           | ^8.6.3  | ✅ Included | Optimized image loading                                  |
+| react-native-gifted-chat          | ^2.8.1  | ✅ Included | Chat UI components                                       |
+| react-native-keyboard-controller  | ^1.17.3 | ✅ Included | Keyboard handling for chat input                         |
+
+### Camera/Video Addon Dependencies (Already Included)
+
+These are **only needed** if you want to use camera/video features with the addon:
+
+| Library                           | Version | Status     | Description                                              |
+| --------------------------------- | ------- | ---------- | -------------------------------------------------------- |
+| react-native-video                | ^6.14.1 | ✅ Included | Video playback support (for camera addon)               |
+| react-native-vision-camera        | ^4.6.4  | ✅ Included | Camera functionality (for camera addon)                 |
+
+### Missing Dependencies (Need to Install)
+
+To fully enable rn-firebase-chat, you need to install these additional dependencies:
+
+```bash
+# Core missing dependencies for basic chat functionality
+yarn add randomcolor uuid react-native-image-picker
+
+# All camera/video dependencies are already included!
+```
+
+### Firebase Configuration Required
+
+#### 1. **app.config.ts Updates**
+
+Update your Firebase configuration files paths in `app.config.ts`:
+
+```typescript
+ios: {
+  ...config.ios,
+  bundleIdentifier: process.env.APP_ID,
+  googleServicesFile: './path/to/GoogleService-Info.plist', // ⚠️ UPDATE THIS PATH
+  // ... rest of config
+},
+android: {
+  ...config.android,
+  package: process.env.APP_ID,
+  googleServicesFile: './path/to/google-services.json', // ⚠️ UPDATE THIS PATH
+  // ... rest of config
+},
+```
+
+#### 2. **Add Firebase Config Plugin**
+
+Add Firebase plugins to your `app.config.ts`:
+
+```typescript
+plugins: [
+  'expo-router',
+  '@react-native-firebase/app',          // ⚠️ ADD THIS
+  '@react-native-firebase/firestore',    // ⚠️ ADD THIS  
+  '@react-native-firebase/storage',      // ⚠️ ADD THIS
+  '@react-native-firebase/auth',         // ⚠️ ADD THIS (if using auth)
+  [
+    'expo-build-properties',
+    {
+      ios: {
+        useFrameworks: 'static',
+      },
+    },
+  ],
+  // ... existing plugins
+],
+```
+
+#### 3. **Firebase Project Setup**
+
+1. **Create Firebase Project**: Go to [Firebase Console](https://console.firebase.google.com)
+2. **Add iOS App**: Download `GoogleService-Info.plist`
+3. **Add Android App**: Download `google-services.json`
+4. **Enable Services**:
+   - Cloud Firestore
+   - Authentication (if needed)
+   - Cloud Storage
+5. **Set up Firestore Rules**: Configure security rules for chat data
+
+### Usage Example
+
+```typescript
+import { ChatProvider } from 'rn-firebase-chat';
+
+const userInfo = {
+  id: 'user123',
+  name: 'John Doe',
+  avatar: 'https://example.com/avatar.jpg',
+};
+
+function App() {
+  return (
+    <ChatProvider userInfo={userInfo}>
+      <YourAppContent />
+    </ChatProvider>
+  );
+}
+```
+
+### Camera/Video Addon Usage
+
+For **camera and video features**, use the addon components (requires the camera dependencies listed above):
+
+```typescript
+import React from 'react'
+import { ChatScreen as BaseChatScreen } from 'rn-firebase-chat'
+import { CameraView, useCamera } from 'rn-firebase-chat/src/addons/camera'
+
+const partnerInfo = {
+  id: 'ayz123',
+  name: 'Tony',
+  avatar: 'https://example.com/tony.jpg',
+};
+
+export const ChatScreen: React.FC = () => {
+  const { onPressCamera, onPressGallery } = useCamera()
+  
+  return (
+    <BaseChatScreen
+      memberIds={[partnerInfo.id]}
+      partners={[partnerInfo]}
+      inputToolbarProps={{
+        hasCamera: true,
+        hasGallery: true,
+        onPressCamera,
+        onPressGallery,
+      }}
+    >
+      {({ onSend }) => (<CameraView onSend={onSend} />)}
+    </BaseChatScreen>
+  )
+}
+```
+
+> **Note**: Camera/Video addons require `react-native-video` and `react-native-vision-camera` which are already included in this template.
+
+### Build Requirements
+
+After adding Firebase configuration:
+
+```bash
+# Clean prebuild
+npx expo prebuild --clean
+
+# Run development build
+yarn start --dev-client
+```
+
+### Troubleshooting
+
+- **Build Errors**: Ensure all Firebase config files are in the correct paths
+- **iOS Build Issues**: Make sure `useFrameworks: 'static'` is set in build properties
+- **Android Build Issues**: Verify `google-services.json` is in the correct location
+- **Firebase Rules**: Check Firestore security rules allow read/write for authenticated users
 
 ## ⭐ Features
 
