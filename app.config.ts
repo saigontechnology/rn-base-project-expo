@@ -12,6 +12,14 @@ export default ({config}: {config: ExpoConfig}) => ({
   plugins: [
     'expo-router',
     [
+      'expo-build-properties',
+      {
+        ios: {
+          useFrameworks: 'static',
+        },
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         image: './src/assets/images/sts.png',
@@ -29,6 +37,7 @@ export default ({config}: {config: ExpoConfig}) => ({
   ios: {
     ...config.ios,
     bundleIdentifier: process.env.APP_ID,
+    googleServicesFile: '', // insert path GoogleService-Info.plist
     entitlements: {
       'aps-environment': process.env.APP_ENV,
     },
@@ -36,6 +45,7 @@ export default ({config}: {config: ExpoConfig}) => ({
   android: {
     ...config.android,
     package: process.env.APP_ID,
+    googleServicesFile: '', // insert path google-services.json
     versionCode: parseInt(process.env.BITBUCKET_BUILD_NUMBER || '1'),
   },
   extra: {
