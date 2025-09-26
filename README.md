@@ -40,17 +40,17 @@
 
 ## Requirements
 
-NodeJS (version 16 or later) and NPM is required.
+Node.js (version 18.18.0 or later) and NPM (version 8.19.2 or later) are required.
 To make sure you have them available on your machine, try running the following command
 
 ```sh
 $ npm -v && node -v
-9.2.0
-v16.19.0
+10.2.3
+v20.18.1
 ```
 
 > **Note**
-> You also need to install the dependencies required by React Native.  
+> You also need to install the dependencies required by React Native.
 > Go to the [React Native environment setup](https://reactnative.dev/docs/environment-setup)
 > Follow instructions for your given `development OS` and `target OS`.
 
@@ -74,7 +74,18 @@ v16.19.0
    > **Note**
    > Pod install automatically after run `yarn install`
 
-3. Run `Android` or `Ios` via package.json with debug mode
+3. **Setup environment variables**
+
+   Create a `.env` file in the root directory of your project and configure the required environment variables:
+
+   ```sh
+   # Copy and modify the content from .env.sample into your .env file
+   ```
+
+   > **Important**
+   > Make sure to update all the placeholder values with your actual configuration values.
+
+4. Run `Android` or `Ios` via package.json with debug mode
 
    ```sh
    # Run with Expo Go
@@ -84,7 +95,7 @@ v16.19.0
    yarn start --dev-client
    ```
 
-4. Build `Android` or `Ios` locally via package.json
+5. Build `Android` or `Ios` locally via package.json
 
    ```sh
    yarn build
@@ -96,6 +107,7 @@ v16.19.0
 
 ## Documents
 
+- [Environment Setup](docs/environments.md)
 - [Multiple schemes](docs/config-scheme.md)
 - [Redux persist](docs/config-redux-persist.md)
 - [Bitbucket Pipelines](/docs/bitbucket-pipelines.md)
@@ -120,18 +132,20 @@ Our template is ship with the following rock-solid technical decisions out of th
 
 | Library               | Category          | Version | Description                                               |
 | --------------------- | ----------------- | ------- | --------------------------------------------------------- |
-| React Native          | Mobile Framework  | v0.76   | The best cross-platform mobile framework                  |
-| React                 | UI Framework      | v18     | The most popular UI framework in the world                |
-| i18n-js               | Translation       | v4      | Provide the i18n translations on the JavaScript           |
-| RN Reanimated         | Animations        | v2      | Beautiful and performant animations                       |
-| Async-storage         | Persistence       | v1      | State persistence                                         |
-| React Native SVG      | SVG Image         | v13     | Provides SVG support to React Native                      |
-| Axios                 | Network Services  | v1      | Provides promise based HTTP client                        |
-| Redux / Redux-toolkit | State Management  | v8      | Provides state container for JavaScript apps              |
-| Redux Saga            | Redux side-effect | v1      | Provides Redux side effect manager                        |
-| ESLint                | Code Formater     | v8      | Tool for identifying and reporting on patterns Javascript |
-| Jest                  | Test Runner       | v26     | Standard test runner for JS apps                          |
+| React Native          | Mobile Framework  | 0.79.2  | The best cross-platform mobile framework                  |
+| React                 | UI Framework      | 19.0.0  | The most popular UI framework in the world                |
+| Expo SDK              | Development       | ~53.0.9 | Expo framework for React Native development               |
+| i18next               | Translation       | ^24.2.2 | Provide the i18n translations on the JavaScript           |
+| RN Reanimated         | Animations        | ~3.17.4 | Beautiful and performant animations                       |
+| Async-storage         | Persistence       | 2.1.2   | State persistence                                         |
+| React Native SVG      | SVG Image         | 15.11.2 | Provides SVG support to React Native                      |
+| Axios                 | Network Services  | ^1.8.2  | Provides promise based HTTP client                        |
+| Redux / Redux-toolkit | State Management  | ^2.5.1  | Provides state container for JavaScript apps              |
+| Redux Saga            | Redux side-effect | ^1.3.0  | Provides Redux side effect manager                        |
+| ESLint                | Code Formater     | ^8.57.0 | Tool for identifying and reporting on patterns Javascript |
+| Jest                  | Test Runner       | ^29.2.1 | Standard test runner for JS apps                          |
 | Husky                 | Native Git Hook   | v8      | Improves your commits and more testing                    |
+| TypeScript            | Type Safety       | ~5.8.3  | Static type checking for JavaScript                       |
 
 ## Scripts
 
