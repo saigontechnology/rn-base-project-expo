@@ -1,0 +1,55 @@
+# Development and build files
+node_modules/
+.expo/
+dist/
+web-build/
+build/
+coverage/
+
+# Native development
+ios/
+android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Environment and config files
+.env.*
+!.env.sample
+.DS_Store
+*.pem
+
+# Development tools
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.metro-health-check*
+*.tsbuildinfo
+
+# Documentation and example files
+docs/
+app-example/
+__tests__/
+*.test.*
+*.spec.*
+
+# CI/CD files
+.github/
+azure-pipelines.yml
+bitbucket-pipelines.yml
+fastlane/
+scripts/
+
+# IDE files
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
