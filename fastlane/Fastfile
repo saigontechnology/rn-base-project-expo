@@ -32,19 +32,33 @@ platform :ios do
     env = assert_environment(**options)
   end
 
-  desc "Build and upload to TestFlight"
+  desc "Build and upload to TestFlight or Firebase App Distribution"
   lane :upload do |options|
     appName = ENV["APP_NAME"]
-    # my app name is HMezher Healthcare Demo
-    # so i need to change the app name to HMezherHealthcareDemo
+    
+    # Validate required environment variables
+    UI.user_error!("APP_NAME environment variable is required") if appName.nil? || appName.empty?
+    UI.user_error!("PROJECT_NAME environment variable is required") if appName.nil? || appName.empty?
+
     appName = appName.gsub(" ", "")
     workspace ="./ios/#{appName}.xcworkspace"
     xcodeproj = "./ios/#{appName}.xcodeproj"
+
+    envName = case env
+    when "development"
+      "Development"
+    when "staging"
+      "Staging"
+    when "production"
+      "Production"
+    else
+      "Development"
+    end
+
     increment_version_number(xcodeproj: xcodeproj, version_number: version)
 
     if options[:ci]
-      build_number = increment_build_number(xcodeproj: xcodeproj, build_number: options[:buildNumber])
-
+      increment_build_number(xcodeproj: xcodeproj, build_number: options[:buildNumber])
       cert
       sigh(
         force: true,
@@ -76,15 +90,16 @@ platform :ios do
       export_options: {
         uploadBitcode: false,
         compileBitcode: false,
+        provisioningProfiles: {
+          ENV["APP_ID"] => ENV["APP_ID"] + " AppStore"
+        }
       }
     )
 
-    # Upload to TestFlight
-    UI.message("Uploading to TestFlight...")
     upload_to_testflight(
       skip_waiting_for_build_processing: true,
       app_identifier: ENV["APP_ID"],
-      changelog: options[:changelog],
+        changelog: "#{envName} - #{Time.now.strftime('%d %b %Y')}",
       itc_provider: teamId
     )
   end
@@ -105,7 +120,17 @@ platform :android do
   desc "Build file apk and upload to firebase app distribution"
 
   lane :upload do |options|
-    # Run EAS Build locally
+    envName = case env
+    when "development"
+      "Development"
+    when "staging"
+      "Staging"
+    when "production"
+      "Production"
+    else
+      "Development"
+    end
+
     if env === 'production'
       build_type = "AAB"
       task = "bundle"
@@ -113,28 +138,56 @@ platform :android do
       build_type = "APK"
       task = "assemble"
     end
+
     gradle(
       task: task,
       build_type: "Release",
       project_dir: "./android",
-#       properties: {
-#         "VERSION_NAME" => version,
-#         "versionCode" => options[:buildNumber]
-#       }
+      # properties: {
+      #   "VERSION_NAME" => version,
+      #   "versionCode" => options[:buildNumber] || "1"
+      # }
     )
+
+    # Determine output path based on build type
     if env === 'production'
       output_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+
+      UI.message("Production environment - uploading to Google Play Console")
+
+      # Upload to Google Play Console
+      upload_to_play_store(
+        package_name: ENV["APP_ID"],
+        version_name: version,
+        version_code: options[:buildNumber] || "1",
+        json_key: ENV["GOOGLE_PLAY_JSON_KEY_PATH"],
+        aab: output_path,
+        skip_upload_apk: true,
+        skip_upload_metadata: true,
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true
+      )
+
+      UI.success("AAB built successfully for production!")
     else
+      # Find the correct APK path for the environment
       output_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
-    end
-    firebase_app_distribution(
+
+      UI.message("Using APK path: #{output_path}")
+
+      # Upload to Firebase App Distribution for development/staging
+      UI.message("Uploading to Firebase App Distribution...")
+
+      firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
-        release_notes: options[:changelog],
+        release_notes: "#{envName} - #{Time.now.strftime('%d %b %Y')}",
         groups: ENV["DISTRIBUTE_GROUP"],
         android_artifact_type: build_type,
         android_artifact_path: output_path,
         firebase_cli_token: ENV["FIREBASE_TOKEN"],
-    )
+      )
+    end
   end
 
   desc "Build Android app"
