@@ -143,10 +143,10 @@ platform :android do
       task: task,
       build_type: "Release",
       project_dir: "./android",
-      properties: {
-        "VERSION_NAME" => version,
-        "versionCode" => options[:buildNumber] || "1"
-      }
+      # properties: {
+      #   "VERSION_NAME" => version,
+      #   "versionCode" => options[:buildNumber] || "1"
+      # }
     )
 
     # Determine output path based on build type
