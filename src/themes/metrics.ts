@@ -48,7 +48,9 @@ const metrics = {
 
   // spacing
   zero: responsiveHeight(0),
+  micro: responsiveHeight(2),
   tiny: responsiveHeight(4),
+  xTiny: responsiveHeight(6),
   xxs: responsiveHeight(8),
   xs: responsiveHeight(12),
   small: responsiveHeight(16),
@@ -84,17 +86,22 @@ const fontSizes = {
   body: responsiveFont(16),
   large: responsiveFont(18),
   title: responsiveFont(20),
+  label: responsiveFont(28),
 } as const
 
-const fontWeights = {
-  bold: '700',
-  semiBold: '600',
+const lineHeights = {
+  small: responsiveFont(18),
+  span: responsiveFont(20),
+  body: responsiveFont(24),
+  large: responsiveFont(26),
+  title: responsiveFont(28),
+  label: responsiveFont(38),
 } as const
 
 export {
   metrics,
   fontSizes,
-  fontWeights,
+  lineHeights,
   isIOS,
   shadow,
   hitSlop,

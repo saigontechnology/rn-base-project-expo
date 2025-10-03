@@ -10,6 +10,7 @@ import { FormChipSelection } from './FormChipSelection'
 import { ISelectionProps } from '@/constants/interface/selection'
 import { TextInputProps } from 'rn-base-component'
 import { IDatePickerProps } from '../DatePicker'
+import { FormPasswordInput } from './FormPasswordInput'
 
 interface IProps<T extends FieldValues> {
   control: Control<T>
@@ -48,6 +49,19 @@ export const Form = <T extends FieldValues>({ control, fields }: IProps<T>) => (
         case FIELD_TYPES.input:
           return (
             <FormInput
+              {...item}
+              {...(item.componentProps as TextInputProps)}
+              id={item.key}
+              key={item.key}
+              control={control}
+              editable={!item.disabled}
+              label={getString(item.label)}
+              placeholder={item.placeholder ? getString(item.placeholder) : ''}
+            />
+          )
+        case FIELD_TYPES.password:
+          return (
+            <FormPasswordInput
               {...item}
               {...(item.componentProps as TextInputProps)}
               id={item.key}

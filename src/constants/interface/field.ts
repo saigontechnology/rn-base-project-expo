@@ -7,6 +7,7 @@ import { ValueOf } from '../../../custom-types'
 
 export const FIELD_TYPES = {
   input: 'input',
+  password: 'password',
   date: 'date',
   select: 'select',
   chip_select: 'chip_select',
