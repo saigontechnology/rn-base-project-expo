@@ -8,7 +8,6 @@ interface IScreenContainerProps extends IHeaderProp {
   full?: boolean
   title?: string
   noPaddingBottom?: boolean
-  showHeaderWithUserInfo?: boolean
   showHeader?: boolean
 }
 
@@ -18,7 +17,6 @@ export const ScreenContainer = ({
   style,
   title,
   noPaddingBottom = false,
-  showHeaderWithUserInfo = false,
   showHeader = false,
   ...rest
 }: PropsWithChildren<IScreenContainerProps>) => {
