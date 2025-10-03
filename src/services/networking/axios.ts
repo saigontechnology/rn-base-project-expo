@@ -1,13 +1,24 @@
 import { AnyAction, Store } from '@reduxjs/toolkit'
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { AXIOS_TIMEOUT, RESPONSE_CODE, TOKEN, TOKEN_TYPE } from '../../constants'
-import { getData, setData, clearAllData } from '../../utilities/storage'
+import { getData, setData, removeData } from '../../utilities/storage'
 import { AUTH_API } from '../api/api'
 import { userActions } from '@/stores/reducers'
 import { RootState } from '@/stores/store'
 import configs from '@/constants/configs'
 
+// Extend the AxiosRequestConfig interface to include _retry property
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean
+}
+
 let store: Store<RootState, AnyAction>
+
+let isRefreshing = false
+let failedQueue: {
+  resolve: (value: string | null) => void
+  reject: (error: unknown) => void
+}[] = []
 
 const instance = axios.create({
   baseURL: configs.API_URL,
@@ -40,58 +51,150 @@ export function setToken(token: string, type: string) {
   }
 }
 
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error)
+    } else {
+      resolve(token)
+    }
+  })
+
+  failedQueue = []
+}
+
 const logout = () => {
   store.dispatch(userActions.logout())
 }
 
+const clearTokens = async () => {
+  try {
+    await removeData(TOKEN.token)
+    await removeData(TOKEN.refreshToken)
+    delete instance.defaults.headers.common.Authorization
+  } catch (error) {
+    console.log('Error clearing tokens:', error)
+  }
+}
+
+// Helper function to validate JSON response
+const isValidJSONResponse = (response: unknown): boolean => {
+  try {
+    if (typeof response === 'string') {
+      JSON.parse(response)
+    } else if (response && typeof response === 'object') {
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 const handleRefreshToken = async (
   refreshToken: string,
-  originalConfig: InternalAxiosRequestConfig,
-): Promise<AxiosRequestConfig | void> =>
-  // Call RefreshToken API
-  instance
-    .post(AUTH_API.refreshToken, refreshToken)
-    .then((response: AxiosResponse) => {
-      // Save new Token and RefreshToken
-      setToken(response?.data?.token, TOKEN_TYPE.Bearer)
-      setData(TOKEN.token, response?.data?.token)
-      setData(TOKEN.refreshToken, response?.data?.refreshToken)
-      return instance(originalConfig)
-    })
-    .catch(() => {
-      // Remove all keys and back to login screen to get new token
-      clearAllData()
-      logout()
-    })
+  originalConfig: ExtendedAxiosRequestConfig,
+): Promise<AxiosResponse> => {
+  if (isRefreshing) {
+    // If already refreshing, queue this request
+    return new Promise((resolve, reject) => {
+      failedQueue.push({ resolve, reject })
+    }).then(() => instance(originalConfig))
+  }
+
+  isRefreshing = true
+
+  try {
+    const response = await instance.post(AUTH_API.refreshToken, { refreshToken })
+
+    // Validate response structure
+    if (!response?.data || !isValidJSONResponse(response.data)) {
+      throw new Error('Invalid response format from refresh token endpoint')
+    }
+
+    // Extract tokens from the response structure
+    const newAccessToken = response?.data?.accessToken
+    const newRefreshToken = response?.data?.refreshToken
+
+    // Validate tokens before saving
+    if (!newAccessToken || !newRefreshToken) {
+      throw new Error('Invalid tokens received from refresh response')
+    }
+
+    // Save new tokens
+    setToken(newAccessToken, TOKEN_TYPE.Bearer)
+    await setData(TOKEN.token, newAccessToken)
+    await setData(TOKEN.refreshToken, newRefreshToken)
+
+    // Process queued requests
+    processQueue(null, newAccessToken)
+
+    // Update the original request with new token
+    if (originalConfig.headers) {
+      originalConfig.headers.Authorization = `Bearer ${newAccessToken}`
+    }
+    originalConfig._retry = false
+
+    // Retry the original request
+    return instance(originalConfig)
+  } catch (error) {
+    // Handle refresh token failure
+    processQueue(error, null)
+    await clearTokens()
+    logout()
+
+    throw error
+  } finally {
+    isRefreshing = false
+  }
+}
 
 instance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) =>
-    // Do something before request is sent
-    config,
-  (error: AxiosError) =>
-    // Do something with request error
-    Promise.reject(error),
+  (config: InternalAxiosRequestConfig) => config,
+  (error: AxiosError) => {
+    console.error('[API Request Error]', error)
+    return Promise.reject(error)
+  },
 )
 
-const interceptor = instance.interceptors.response.use(
-  (response: AxiosResponse) =>
-    // Do something with response data
-    response,
+instance.interceptors.response.use(
+  (response: AxiosResponse) => response,
   async (error: AxiosError) => {
-    const originalConfig = error?.config as InternalAxiosRequestConfig
+    const originalConfig = error?.config as ExtendedAxiosRequestConfig
+
+    // Handle JSON parse errors
+    if (error?.response?.data && typeof error.response.data === 'string') {
+      try {
+        // Try to parse the response as JSON
+        const parsedData = JSON.parse(error.response.data)
+        error.response.data = parsedData
+      } catch {
+        // If it's not valid JSON, create a structured error
+        error.response.data = {
+          message: 'Invalid response format',
+          originalData: error.response.data,
+        }
+      }
+    }
+
     const token = await getData<string>(TOKEN.token)
     const refreshToken = await getData<string>(TOKEN.refreshToken)
+
     const isTokenExpired = token && RESPONSE_CODE.unauthorized.includes(error?.response?.status as number)
 
-    if (isTokenExpired) {
-      if (refreshToken) {
-        // Eject the interceptor so it doesn't loop in case
-        instance.interceptors.response.eject(interceptor)
+    if (isTokenExpired && !originalConfig._retry) {
+      // Mark this request as retried to prevent infinite loops
+      originalConfig._retry = true
 
-        // handle refresh token when the token has expired
-        return handleRefreshToken(refreshToken, originalConfig)
+      if (refreshToken) {
+        try {
+          return await handleRefreshToken(refreshToken, originalConfig)
+        } catch (refreshError) {
+          return Promise.reject(refreshError)
+        }
       } else {
-        // Do something when expired token
+        await clearTokens()
+        logout()
       }
     }
 
