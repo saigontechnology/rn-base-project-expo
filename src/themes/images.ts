@@ -8,6 +8,7 @@ const Images = {
   sts: require('@/assets/images/sts.png'),
   eye: require('@/assets/images/eye.png'),
   eyeHide: require('@/assets/images/eye-hide.png'),
+  arrowLeft: require('@/assets/images/arrow-left.png'),
 }
 
 export { Images }

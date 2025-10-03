@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { FlatList, Keyboard, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { Text, TextInput } from 'rn-base-component'
 import { BottomSheet, BottomSheetMethods } from './BottomSheet'
 import { colors, fonts, fontSizes, metrics } from '@/themes'
@@ -69,6 +69,7 @@ export const Selection = <T extends object>({
   }, [children, data, getTitle, placeholder, getValue, value])
 
   const handleOpen = useCallback(() => {
+    Keyboard.dismiss()
     ref.current?.open()
     setSearchText('')
   }, [])

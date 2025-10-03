@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Image, StyleSheet } from 'react-native'
+import { Image, Keyboard, StyleSheet } from 'react-native'
 
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
@@ -25,6 +25,7 @@ export const SignInScreen: React.FC = () => {
 
   const onSubmit = useCallback(
     (data: IUserSignInPayload) => {
+      Keyboard.dismiss()
       dispatch(userActions.userLogin())
     },
     [dispatch],

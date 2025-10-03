@@ -1,5 +1,5 @@
 import React, { ReactNode, useCallback, useState } from 'react'
-import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native'
+import { Keyboard, StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native'
 import { Text } from 'rn-base-component'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { colors, fonts, fontSizes, metrics } from '../themes'
@@ -46,6 +46,7 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
   }, [children, placeholder, value])
 
   const handleShowDatePicker = useCallback(() => {
+    Keyboard.dismiss()
     setDatePickerVisible(true)
   }, [])
 

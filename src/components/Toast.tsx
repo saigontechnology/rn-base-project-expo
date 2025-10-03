@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Animated, Image, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Emitter from '../utilities/Emitter'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { colors, fontSizes, hitSlop, Images, metrics } from '@/themes'
+import { colors, fonts, fontSizes, hitSlop, Images, metrics } from '@/themes'
 
 export const TOAST_TYPE = {
   SUCCESS: 'SUCCESS',
@@ -50,6 +50,8 @@ const initState = {
 export const Toast: React.FC = () => {
   const insets = useSafeAreaInsets()
   const [state, setState] = useState<IToastState>(initState)
+  //Use state instead of useRef to avoid overlapping animations
+  const [isVisible, setIsVisible] = useState(false)
   const HEIGHT = insets.bottom + metrics.toast
   const animationRef = useRef<Animated.CompositeAnimation | null>(null)
   const animation = useRef(new Animated.Value(0)).current
@@ -67,6 +69,7 @@ export const Toast: React.FC = () => {
       const args = param as IToastState
       animation.setValue(0)
       setState(args)
+      setIsVisible(true)
       animationRef.current?.stop()
       setTimeout(() => {
         animationRef.current = Animated.sequence([
@@ -92,15 +95,19 @@ export const Toast: React.FC = () => {
     [animation],
   )
 
-  const dismiss = () => {
+  const dismiss = useCallback(() => {
     animationRef.current?.stop()
-    setState(initState)
     Animated.timing(animation, {
       toValue: 0,
       duration: DEFAULT_DURATION,
       useNativeDriver: true,
-    }).start()
-  }
+    }).start(({ finished }) => {
+      if (finished) {
+        setIsVisible(false)
+        setState(initState)
+      }
+    })
+  }, [animation])
 
   useEffect(() => {
     Emitter.on(TOAST_EVENTS.showToastMessage, displayMessage)
@@ -108,6 +115,8 @@ export const Toast: React.FC = () => {
       Emitter.rm(TOAST_EVENTS.showToastMessage)
     }
   }, [displayMessage])
+
+  if (!isVisible) return null
 
   return (
     <Animated.View
@@ -132,7 +141,7 @@ export const Toast: React.FC = () => {
           {!!state.subMessage && <Text style={styles.textStyle}>{state.subMessage}</Text>}
         </View>
         <TouchableOpacity onPress={dismiss} hitSlop={hitSlop}>
-          <Image source={Images.close} style={styles.icon} />
+          <Image source={Images.close} style={styles.closeIcon} />
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -169,16 +178,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleStyle: {
-    fontSize: fontSizes.title,
+    fontSize: fontSizes.span,
     color: colors.white,
+    fontFamily: fonts.bold,
+    marginBottom: metrics.tiny,
   },
   textStyle: {
-    fontSize: fontSizes.body,
+    fontSize: fontSizes.span,
     color: colors.white,
   },
   icon: {
     width: metrics.icon,
     height: metrics.icon,
+  },
+  closeIcon: {
+    width: metrics.medium,
+    height: metrics.medium,
+    aspectRatio: 1,
     tintColor: colors.white,
+    resizeMode: 'contain',
   },
 })

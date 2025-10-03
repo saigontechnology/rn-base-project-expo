@@ -14,7 +14,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { RootNavigation } from '@/routes/AppNavigation'
 import { useSelector } from 'react-redux'
 import { getLoadingIndicator } from '@/stores/selectors'
-import { IndicatorDialog } from '@/components'
+import { IndicatorDialog, Toast } from '@/components'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
@@ -48,6 +48,7 @@ export default function MainLayout() {
           <BottomSheetModalProvider>
             <RootNavigation />
             <StatusBar style="auto" />
+            <Toast />
           </BottomSheetModalProvider>
         </ThemeProvider>
       </BaseProvider>
