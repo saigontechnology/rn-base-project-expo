@@ -133,6 +133,7 @@ const handleRefreshToken = async (
     if (originalConfig.headers) {
       originalConfig.headers.Authorization = `Bearer ${newAccessToken}`
     }
+    originalConfig._retry = false
 
     // Retry the original request
     return instance(originalConfig)
@@ -149,13 +150,7 @@ const handleRefreshToken = async (
 }
 
 instance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    // Add request logging for debugging
-    if (configs.DEBUG_ENABLED) {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`)
-    }
-    return config
-  },
+  (config: InternalAxiosRequestConfig) => config,
   (error: AxiosError) => {
     console.error('[API Request Error]', error)
     return Promise.reject(error)
@@ -163,26 +158,9 @@ instance.interceptors.request.use(
 )
 
 instance.interceptors.response.use(
-  (response: AxiosResponse) => {
-    // Add response logging for debugging
-    if (configs.DEBUG_ENABLED) {
-      console.log(`[API Response] ${response.status} ${response.config.url}`)
-    }
-    return response
-  },
+  (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalConfig = error?.config as ExtendedAxiosRequestConfig
-
-    // Log error details for debugging
-    if (configs.DEBUG_ENABLED) {
-      console.error('[API Error]', {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        url: originalConfig?.url,
-        method: originalConfig?.method,
-        data: error?.response?.data,
-      })
-    }
 
     // Handle JSON parse errors
     if (error?.response?.data && typeof error.response.data === 'string') {
