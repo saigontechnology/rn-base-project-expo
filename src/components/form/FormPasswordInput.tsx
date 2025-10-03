@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { Control, Controller, Path } from 'react-hook-form'
 import { TextInputProps } from 'rn-base-component'
-import { TouchableOpacity, Image, StyleSheet } from 'react-native'
+import { TouchableOpacity, Image, StyleSheet, ImageSourcePropType } from 'react-native'
 import { TextInput } from '../TextInput'
 import { Images, metrics } from '@/themes'
 import { getString, TranslationKey } from '@/locale/I18nConfig'
@@ -9,9 +9,17 @@ import { getString, TranslationKey } from '@/locale/I18nConfig'
 interface IProps<T extends object> extends Omit<TextInputProps, 'secureTextEntry' | 'rightComponent'> {
   control: Control<T>
   id: Path<T>
+  showIcon?: ImageSourcePropType
+  hideIcon?: ImageSourcePropType
 }
 
-export const FormPasswordInput = <T extends object>({ control, id, ...rest }: IProps<T>) => {
+export const FormPasswordInput = <T extends object>({
+  control,
+  id,
+  showIcon = Images.eye,
+  hideIcon = Images.eyeHide,
+  ...rest
+}: IProps<T>) => {
   const [showPassword, setShowPassword] = useState(false)
 
   const togglePasswordVisibility = useCallback(() => {
@@ -21,10 +29,10 @@ export const FormPasswordInput = <T extends object>({ control, id, ...rest }: IP
   const renderPasswordEyeIcon = useCallback(
     () => (
       <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeIconContainer}>
-        <Image source={showPassword ? Images.eye : Images.eyeHide} style={styles.eyeIcon} />
+        <Image source={showPassword ? showIcon : hideIcon} style={styles.eyeIcon} />
       </TouchableOpacity>
     ),
-    [showPassword, togglePasswordVisibility],
+    [showPassword, togglePasswordVisibility, showIcon, hideIcon],
   )
 
   return (
