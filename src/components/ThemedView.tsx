@@ -1,8 +1,8 @@
 import React from 'react'
-import { KeyboardAvoidingView, StyleSheet, View, type ViewProps } from 'react-native'
+import { StyleSheet, View, type ViewProps } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { isIOS } from '@/themes'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type ThemedViewProps = ViewProps & {
@@ -30,9 +30,11 @@ export const ThemedView: React.FC<ThemedViewProps> = ({
         !full && { paddingTop: insets.top, paddingBottom: insets.bottom },
       ]}
       {...otherProps}>
-      <KeyboardAvoidingView behavior={isIOS ? 'padding' : 'height'} style={[styles.flex, style]}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={[styles.flex, style]}
+        keyboardShouldPersistTaps="handled">
         {children}
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </View>
   )
 }

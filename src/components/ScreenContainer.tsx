@@ -1,13 +1,7 @@
 import React, { PropsWithChildren } from 'react'
-import {
-  KeyboardAvoidingView,
-  KeyboardAvoidingViewProps,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from 'react-native'
-import { colors, isIOS, metrics } from '../themes'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
+import { colors, metrics } from '../themes'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Header, IHeaderProp } from './Header'
 interface IScreenContainerProps extends IHeaderProp {
@@ -17,7 +11,6 @@ interface IScreenContainerProps extends IHeaderProp {
   title?: string
   noPaddingBottom?: boolean
   showHeader?: boolean
-  keyboardAvoidingBehavior?: KeyboardAvoidingViewProps['behavior']
 }
 
 export const ScreenContainer = ({
@@ -28,7 +21,6 @@ export const ScreenContainer = ({
   title,
   noPaddingBottom = false,
   showHeader = false,
-  keyboardAvoidingBehavior,
   ...rest
 }: PropsWithChildren<IScreenContainerProps>) => {
   const insets = useSafeAreaInsets()
@@ -41,11 +33,11 @@ export const ScreenContainer = ({
         containerStyle,
       ]}>
       {shouldShowHeader && <Header title={title} {...rest} />}
-      <KeyboardAvoidingView
-        behavior={keyboardAvoidingBehavior ?? (isIOS ? 'padding' : undefined)}
-        style={[styles.flex, style]}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={[styles.flex, style]}
+        keyboardShouldPersistTaps="handled">
         {children}
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </View>
   )
 }
