@@ -21,6 +21,7 @@ export default ({ config }: { config: ExpoConfig }) => ({
       },
     ],
     'expo-font',
+    'expo-web-browser',
   ],
   experiments: {
     typedRoutes: true,
