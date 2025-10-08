@@ -40,7 +40,7 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
         }
         return <Text color={colors.black}>{dayjs(value).format(DATE_FORMAT.date)}</Text>
       }
-      return <Text color={colors.dark}>{placeholder}</Text>
+      return <Text color={colors.dark.text}>{placeholder}</Text>
     }
     return children
   }, [children, placeholder, value])

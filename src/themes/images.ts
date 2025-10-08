@@ -9,6 +9,7 @@ const Images = {
   eye: require('@/assets/images/eye.png'),
   eyeHide: require('@/assets/images/eye-hide.png'),
   arrowLeft: require('@/assets/images/arrow-left.png'),
+  search: require('@/assets/images/search.png'),
 }
 
 export { Images }
