@@ -1,0 +1,321 @@
+---
+description: "Guidelines for managing imports and preventing dependency cycles in Mobile"
+globs: "*.ts,*.tsx"
+alwaysApply: false
+---
+
+# Import Management and Dependency Cycle Prevention
+
+This rule provides comprehensive guidelines for managing imports and preventing dependency cycles in the codebase.
+
+## Core Import Principles
+
+### 1. Avoid Dependency Cycles
+
+Dependency cycles create build issues and make code harder to maintain. Always structure imports to flow in one direction.
+
+```typescript
+// ❌ INCORRECT - Creates dependency cycle
+// File A imports from File B, and File B imports from File A
+
+// src/stores/types/api.ts
+import { SomeType } from '@/screens/feature/constants'
+
+// src/screens/feature/FeatureScreen.tsx  
+import { ApiType } from '@/stores/types'
+```
+
+```typescript
+// ✅ CORRECT - One-way dependency flow
+// Move shared types to a common location or duplicate simple constants
+
+// src/stores/types/api.ts
+export const SHARED_CONSTANTS = {
+  TYPE_A: 'type_a',
+  TYPE_B: 'type_b',
+} as const
+```
+
+### 2. Import Layer Architecture
+
+Follow this import hierarchy to prevent cycles:
+
+```
+Types Layer (No dependencies on other layers)
+├── @/stores/types/
+├── @/constants/interface/
+└── @/utilities/types.ts
+
+Services Layer (Can import from Types)
+├── @/services/api/
+├── @/services/networking/
+└── @/utilities/
+
+Redux Layer (Can import from Types and Services)
+├── @/stores/reducers/
+├── @/stores/selectors/
+└── @/stores/saga/
+
+Components Layer (Can import from all above)
+├── @/components/
+└── @/themes/
+
+Screens Layer (Can import from all above)
+└── @/screens/
+```
+
+### 3. Remove Unused Imports
+
+Always remove unused imports to keep code clean and prevent potential cycles.
+
+```typescript
+// ❌ INCORRECT - Unused imports
+import { UnusedType, UsedType } from '@/stores/types'
+import { AnotherUnusedType } from '@/components'
+
+export const component: UsedType = {}
+
+// ✅ CORRECT - Only import what you need
+import { UsedType } from '@/stores/types'
+
+export const component: UsedType = {}
+```
+
+## ESLint Rules Compliance
+
+### Import/No-Cycle Rule
+
+The `import/no-cycle` ESLint rule detects circular dependencies. When you see this error:
+
+```
+Dependency cycle via @/path/to/fileA:1=>@/path/to/fileB:1=>@/path/to/fileA:9
+```
+
+**Resolution Strategies:**
+
+1. **Move shared constants to types layer**
+2. **Duplicate simple constants** 
+3. **Create index files for re-exports**
+4. **Restructure component hierarchy**
+
+### No-Unused-Vars Rule
+
+Remove unused imports immediately:
+
+```typescript
+// ❌ INCORRECT - Triggers ESLint error
+import { UnusedType } from '@/stores/types' // 'UnusedType' is defined but never used
+
+// ✅ CORRECT - Clean imports
+import { ActuallyUsedType } from '@/stores/types'
+```
+
+## Common Dependency Cycle Patterns and Solutions
+
+### Pattern 1: Types importing from Screens
+
+**Problem:**
+```typescript
+// src/stores/types/api.ts
+import { ScreenConstant } from '@/screens/feature/constants'
+
+// src/screens/feature/FeatureScreen.tsx
+import { ApiType } from '@/stores/types'
+```
+
+**Solution - Move constants to types:**
+```typescript
+// src/stores/types/api.ts
+export const SCREEN_CONSTANTS = {
+  VALUE_A: 'a',
+  VALUE_B: 'b',
+} as const
+
+// src/screens/feature/constants.ts
+export { SCREEN_CONSTANTS } from '@/stores/types/api'
+```
+
+### Pattern 2: Components importing from Screens
+
+**Problem:**
+```typescript
+// src/components/shared/SharedComponent.tsx
+import { ScreenSpecificType } from '@/screens/feature'
+
+// src/screens/feature/FeatureScreen.tsx
+import { SharedComponent } from '@/components'
+```
+
+**Solution - Move types to components:**
+```typescript
+// src/components/shared/types.ts
+export interface SharedType {
+  commonField: string
+}
+
+// src/components/shared/SharedComponent.tsx
+import { SharedType } from './types'
+
+// src/screens/feature/FeatureScreen.tsx
+import { SharedComponent } from '@/components'
+import { SharedType } from '@/components/shared/types'
+```
+
+### Pattern 3: Cross-Screen Dependencies
+
+**Problem:**
+```typescript
+// src/screens/featureA/FeatureA.tsx
+import { TypeFromB } from '@/screens/featureB'
+
+// src/screens/featureB/FeatureB.tsx  
+import { TypeFromA } from '@/screens/featureA'
+```
+
+**Solution - Extract to shared types:**
+```typescript
+// src/stores/types/shared.ts
+export interface SharedScreenType {
+  id: string
+  name: string
+}
+
+// src/screens/featureA/FeatureA.tsx
+import { SharedScreenType } from '@/stores/types/shared'
+
+// src/screens/featureB/FeatureB.tsx
+import { SharedScreenType } from '@/stores/types/shared'
+```
+
+## Import Organization Best Practices
+
+### 1. Group Imports by Type
+
+```typescript
+// ✅ CORRECT - Organized import groups
+// External libraries
+import React, { useCallback, useEffect } from 'react'
+import { View, StyleSheet } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+
+// Internal components and utilities
+import { Header, ScreenContainer } from '@/components'
+import { colors, metrics } from '@/themes'
+import { getString } from '@/locale/I18nConfig'
+
+// Types and constants
+import { ApiType, LocalConstant } from '@/stores/types'
+import { SCREEN_CONSTANTS } from './constants'
+
+// Redux actions and selectors
+import { actions } from '@/stores/reducers'
+import { selectData } from '@/stores/selectors'
+```
+
+### 2. Use Absolute Imports
+
+```typescript
+// ✅ CORRECT - Absolute imports with @ alias
+import { Component } from '@/components/Component'
+import { Types } from '@/stores/types'
+
+// ❌ INCORRECT - Relative imports (harder to track dependencies)
+import { Component } from '../../../components/Component'
+import { Types } from '../../stores/types'
+```
+
+### 3. Index File Re-exports
+
+Use index files to create clean public APIs:
+
+```typescript
+// src/stores/types/index.ts
+export * from './api'
+export * from './gifts'
+export * from './user'
+
+// Usage - clean single import
+import { ApiType, GiftType, UserType } from '@/stores/types'
+```
+
+## Debugging Dependency Cycles
+
+### 1. Use ESLint Output
+
+When ESLint reports a cycle:
+```
+Dependency cycle via @/screens/favoriteLocation:1=>./FavoriteLocationScreen:1=>@/stores/types:9
+```
+
+This means:
+- `@/screens/favoriteLocation` imports from
+- `./FavoriteLocationScreen` which imports from  
+- `@/stores/types` which imports back to `@/screens/favoriteLocation`
+
+### 2. Analysis Steps
+
+1. **Identify the cycle path** from ESLint output
+2. **Find the specific imports** creating the cycle
+3. **Determine if imports are actually used** (remove if unused)
+4. **Choose resolution strategy** based on cycle type
+5. **Apply fix and verify** with ESLint
+
+### 3. Prevention Tools
+
+```bash
+# Check for dependency cycles
+yarn lint
+
+# Find unused imports
+yarn lint --fix  # Removes some unused imports automatically
+
+# TypeScript compiler checks
+yarn tsc --noEmit
+```
+
+## File-Specific Import Guidelines
+
+### Types Files (`src/stores/types/*`)
+- ✅ **Can import**: Other type files, utility types
+- ❌ **Cannot import**: Components, screens, services
+- ✅ **Best practice**: Keep types pure, no runtime dependencies
+
+### Service Files (`src/services/*`)
+- ✅ **Can import**: Types, utilities, networking
+- ❌ **Cannot import**: Components, screens, Redux stores
+- ✅ **Best practice**: Pure API logic, no UI dependencies
+
+### Component Files (`src/components/*`)
+- ✅ **Can import**: Types, utilities, themes, other components
+- ❌ **Cannot import**: Screen-specific logic
+- ✅ **Best practice**: Reusable, screen-agnostic components
+
+### Screen Files (`src/screens/*`)
+- ✅ **Can import**: All other layers
+- ❌ **Cannot import**: Other screens (except via shared types)
+- ✅ **Best practice**: Screen-specific logic, coordinate other layers
+
+## Quick Reference Checklist
+
+Before committing code, verify:
+
+- [ ] No ESLint `import/no-cycle` errors
+- [ ] No unused import warnings  
+- [ ] Imports follow layer architecture
+- [ ] Absolute imports used with `@/` alias
+- [ ] Related imports grouped together
+- [ ] Types moved to appropriate layer if creating cycles
+- [ ] Simple constants duplicated rather than creating complex dependencies
+
+## Common Fixes Summary
+
+| Problem | Solution |
+|---------|----------|
+| Types importing from screens | Move constants to types layer |
+| Unused imports | Remove with ESLint --fix or manually |
+| Cross-screen dependencies | Extract to shared types |
+| Component-screen cycles | Move shared types to components |
+| Deep relative imports | Use absolute imports with @ alias |
+| Complex re-export cycles | Simplify with direct imports |
+
+Following these guidelines ensures clean, maintainable code with predictable dependency flows and no circular imports.

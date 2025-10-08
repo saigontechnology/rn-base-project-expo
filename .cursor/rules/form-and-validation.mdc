@@ -1,0 +1,305 @@
+# Form Handling and Validation Patterns
+
+## Form Architecture Overview
+
+The project uses `react-hook-form` with Zod validation for robust form handling.
+
+### Core Form Components
+
+Located in [src/components/form/](mdc:src/components/form):
+
+- **FormInput**: [src/components/form/FormInput.tsx](mdc:src/components/form/FormInput.tsx) - Text input with validation
+- **FormPhoneInput**: [src/components/form/FormPhoneInput.tsx](mdc:src/components/form/FormPhoneInput.tsx) - Phone number with country picker
+- **FormSelection**: [src/components/form/FormSelection.tsx](mdc:src/components/form/FormSelection.tsx) - Dropdown selection
+- **FormChipSelection**: [src/components/form/FormChipSelection.tsx](mdc:src/components/form/FormChipSelection.tsx) - Multi-select chips
+- **FormDatePicker**: [src/components/form/FormDatePicker.tsx](mdc:src/components/form/FormDatePicker.tsx) - Date selection
+- **Form**: [src/components/form/Form.tsx](mdc:src/components/form/Form.tsx) - Dynamic form generator
+
+## Form Implementation Patterns
+
+### Basic Form Setup
+
+```typescript
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FormInput, FormPhoneInput } from '@/components/form'
+
+const {
+  control,
+  handleSubmit,
+  watch,
+  formState: { errors, isValid },
+} = useForm<FormData>({
+  defaultValues: {
+    phone: '',
+    countryCode: '+84',
+    password: '',
+  },
+  mode: 'onChange',
+  resolver: zodResolver(ValidationSchema),
+})
+```
+
+### Form Component Usage
+
+#### Text Input
+
+```typescript
+<Controller
+  control={control}
+  name="fieldName"
+  render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+    <FormInput
+      control={control}
+      id="fieldName"
+      label={getString('label.key')}
+      placeholder={getString('placeholder.key')}
+      secureTextEntry={false}
+      errorText={error?.message}
+    />
+  )}
+/>
+```
+
+#### Phone Input with Country Code
+
+```typescript
+<FormPhoneInput
+  control={control}
+  id="phone"
+  countryFieldId="countryCode"
+  defaultCountryCode="VN"
+  label={getString('auth.phoneNumber')}
+  placeholder={getString('auth.phoneNumberPlaceholderShort')}
+  maxLength={15}
+  keyboardType="phone-pad"
+  autoComplete="tel"
+  textContentType="telephoneNumber"
+/>
+```
+
+#### Selection Components
+
+```typescript
+<FormSelection
+  control={control}
+  id="selection"
+  data={selectionData}
+  label={getString('selection.label')}
+  placeholder={getString('selection.placeholder')}
+  onItemSelected={handleItemSelected}
+/>
+```
+
+### Dynamic Form Generation
+
+Use the Form component for dynamic forms:
+
+```typescript
+import { Form } from '@/components/form'
+import { FIELD_TYPES } from '@/constants/interface/field'
+
+const formFields = [
+  {
+    key: 'email',
+    fieldType: FIELD_TYPES.input,
+    label: 'auth.email',
+    placeholder: 'auth.emailPlaceholder',
+    componentProps: {
+      keyboardType: 'email-address',
+      autoComplete: 'email',
+    },
+  },
+  {
+    key: 'birthDate',
+    fieldType: FIELD_TYPES.date,
+    label: 'profile.birthDate',
+    placeholder: 'profile.birthDatePlaceholder',
+  },
+]
+
+<Form control={control} fields={formFields} />
+```
+
+## Validation Patterns
+
+### Zod Schema Definition
+
+Located in [src/screens/auth/schema.ts](mdc:src/screens/auth/schema.ts):
+
+```typescript
+import { z } from 'zod'
+
+export const SignUpSchema = z.object({
+  phone: z
+    .string()
+    .min(8, getString('validation.phoneMinLength'))
+    .max(15, getString('validation.phoneMaxLength'))
+    .regex(/^[0-9]+$/, getString('validation.phoneInvalid')),
+  countryCode: z.string().min(1),
+  termsAccepted: z.boolean().refine(val => val === true, {
+    message: getString('validation.termsRequired'),
+  }),
+})
+
+export type SignUpFormData = z.infer<typeof SignUpSchema>
+```
+
+### Common Validation Rules
+
+```typescript
+// Phone number validation
+phone: z
+  .string()
+  .min(8, getString('phone.minLength'))
+  .max(15, getString('phone.maxLength'))
+  .regex(/^[0-9]+$/, getString('phone.onlyDigits')),
+
+// Password validation
+password: z
+  .string()
+  .min(8, getString('password.minLength'))
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, getString('password.incorrect_format')),
+
+// Email validation
+email: z
+  .string()
+  .email(getString('email.incorrect_format'))
+  .min(1, getString('email.required')),
+
+// OTP validation
+otp: z
+  .string()
+  .length(6, getString('otp.minLength'))
+  .regex(/^[0-9]{6}$/, getString('otp.onlyDigits')),
+```
+
+## Form State Management
+
+### Watching Form Values
+
+```typescript
+const watchedPhone = watch('phone')
+const watchedPassword = watch('password')
+const watchedTerms = watch('termsAccepted')
+
+// Computed validation
+const isFormValid = isValid && watchedTerms && watchedPhone.length >= 8
+```
+
+### Form Submission
+
+```typescript
+const onSubmit = useCallback(
+  (data: FormData) => {
+    // Combine fields if needed
+    const fullPhoneNumber = `${data.countryCode}${data.phone}`
+
+    // Dispatch Redux action
+    dispatch(
+      userActions.loginRequest({
+        phone: fullPhoneNumber,
+        password: data.password,
+      }),
+    )
+  },
+  [dispatch],
+)
+
+// Usage
+<ButtonPrimary
+  onPress={handleSubmit(onSubmit)}
+  disabled={!isFormValid || isLoading}
+>
+  {getString('auth.submit')}
+</ButtonPrimary>
+```
+
+## Phone Number Handling
+
+### FormPhoneInput Features
+
+- **Country Picker**: Built-in country selection with flags
+- **Country Code Management**: Automatic country code handling
+- **Phone Validation**: Real-time validation with proper formatting
+- **Accessibility**: Full accessibility support
+- **Theming**: Consistent with app theme system
+
+```typescript
+<FormPhoneInput
+  control={control}
+  id="phone"
+  countryFieldId="countryCode" // Links to country code field
+  defaultCountryCode="VN"
+  preferredCountries={['VN', 'US', 'GB']}
+  label={getString('auth.phoneNumber')}
+  placeholder={getString('auth.phoneNumberPlaceholder')}
+  maxLength={15}
+  disabled={isLoading}
+/>
+```
+
+## Error Handling
+
+### Field-Level Errors
+
+```typescript
+// Automatic error display through FormInput
+<FormInput
+  control={control}
+  id="email"
+  label="Email"
+  errorText={errors.email?.message} // Displays validation errors
+/>
+```
+
+### Custom Error States
+
+```typescript
+const [showTermsError, setShowTermsError] = useState(false)
+
+const onSubmit = useCallback((data: FormData) => {
+  if (!data.termsAccepted) {
+    setShowTermsError(true)
+    return
+  }
+  setShowTermsError(false)
+  // Process form
+}, [])
+```
+
+## Internationalization
+
+### Label and Error Localization
+
+```typescript
+// Always use getString for labels and errors
+label={getString('auth.phoneNumber')}
+placeholder={getString('auth.phoneNumberPlaceholder')}
+
+// Validation messages
+.min(8, getString('validation.phoneMinLength'))
+.email(getString('validation.emailInvalid'))
+```
+
+## Best Practices
+
+1. **Use react-hook-form**: Always use with Controller for controlled components
+2. **Zod Validation**: Define schemas in dedicated files for reusability
+3. **Form Components**: Use FormInput, FormPhoneInput, etc. instead of base components
+4. **Error Handling**: Display errors immediately with field validation
+5. **Loading States**: Disable forms during submission
+6. **Internationalization**: Use getString for all text content
+7. **Type Safety**: Generate TypeScript types from Zod schemas
+8. **Country Codes**: Handle phone numbers with proper country code separation
+9. **Accessibility**: Include proper autoComplete and textContentType props
+10. **Real-time Validation**: Use mode: 'onChange' for immediate feedback
+11. **Form State**: Watch form values for conditional rendering and validation
+12. **Dynamic Forms**: Use the Form component for flexible form generation
+13. **Currency Formatting**: Use isCurrency prop in FormInput for monetary values
+14. **Date Handling**: Use FormDatePicker for consistent date selection
+15. **Multi-select**: Use FormChipSelection for multiple choice selections
+
+alwaysApply: false
+
+---

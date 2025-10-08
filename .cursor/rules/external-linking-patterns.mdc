@@ -1,0 +1,333 @@
+# External Linking Patterns
+
+## Overview
+
+Guidelines for safely and consistently handling external URL navigation in React Native applications.
+
+## Core Implementation
+
+### Required Imports
+
+Always import necessary modules for external linking:
+
+```tsx
+import { Linking, Alert } from 'react-native'
+```
+
+### Basic Link Opening Pattern
+
+Use consistent error handling for all external links:
+
+```tsx
+const handleLinkPress = useCallback((url: string, errorMessage: string) => {
+  Linking.openURL(url).catch(() => {
+    Alert.alert('Error', errorMessage)
+  })
+}, [])
+```
+
+### URL Validation
+
+Validate URLs before attempting to open:
+
+```tsx
+const isValidURL = (url: string): boolean => {
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const handleSafeLinkPress = useCallback((url: string, errorMessage: string) => {
+  if (!isValidURL(url)) {
+    Alert.alert('Error', 'Invalid URL format')
+    return
+  }
+
+  Linking.openURL(url).catch(() => {
+    Alert.alert('Error', errorMessage)
+  })
+}, [])
+```
+
+## Common Link Types
+
+### Terms of Service & Privacy Policy
+
+```tsx
+const TermsAndPrivacyLinks: React.FC = () => {
+  const handleTermsPress = useCallback(() => {
+    const termsUrl = 'https://royalcanin.com/terms-of-service'
+    Linking.openURL(termsUrl).catch(() => {
+      Alert.alert('Error', 'Unable to open Terms of Service')
+    })
+  }, [])
+
+  const handlePrivacyPress = useCallback(() => {
+    const privacyUrl = 'https://royalcanin.com/privacy-policy'
+    Linking.openURL(privacyUrl).catch(() => {
+      Alert.alert('Error', 'Unable to open Privacy Policy')
+    })
+  }, [])
+
+  return (
+    <Text style={styles.text}>
+      <Text style={styles.link} onPress={handleTermsPress}>
+        {getString('auth.term_of_service')}
+      </Text>
+      <Text> & </Text>
+      <Text style={styles.link} onPress={handlePrivacyPress}>
+        {getString('auth.privacy_policy')}
+      </Text>
+    </Text>
+  )
+}
+```
+
+### Support and Help Links
+
+```tsx
+const SupportLinks: React.FC = () => {
+  const handleSupportPress = useCallback(() => {
+    const supportUrl = 'https://royalcanin.com/support'
+    Linking.openURL(supportUrl).catch(() => {
+      Alert.alert('Error', 'Unable to open support page')
+    })
+  }, [])
+
+  const handleFAQPress = useCallback(() => {
+    const faqUrl = 'https://royalcanin.com/faq'
+    Linking.openURL(faqUrl).catch(() => {
+      Alert.alert('Error', 'Unable to open FAQ page')
+    })
+  }, [])
+
+  return (
+    <>
+      <Text style={styles.link} onPress={handleSupportPress}>
+        {getString('auth.contact')}
+      </Text>
+      <Text style={styles.link} onPress={handleFAQPress}>
+        {getString('auth.faq')}
+      </Text>
+    </>
+  )
+}
+```
+
+## URL Management
+
+### Centralized URL Configuration
+
+Create a centralized configuration for all external URLs:
+
+```tsx
+// src/constants/urls.ts
+export const EXTERNAL_URLS = {
+  TERMS_OF_SERVICE: 'https://royalcanin.com/terms-of-service',
+  PRIVACY_POLICY: 'https://royalcanin.com/privacy-policy',
+  SUPPORT: 'https://royalcanin.com/support',
+  FAQ: 'https://royalcanin.com/faq',
+} as const
+```
+
+### Environment-Specific URLs
+
+Handle different URLs for different environments:
+
+```tsx
+// src/constants/urls.ts
+const getBaseURL = () => {
+  if (__DEV__) {
+    return 'https://staging.royalcanin.com'
+  }
+  return 'https://royalcanin.com'
+}
+
+export const EXTERNAL_URLS = {
+  TERMS_OF_SERVICE: `${getBaseURL()}/terms-of-service`,
+  PRIVACY_POLICY: `${getBaseURL()}/privacy-policy`,
+} as const
+```
+
+## Accessibility and UX
+
+### Link Styling
+
+Use consistent styling to indicate clickable links:
+
+```typescript
+linkText: {
+  fontFamily: fonts.medium,
+  fontSize: fontSizes.span,
+  lineHeight: lineHeights.span,
+  color: theme.colors.info,
+  textDecorationLine: 'underline',
+},
+```
+
+### Loading States
+
+Show loading feedback for slow-loading links:
+
+```tsx
+const [isLoading, setIsLoading] = useState(false)
+
+const handleLinkWithLoading = useCallback(async (url: string) => {
+  setIsLoading(true)
+  try {
+    await Linking.openURL(url)
+  } catch (error) {
+    Alert.alert('Error', 'Unable to open link')
+  } finally {
+    setIsLoading(false)
+  }
+}, [])
+```
+
+## Error Handling Patterns
+
+### Custom Error Messages
+
+Provide specific error messages for different link types:
+
+```tsx
+const ERROR_MESSAGES = {
+  TERMS: getString('auth.term'),
+  PRIVACY: getString('auth.privacy'),
+  SUPPORT: getString('auth.support'),
+  GENERAL: getString('auth.general'),
+} as const
+
+const handleTypedLinkPress = useCallback((url: string, type: keyof typeof ERROR_MESSAGES) => {
+  Linking.openURL(url).catch(() => {
+    Alert.alert('Error', ERROR_MESSAGES[type])
+  })
+}, [])
+```
+
+### Fallback Options
+
+Provide fallback options when links fail:
+
+```tsx
+const handleLinkWithFallback = useCallback((url: string, fallbackAction?: () => void) => {
+  Linking.openURL(url).catch(() => {
+    Alert.alert(getString('auth.alert_fallback'), [
+      { text: getString('button.cancel'), style: 'cancel' },
+      { text: getString('button.try_alternative'), onPress: fallbackAction },
+    ])
+  })
+}, [])
+```
+
+## Platform-Specific Considerations
+
+### iOS Deep Linking
+
+Handle iOS-specific URL schemes:
+
+```tsx
+const handleiOSSpecificLink = useCallback((url: string) => {
+  if (Platform.OS === 'ios') {
+    // iOS-specific handling
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url)
+      } else {
+        Alert.alert('Error', getString('error'))
+      }
+    })
+  } else {
+    // Android fallback
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Error', getString('error'))
+    })
+  }
+}, [])
+```
+
+### Android Intent Handling
+
+Handle Android-specific intents when needed:
+
+```tsx
+const handleAndroidIntent = useCallback((url: string) => {
+  if (Platform.OS === 'android') {
+    // Android-specific handling
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Error', getString('error'))
+    })
+  }
+}, [])
+```
+
+## Security Considerations
+
+### URL Sanitization
+
+Always validate and sanitize URLs:
+
+```tsx
+const sanitizeURL = (url: string): string => {
+  // Remove potentially dangerous protocols
+  const dangerous = ['javascript:', 'data:', 'vbscript:']
+  const lowerUrl = url.toLowerCase()
+
+  if (dangerous.some(protocol => lowerUrl.startsWith(protocol))) {
+    throw new Error(getString('error'))
+  }
+
+  return url
+}
+```
+
+### Whitelist Approach
+
+Use a whitelist for allowed domains:
+
+```tsx
+const ALLOWED_DOMAINS = ['royalcanin.com', 'support.royalcanin.com', 'help.royalcanin.com'] as const
+
+const isAllowedDomain = (url: string): boolean => {
+  try {
+    const domain = new URL(url).hostname
+    return ALLOWED_DOMAINS.some(allowed => domain.endsWith(allowed))
+  } catch {
+    return false
+  }
+}
+```
+
+## Testing Patterns
+
+### Mock Linking for Tests
+
+Mock the Linking module in tests:
+
+```tsx
+// In test files
+jest.mock('react-native', () => ({
+  ...jest.requireActual('react-native'),
+  Linking: {
+    openURL: jest.fn().mockResolvedValue(true),
+    canOpenURL: jest.fn().mockResolvedValue(true),
+  },
+}))
+```
+
+## Common Use Cases
+
+- Legal document links (Terms, Privacy Policy)
+- Customer support and help pages
+- External documentation
+- Social media profiles
+- App store links for rating/reviews
+- Third-party service integrations
+  description:
+  globs:
+  alwaysApply: false
+
+---

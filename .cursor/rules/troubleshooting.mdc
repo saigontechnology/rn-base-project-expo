@@ -1,8 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # Troubleshooting Guide
 
 ## Common Issues and Solutions
@@ -10,6 +11,7 @@ alwaysApply: true
 ### Expo Doctor Checks
 
 Run `npx expo-doctor` to check for configuration issues:
+
 - Ensures package versions match Expo SDK requirements
 - Validates native module compatibility
 - Checks for common configuration problems
@@ -17,6 +19,7 @@ Run `npx expo-doctor` to check for configuration issues:
 ### TypeScript Errors
 
 Current known issues:
+
 - I18n configuration has complex generic type constraints (non-critical)
 - Use `npx tsc --noEmit` to check for type errors
 - Path aliases configured: `@/*` maps to `src/*`
@@ -24,6 +27,7 @@ Current known issues:
 ### Font Loading Issues
 
 Font files location: [src/assets/fonts/](mdc:src/assets/fonts)
+
 - Ensure correct relative paths in [src/screens/MainLayout.tsx](mdc:src/screens/MainLayout.tsx)
 - Use `require('../assets/fonts/FontName.ttf')` syntax
 - Available fonts: Roboto-Regular, Roboto-Medium, Roboto-Bold
@@ -51,7 +55,7 @@ Font files location: [src/assets/fonts/](mdc:src/assets/fonts)
 
 ### Environment Variables
 
-- Set in EAS project settings, not in local .env files
+- Set in local .env files for different environments (.env.development, .env.staging, .env.production)
 - Access via `process.env.EXPO_PUBLIC_*` for client-side variables
 - Server-side variables available in [app.config.ts](mdc:app.config.ts)
 

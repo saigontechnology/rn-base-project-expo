@@ -1,0 +1,243 @@
+# Checkbox Form Integration Patterns
+
+## rn-base-component Checkbox Integration
+
+### Basic Checkbox Usage
+
+When using Checkbox from rn-base-component, follow these patterns:
+
+```tsx
+import { Checkbox } from 'rn-base-component'
+
+// Basic usage
+;<Checkbox isChecked={value} onPressIn={() => onChange(!value)} label="Simple checkbox label" />
+```
+
+### Custom Text Component Integration
+
+For complex text with links or custom styling:
+
+```tsx
+<Checkbox isChecked={value} onPressIn={() => onChange(!value)} textComponent={<CustomTextComponent />} />
+```
+
+## react-hook-form Integration
+
+### Controller Pattern
+
+Always use Controller for proper form state management:
+
+```tsx
+<Controller
+  control={control}
+  name="fieldName"
+  render={({ field: { onChange, value } }) => (
+    <Checkbox isChecked={value} onPressIn={() => onChange(!value)} textComponent={<InteractiveText />} />
+  )}
+/>
+```
+
+### Validation Integration
+
+Include validation error handling:
+
+```tsx
+<View style={styles.checkboxContainer}>
+  <View style={styles.checkboxRow}>
+    <Controller
+      control={control}
+      name="termsAccepted"
+      render={({ field: { onChange, value } }) => (
+        <Checkbox isChecked={value} onPressIn={() => onChange(!value)} textComponent={<TermsText />} />
+      )}
+    />
+  </View>
+
+  {/* Error Display */}
+  {(showError || errors.termsAccepted) && (
+    <Text style={styles.validationError}>{getString('validation.required')}</Text>
+  )}
+</View>
+```
+
+## Layout and Styling
+
+### Container Structure
+
+Use consistent container styling:
+
+```typescript
+checkboxContainer: {
+  width: '100%',
+},
+checkboxRow: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  width: '100%',
+},
+```
+
+### Error Styling
+
+Consistent error message styling:
+
+```typescript
+validationError: {
+  color: theme.colors.errorText,
+  fontSize: fontSizes.small,
+  marginTop: metrics.tiny,
+},
+```
+
+## Theme Configuration
+
+### Checkbox Theme Settings
+
+Ensure proper theme configuration in [src/themes/theme.ts](mdc:src/themes/theme.ts):
+
+```typescript
+components: {
+  Checkbox: {
+    fillColor: theme.colors.primary,
+    size: metrics.checkboxSize,
+    borderRadius: metrics.borderRadius,
+    borderColor: theme.colors.defaultBorder,
+    checkmarkColor: theme.colors.white,
+    textColor: theme.colors.labelText,
+    disabledColor: theme.colors.disabled,
+  },
+}
+```
+
+## Form State Management
+
+### Boolean Field Handling
+
+For boolean checkbox fields:
+
+```tsx
+const {
+  control,
+  watch,
+  formState: { errors, isValid },
+} = useForm<FormData>({
+  defaultValues: {
+    termsAccepted: false, // Boolean default
+  },
+  mode: 'onChange',
+  resolver: zodResolver(validationSchema),
+})
+
+const watchedTerms = watch('termsAccepted')
+```
+
+### Form Validation Logic
+
+Include checkbox state in form validation:
+
+```tsx
+const isFormValid = isValid && watchedTerms && otherConditions
+```
+
+## Common Patterns
+
+### Terms of Service Acceptance
+
+```tsx
+<Controller
+  control={control}
+  name="termsAccepted"
+  render={({ field: { onChange, value } }) => (
+    <Checkbox
+      isChecked={value}
+      onPressIn={() => {
+        onChange(!value)
+        handleTermsToggle() // Clear any validation errors
+      }}
+      textComponent={<TermsText />}
+    />
+  )}
+/>
+```
+
+### Newsletter Subscription
+
+```tsx
+<Controller
+  control={control}
+  name="subscribeNewsletter"
+  render={({ field: { onChange, value } }) => (
+    <Checkbox
+      isChecked={value}
+      onPressIn={() => onChange(!value)}
+      label={getString('newsletter.subscribe')}
+    />
+  )}
+/>
+```
+
+## Accessibility Considerations
+
+### Touch Targets
+
+Ensure adequate touch targets:
+
+- Checkbox components should have minimum 44pt touch area
+- Use proper `onPressIn` handlers for immediate feedback
+
+### Screen Reader Support
+
+- Use descriptive labels
+- Ensure proper focus management
+- Include validation announcements
+
+## Testing Patterns
+
+### Test ID Assignment
+
+Include testID for accessibility and testing:
+
+```tsx
+<Checkbox
+  testID="terms-checkbox"
+  isChecked={value}
+  onPressIn={() => onChange(!value)}
+  textComponent={<TermsText />}
+/>
+```
+
+## Common Pitfalls to Avoid
+
+1. **Wrong Prop Names**: Use `isChecked`, not `checked`
+2. **Wrong Handler**: Use `onPressIn`, not `onPress`
+3. **Missing Controller**: Always wrap in Controller for form integration
+4. **Validation Logic**: Don't forget to include checkbox state in form validation
+5. **State Conflicts**: Don't manage checkbox state outside of react-hook-form when using Controller
+
+## Performance Considerations
+
+### Callback Optimization
+
+Use useCallback for press handlers:
+
+```tsx
+const handleTermsToggle = useCallback(() => {
+  setShowTermsError(false)
+}, [])
+```
+
+### Memoization
+
+Consider memoizing complex text components:
+
+```tsx
+const TermsText = React.memo(() => {
+  // Component implementation
+})
+```
+
+description:
+globs:
+alwaysApply: false
+
+---

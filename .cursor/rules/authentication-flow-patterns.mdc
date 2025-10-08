@@ -1,0 +1,191 @@
+# Authentication Flow Patterns
+
+## Screen Structure for Auth Flows
+
+Follow this consistent structure for all authentication screens:
+
+```tsx
+export const AuthScreen: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const { isLoading } = useSelector((state: RootState) => state.user)
+  const params = useLocalSearchParams()
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { isValid },
+  } = useForm<FormData>({
+    defaultValues: {
+      /* ... */
+    },
+    mode: 'onChange',
+    resolver: zodResolver(ValidationSchema),
+  })
+
+  const onSubmit = useCallback(
+    (data: FormData) => {
+      dispatch(authAction(data))
+    },
+    [dispatch],
+  )
+
+  return (
+    <ScreenContainer style={styles.container}>
+      {/* Status bar and logo */}
+      {/* Form content */}
+      {/* Action buttons */}
+      {/* Background image */}
+    </ScreenContainer>
+  )
+}
+```
+
+## OTP Verification Patterns
+
+### Timer Management
+
+```tsx
+const [countdown, setCountdown] = useState(OTP_EXPIRY_TIME)
+const [canResend, setCanResend] = useState(false)
+
+useEffect(() => {
+  if (countdown > 0) {
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+    return () => clearTimeout(timer)
+  } else {
+    setCanResend(true)
+  }
+}, [countdown])
+```
+
+### Auto-Submit Logic
+
+```tsx
+const watchedOtp = watch('otp')
+
+useEffect(() => {
+  if (watchedOtp && watchedOtp.length === 6) {
+    handleSubmit(onSubmit)()
+  }
+}, [watchedOtp, handleSubmit])
+```
+
+### Resend Functionality
+
+```tsx
+const handleResendOtp = useCallback(() => {
+  if (canResend && phoneNumber) {
+    dispatch(userActions.registerRequest({ phone: phoneNumber }))
+    setCountdown(OTP_EXPIRY_TIME)
+    setCanResend(false)
+    setValue('otp', '')
+  }
+}, [canResend, dispatch, phoneNumber, setValue])
+```
+
+## Navigation Patterns
+
+### Parameter Passing
+
+```tsx
+// Pass phone number to OTP screen
+router.push({
+  pathname: RouteKeys.VerifyOTP,
+  params: { phone: phoneNumber },
+})
+
+// Retrieve parameters
+const params = useLocalSearchParams()
+const phoneNumber = params.phone as string
+```
+
+### Success Navigation
+
+```tsx
+// On successful auth action
+dispatch(
+  userActions.verifyRegisterOtpRequest({
+    otp: data.otp,
+    phone: phoneNumber,
+  }),
+)
+```
+
+## Form Validation Patterns
+
+### Schema Definition
+
+```tsx
+export const AuthSchema = z.object({
+  phone: z.string().min(10, getString('auth.validation.otpRequired')),
+  password: z.string().min(6, getString('auth.validation.otpRequired')),
+  otp: z.string().length(6, getString('auth.validation.otpRequired')),
+})
+
+export type AuthFormData = z.infer<typeof AuthSchema>
+```
+
+### Conditional Button States
+
+```tsx
+<ButtonPrimary
+  onPress={handleSubmit(onSubmit)}
+  disabled={!isValid || isLoading || additionalCondition}
+  textStyle={styles.buttonText}>
+  {isLoading ? getString('auth.processing') : getString('auth.continue')}
+</ButtonPrimary>
+```
+
+## Phone Number Formatting
+
+```tsx
+const formatPhoneNumber = (phone: string) => {
+  if (phone.startsWith('+')) {
+    const countryCode = phone.slice(0, 3)
+    const number = phone.slice(3)
+    return `${countryCode} ${number}`
+  }
+  return phone
+}
+```
+
+## Common UI Patterns
+
+### Status Bar Management
+
+```tsx
+<StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+```
+
+### Logo Positioning
+
+```tsx
+<Image source={Images.logo} style={styles.logo} resizeMode="contain" />
+```
+
+### Background Image
+
+```tsx
+<Image source={Images.authBackground} style={styles.backgroundImage} />
+```
+
+## Error Handling
+
+- Display validation errors inline with form fields
+- Show loading states on buttons during API calls
+- Handle network errors gracefully
+- Clear sensitive data on unmount or navigation
+
+## Security Considerations
+
+- Never log sensitive data (passwords, OTPs) in production
+- Clear form data when navigating away from sensitive screens
+- Implement proper session timeout
+- Use secure parameter passing for sensitive data
+  description:
+  globs:
+  alwaysApply: false
+
+---

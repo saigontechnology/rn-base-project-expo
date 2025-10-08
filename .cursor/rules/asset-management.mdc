@@ -1,0 +1,330 @@
+# Asset Management System
+
+This document outlines the asset management practices for the Mobile project, including image registration, font loading, and SVG configuration.
+
+## Asset Directory Structure
+
+The project maintains a structured asset organization:
+
+- **Fonts**: `src/assets/fonts/` - Custom font family files
+- **Images**: `src/assets/images/` - PNG/JPG/SVG assets
+- **SVG Support**: Configured with `react-native-svg-transformer`
+
+## Image Registration
+
+### Image Registry
+
+All images **MUST** be registered in `src/themes/images.ts` before use:
+
+```typescript
+const Images = {
+  logo: require('@/assets/images/logo.png'),
+  icon: require('@/assets/images/icon.png'),
+  // Add new images here
+  newImage: require('@/assets/images/new-image.png'),
+}
+
+export { Images }
+```
+
+### Usage in Components
+
+```typescript
+import { Images } from '@/themes/images'
+import { Image } from 'react-native'
+
+const Component = () => (
+  <Image source={Images.logo} style={styles.logo} />
+)
+```
+
+### Registration Rules
+
+1. ✅ **ALWAYS** register images in `images.ts` before importing in components
+2. ✅ Use descriptive, camelCase names for image keys
+3. ✅ Group related images logically (e.g., `auth`, `home`, `profile`)
+4. ✅ Document image purpose if not obvious from name
+
+**Example Grouping:**
+```typescript
+const Images = {
+  // Auth screens
+  authBackground: require('@/assets/images/auth/background.png'),
+  authLogo: require('@/assets/images/auth/logo.png'),
+  
+  // Home screen
+  homeHero: require('@/assets/images/home/hero.png'),
+  homeIcon: require('@/assets/images/home/icon.png'),
+  
+  // Common icons
+  iconClose: require('@/assets/images/icons/close.png'),
+  iconEye: require('@/assets/images/icons/eye.png'),
+  iconEyeHide: require('@/assets/images/icons/eye-hide.png'),
+}
+```
+
+## Font Management
+
+### Font Loading
+
+Fonts are loaded in `src/screens/MainLayout.tsx` using Expo's `useFonts` hook:
+
+```typescript
+import { useFonts } from 'expo-font'
+
+const MainLayout = () => {
+  const [loaded] = useFonts({
+    'Roboto-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
+    'Roboto-Medium': require('../assets/fonts/Roboto-Medium.ttf'),
+    'Roboto-Bold': require('../assets/fonts/Roboto-Bold.ttf'),
+  })
+
+  if (!loaded) {
+    return null
+  }
+
+  return (
+    // App content
+  )
+}
+```
+
+### Font Registration
+
+1. **Add font files** to `src/assets/fonts/`
+2. **Register in MainLayout.tsx** with descriptive names
+3. **Define in fonts.ts** for easy access:
+
+```typescript
+// src/themes/fonts.ts
+const fonts = {
+  regular: 'Roboto-Regular',
+  medium: 'Roboto-Medium',
+  bold: 'Roboto-Bold',
+  family: 'Roboto',
+} as const
+
+export { fonts }
+```
+
+4. **Use in styles** via fonts constant:
+
+```typescript
+import { fonts } from '@/themes/fonts'
+
+const styles = StyleSheet.create({
+  text: {
+    fontFamily: fonts.medium,
+  },
+})
+```
+
+### Font File Requirements
+
+- **Format**: `.ttf` (TrueType Font) or `.otf` (OpenType Font)
+- **Naming**: Use descriptive names matching font weight/style
+- **Loading**: Always check `loaded` state before rendering content
+
+## SVG Configuration
+
+### SVG Transformer Setup
+
+The project uses `react-native-svg-transformer` for SVG support.
+
+**Metro Configuration** (`metro.config.js`):
+```javascript
+const { getDefaultConfig } = require('expo/metro-config')
+
+const config = getDefaultConfig(__dirname)
+
+config.transformer.babelTransformerPath = require.resolve('react-native-svg-transformer')
+config.resolver.assetExts = config.resolver.assetExts.filter(ext => ext !== 'svg')
+config.resolver.sourceExts.push('svg')
+
+module.exports = config
+```
+
+**TypeScript Support** (`custom-types.d.ts`):
+```typescript
+declare module '*.svg' {
+  import React from 'react'
+  import { SvgProps } from 'react-native-svg'
+  const content: React.FC<SvgProps>
+  export default content
+}
+```
+
+### SVG Usage
+
+```typescript
+import LogoSvg from '@/assets/images/logo.svg'
+import { StyleSheet } from 'react-native'
+import { metrics } from '@/themes/metrics'
+
+const Component = () => (
+  <LogoSvg 
+    width={metrics.iconSize24} 
+    height={metrics.iconSize24}
+    style={styles.icon}
+  />
+)
+
+const styles = StyleSheet.create({
+  icon: {
+    // Additional styling if needed
+  },
+})
+```
+
+### SVG Best Practices
+
+1. ✅ Use SVG for scalable icons and graphics
+2. ✅ Optimize SVGs before adding to project (remove unnecessary metadata)
+3. ✅ Use metrics tokens for width/height props
+4. ✅ Apply colors via `fill` or `stroke` props when possible
+5. ✅ Consider PNG fallbacks for complex SVGs
+
+## Asset Optimization
+
+### Image Optimization
+
+**Guidelines:**
+- Use appropriate image formats:
+  - **PNG**: Icons, logos, images with transparency
+  - **JPG**: Photos, complex images without transparency
+  - **SVG**: Scalable icons, simple graphics
+- Provide `@2x` and `@3x` variants for different screen densities
+- Compress images before adding to project
+
+**Naming Convention:**
+```
+icon.png      # 1x resolution
+icon@2x.png   # 2x resolution (Retina)
+icon@3x.png   # 3x resolution (Retina HD)
+```
+
+### Image Resolution Guidelines
+
+| Device Type | Scale Factor | Example |
+|-------------|--------------|---------|
+| Standard | 1x | 100×100 |
+| Retina | 2x | 200×200 |
+| Retina HD | 3x | 300×300 |
+
+**React Native Auto-Selection:**
+React Native automatically selects the appropriate resolution based on device pixel density.
+
+```typescript
+// React Native will automatically load:
+// - icon.png on 1x devices
+// - icon@2x.png on 2x devices  
+// - icon@3x.png on 3x devices
+<Image source={Images.icon} />
+```
+
+## Asset Security
+
+### Sensitive Assets
+
+For sensitive or private assets:
+
+1. ✅ Never commit API keys, secrets, or credentials in asset files
+2. ✅ Use environment variables for configuration
+3. ✅ Consider encrypting sensitive images if needed
+4. ✅ Use `.gitignore` to exclude temporary or build-generated assets
+
+### Asset Attribution
+
+If using third-party assets:
+
+1. ✅ Document license information in comments
+2. ✅ Maintain attribution files if required by license
+3. ✅ Verify commercial usage rights
+
+## Troubleshooting
+
+### Issue 1: Image Not Displaying
+
+**Problem**: Image doesn't appear in app
+
+**Solution**:
+1. Verify image is registered in `images.ts`
+2. Check file path is correct (case-sensitive)
+3. Ensure image file exists in `src/assets/images/`
+4. Clear Metro cache: `npx expo start --clear`
+5. Check image format is supported (PNG, JPG, GIF, WebP)
+
+### Issue 2: Font Not Loading
+
+**Problem**: Custom font doesn't apply or falls back to system font
+
+**Solution**:
+1. Verify font file is in `src/assets/fonts/`
+2. Check font name matches in `useFonts()` and `fonts.ts`
+3. Ensure `loaded` state is checked before rendering
+4. Verify font file format is `.ttf` or `.otf`
+5. Check for typos in font family name
+6. Clear cache and restart: `npx expo start --clear`
+
+### Issue 3: SVG Not Rendering
+
+**Problem**: SVG imports fail or don't render
+
+**Solution**:
+1. Verify `react-native-svg` is installed: `npx expo install react-native-svg`
+2. Verify `react-native-svg-transformer` is installed
+3. Check Metro configuration includes SVG transformer setup
+4. Ensure TypeScript declaration exists in `custom-types.d.ts`
+5. Restart Metro bundler
+6. Check SVG file is valid (test in browser/editor first)
+
+### Issue 4: Asset Bundle Size Too Large
+
+**Problem**: App bundle size is too large due to assets
+
+**Solution**:
+1. Compress images using tools like TinyPNG, ImageOptim
+2. Use WebP format for better compression (React Native supports it)
+3. Consider lazy loading for large assets
+4. Remove unused assets from project
+5. Use SVG instead of PNG for simple icons
+6. Analyze bundle with `npx react-native-bundle-visualizer`
+
+## Maintenance
+
+### Regular Asset Audits
+
+Periodically review assets:
+
+1. **Remove Unused Assets**: Search codebase for unreferenced images
+2. **Optimize File Sizes**: Re-compress images as tools improve
+3. **Update Formats**: Convert legacy formats to modern ones (WebP)
+4. **Check Licenses**: Verify third-party asset licenses are still valid
+5. **Document Changes**: Maintain changelog of major asset updates
+
+### Version Control Best Practices
+
+```bash
+# Track asset changes
+git add src/assets/
+git add src/themes/images.ts
+git commit -m "feat: add new brand logo assets"
+
+# Use Git LFS for large assets (optional)
+git lfs track "*.png"
+git lfs track "*.jpg"
+```
+
+## Summary
+
+This asset management system ensures:
+- ✅ Organized asset structure
+- ✅ Centralized image registration
+- ✅ Proper font loading and management
+- ✅ SVG support with TypeScript
+- ✅ Optimized asset delivery
+- ✅ Maintainable asset organization
+
+By following these practices, the Mobile project maintains clean, efficient, and scalable asset management.
+
+alwaysApply: false

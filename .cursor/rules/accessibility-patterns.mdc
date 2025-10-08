@@ -1,0 +1,665 @@
+# Accessibility Patterns
+
+## Accessibility Overview
+
+React Native accessibility ensures the app is usable by everyone, including users with disabilities. This includes screen reader support, keyboard navigation, and proper semantic structure.
+
+### Core Accessibility Props
+
+#### Essential Props for All Interactive Components
+
+```typescript
+import React from 'react'
+import { TouchableOpacity, Text, View } from 'react-native'
+import { ButtonPrimary } from 'rn-base-component'
+import { getString } from '@/locale/I18nConfig'
+
+// ✅ Proper accessibility implementation
+export const AccessibleButton: React.FC = () => {
+  return (
+    <ButtonPrimary
+      // ✅ Clear, descriptive label
+      accessibilityLabel={getString('profile.saveChanges')}
+      // ✅ Describe what happens when pressed
+      accessibilityHint={getString('accessibility.saveChangesHint')}
+      // ✅ Appropriate role
+      accessibilityRole="button"
+      // ✅ Current state
+      accessibilityState={{ disabled: false }}
+      // ✅ Test ID for automation
+      testID="save-changes-button"
+      onPress={handleSave}
+    >
+      {getString('common.save')}
+    </ButtonPrimary>
+  )
+}
+
+// ✅ Accessible form input
+export const AccessibleInput: React.FC = () => {
+  const [value, setValue] = useState('')
+  const [hasError, setHasError] = useState(false)
+
+  return (
+    <View>
+      <Text
+        // ✅ Associate label with input
+        nativeID="email-label"
+        accessibilityRole="text"
+      >
+        {getString('auth.email')}
+      </Text>
+      <TextInput
+        value={value}
+        onChangeText={setValue}
+        // ✅ Associate with label
+        accessibilityLabelledBy="email-label"
+        // ✅ Specify input purpose
+        accessibilityLabel={getString('auth.email')}
+        accessibilityHint={getString('accessibility.emailInputHint')}
+        // ✅ Indicate if required
+        accessibilityRequired={true}
+        // ✅ Show error state
+        accessibilityInvalid={hasError}
+        // ✅ Keyboard type for context
+        keyboardType="email-address"
+        autoComplete="email"
+        testID="email-input"
+      />
+      {hasError && (
+        <Text
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+        >
+          {getString('validation.emailRequired')}
+        </Text>
+      )}
+    </View>
+  )
+}
+```
+
+### Screen Reader Navigation
+
+#### Proper Heading Structure
+
+```typescript
+import React from 'react'
+import { View } from 'react-native'
+import { ThemedText, Header } from '@/components'
+
+export const AccessibleScreen: React.FC = () => {
+  return (
+    <View>
+      {/* ✅ Screen title - highest level heading */}
+      <Header
+        title={getString('profile.personalInformation')}
+        accessibilityRole="header"
+        accessibilityLevel={1}
+      />
+
+      {/* ✅ Section headings - second level */}
+      <ThemedText
+        type="subtitle"
+        accessibilityRole="header"
+        accessibilityLevel={2}
+      >
+        {getString('profile.contactInformation')}
+      </ThemedText>
+
+      {/* ✅ Subsection headings - third level */}
+      <ThemedText
+        type="body"
+        accessibilityRole="header"
+        accessibilityLevel={3}
+      >
+        {getString('profile.phoneNumber')}
+      </ThemedText>
+    </View>
+  )
+}
+```
+
+#### Focus Management
+
+```typescript
+import React, { useRef, useEffect } from 'react'
+import { View, AccessibilityInfo } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
+
+export const FocusManagementScreen: React.FC = () => {
+  const headerRef = useRef<View>(null)
+  const firstInputRef = useRef<TextInput>(null)
+
+  // ✅ Announce screen changes
+  useFocusEffect(
+    React.useCallback(() => {
+      // Announce the screen title
+      AccessibilityInfo.announceForAccessibility(
+        getString('accessibility.screenLoaded', {
+          screen: getString('profile.personalInformation')
+        })
+      )
+
+      // Focus on the first interactive element
+      setTimeout(() => {
+        firstInputRef.current?.focus()
+      }, 100)
+    }, [])
+  )
+
+  // ✅ Focus management after form submission
+  const handleSubmitSuccess = () => {
+    AccessibilityInfo.announceForAccessibility(
+      getString('accessibility.changesSaved')
+    )
+
+    // Return focus to appropriate element
+    headerRef.current?.focus()
+  }
+
+  return (
+    <View>
+      <View ref={headerRef} accessible>
+        <Header title={getString('profile.personalInformation')} />
+      </View>
+      <TextInput
+        ref={firstInputRef}
+        accessibilityLabel={getString('profile.firstName')}
+      />
+    </View>
+  )
+}
+```
+
+### Dynamic Content Accessibility
+
+#### Live Regions for Updates
+
+```typescript
+import React, { useState } from 'react'
+import { View, Text } from 'react-native'
+
+export const AccessibleCounter: React.FC = () => {
+  const [count, setCount] = useState(0)
+  const [status, setStatus] = useState('')
+
+  const increment = () => {
+    const newCount = count + 1
+    setCount(newCount)
+    setStatus(getString('accessibility.countUpdated', { count: newCount }))
+  }
+
+  return (
+    <View>
+      <Text
+        accessibilityRole="text"
+        accessibilityLabel={getString('accessibility.currentCount', { count })}
+      >
+        {getString('common.count')}: {count}
+      </Text>
+
+      {/* ✅ Live region for announcements */}
+      <Text
+        accessibilityLiveRegion="polite"
+        accessibilityRole="status"
+        style={{ position: 'absolute', left: -10000 }} // Screen reader only
+      >
+        {status}
+      </Text>
+
+      <ButtonPrimary
+        onPress={increment}
+        accessibilityLabel={getString('accessibility.incrementCount')}
+      >
+        {getString('common.increment')}
+      </ButtonPrimary>
+    </View>
+  )
+}
+```
+
+#### Loading States
+
+```typescript
+import React from 'react'
+import { View, ActivityIndicator, Text } from 'react-native'
+
+interface AccessibleLoadingProps {
+  loading: boolean
+  loadingText?: string
+  children: React.ReactNode
+}
+
+export const AccessibleLoading: React.FC<AccessibleLoadingProps> = ({
+  loading,
+  loadingText = getString('common.loading'),
+  children,
+}) => {
+  if (loading) {
+    return (
+      <View
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel={loadingText}
+        accessibilityState={{ busy: true }}
+      >
+        <ActivityIndicator />
+        <Text
+          accessibilityLiveRegion="assertive"
+          style={{ position: 'absolute', left: -10000 }}
+        >
+          {loadingText}
+        </Text>
+      </View>
+    )
+  }
+
+  return <>{children}</>
+}
+```
+
+### Form Accessibility
+
+#### Error Handling and Validation
+
+```typescript
+import React from 'react'
+import { View, Text } from 'react-native'
+import { useForm, Controller } from 'react-hook-form'
+import { TextInput } from '@/components'
+
+export const AccessibleForm: React.FC = () => {
+  const { control, formState: { errors } } = useForm()
+
+  return (
+    <View>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, value }, fieldState: { error } }) => (
+          <View>
+            <Text
+              nativeID="email-label"
+              accessibilityRole="text"
+            >
+              {getString('auth.email')} *
+            </Text>
+
+            <TextInput
+              value={value}
+              onChangeText={onChange}
+              accessibilityLabelledBy="email-label"
+              accessibilityRequired={true}
+              accessibilityInvalid={!!error}
+              // ✅ Describe error state
+              accessibilityErrorMessage={error?.message}
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+
+            {error && (
+              <Text
+                accessibilityRole="alert"
+                accessibilityLiveRegion="assertive"
+                style={{ color: 'red' }}
+              >
+                {error.message}
+              </Text>
+            )}
+          </View>
+        )}
+      />
+    </View>
+  )
+}
+```
+
+### List Accessibility
+
+#### Accessible FlatList Implementation
+
+```typescript
+import React from 'react'
+import { FlatList, View, Text, TouchableOpacity } from 'react-native'
+
+interface AccessibleListProps {
+  data: Array<{ id: string; title: string; description: string }>
+  onItemPress: (id: string) => void
+}
+
+export const AccessibleList: React.FC<AccessibleListProps> = ({ data, onItemPress }) => {
+  const renderItem = ({ item, index }) => (
+    <TouchableOpacity
+      onPress={() => onItemPress(item.id)}
+      // ✅ Descriptive accessibility label
+      accessibilityLabel={getString('accessibility.listItem', {
+        title: item.title,
+        position: index + 1,
+        total: data.length,
+      })}
+      // ✅ Describe what happens on press
+      accessibilityHint={getString('accessibility.tapToOpen')}
+      accessibilityRole="button"
+      // ✅ Provide context about position
+      accessibilityState={{
+        selected: false,
+        expanded: false
+      }}
+    >
+      <View style={styles.listItem}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.description}>{item.description}</Text>
+      </View>
+    </TouchableOpacity>
+  )
+
+  return (
+    <FlatList
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={item => item.id}
+      // ✅ Accessibility props for the list
+      accessibilityRole="list"
+      accessibilityLabel={getString('accessibility.itemsList', { count: data.length })}
+    />
+  )
+}
+```
+
+### Custom Component Accessibility
+
+#### Accessible Custom Components
+
+```typescript
+import React from 'react'
+import { View, TouchableOpacity, Text } from 'react-native'
+import { IconSymbol } from '@/components'
+
+interface AccessibleTabProps {
+  title: string
+  isActive: boolean
+  onPress: () => void
+  icon: string
+}
+
+export const AccessibleTab: React.FC<AccessibleTabProps> = ({
+  title,
+  isActive,
+  onPress,
+  icon,
+}) => {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      // ✅ Combine icon and text information
+      accessibilityLabel={getString('accessibility.tab', { title })}
+      // ✅ Indicate current state
+      accessibilityState={{ selected: isActive }}
+      accessibilityRole="tab"
+      // ✅ Provide interaction guidance
+      accessibilityHint={
+        isActive
+          ? getString('accessibility.currentTab')
+          : getString('accessibility.tapToSwitchTab')
+      }
+    >
+      <View style={[styles.tab, isActive && styles.activeTab]}>
+        <IconSymbol
+          name={icon}
+          // ✅ Icon is decorative, hide from screen reader
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        />
+        <Text style={[styles.tabText, isActive && styles.activeText]}>
+          {title}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  )
+}
+```
+
+### Modal and Overlay Accessibility
+
+#### Accessible Modal Implementation
+
+```typescript
+import React, { useRef, useEffect } from 'react'
+import { Modal, View, Text, TouchableOpacity } from 'react-native'
+import { ButtonPrimary, ButtonSecondary } from 'rn-base-component'
+
+interface AccessibleModalProps {
+  visible: boolean
+  title: string
+  onClose: () => void
+  onConfirm: () => void
+  children: React.ReactNode
+}
+
+export const AccessibleModal: React.FC<AccessibleModalProps> = ({
+  visible,
+  title,
+  onClose,
+  onConfirm,
+  children,
+}) => {
+  const modalRef = useRef<View>(null)
+
+  useEffect(() => {
+    if (visible) {
+      // ✅ Announce modal opening
+      AccessibilityInfo.announceForAccessibility(
+        getString('accessibility.modalOpened', { title })
+      )
+
+      // ✅ Focus on modal content
+      setTimeout(() => {
+        modalRef.current?.focus()
+      }, 100)
+    }
+  }, [visible, title])
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      // ✅ Prevent interaction with background
+      accessibilityViewIsModal={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.overlay}>
+        <View
+          ref={modalRef}
+          style={styles.modalContent}
+          // ✅ Make modal focusable
+          accessible
+          accessibilityRole="dialog"
+          accessibilityLabel={title}
+          // ✅ Modal-specific accessibility
+          accessibilityModal={true}
+        >
+          {/* ✅ Modal header */}
+          <Text
+            style={styles.modalTitle}
+            accessibilityRole="header"
+            accessibilityLevel={1}
+          >
+            {title}
+          </Text>
+
+          {/* ✅ Modal content */}
+          <View accessibilityRole="text">
+            {children}
+          </View>
+
+          {/* ✅ Modal actions */}
+          <View style={styles.modalActions}>
+            <ButtonSecondary
+              onPress={onClose}
+              accessibilityLabel={getString('common.cancel')}
+              accessibilityHint={getString('accessibility.closeModal')}
+            >
+              {getString('common.cancel')}
+            </ButtonSecondary>
+
+            <ButtonPrimary
+              onPress={onConfirm}
+              accessibilityLabel={getString('common.confirm')}
+              accessibilityHint={getString('accessibility.confirmAction')}
+            >
+              {getString('common.confirm')}
+            </ButtonPrimary>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  )
+}
+```
+
+### Testing Accessibility
+
+#### Accessibility Testing Patterns
+
+```typescript
+import { render, fireEvent } from '@testing-library/react-native'
+import { AccessibleButton } from './AccessibleButton'
+
+describe('AccessibleButton', () => {
+  it('should have proper accessibility props', () => {
+    const { getByTestId } = render(
+      <AccessibleButton onPress={jest.fn()} />
+    )
+
+    const button = getByTestId('save-changes-button')
+
+    // ✅ Test accessibility properties
+    expect(button).toHaveProp('accessibilityRole', 'button')
+    expect(button).toHaveProp('accessibilityLabel', expect.any(String))
+    expect(button).toHaveProp('accessibilityHint', expect.any(String))
+  })
+
+  it('should be discoverable by accessibility label', () => {
+    const onPress = jest.fn()
+    const { getByA11yLabel } = render(
+      <AccessibleButton onPress={onPress} />
+    )
+
+    const button = getByA11yLabel('Save changes')
+    fireEvent.press(button)
+
+    expect(onPress).toHaveBeenCalled()
+  })
+})
+```
+
+## Accessibility Guidelines
+
+### Color and Contrast
+
+```typescript
+// src/themes/colors.ts - Ensure WCAG AA compliance
+export const accessibleColors = {
+  // ✅ High contrast ratios (4.5:1 minimum)
+  primaryText: '#000000', // 21:1 ratio on white
+  secondaryText: '#666666', // 4.5:1 ratio on white
+  errorText: '#D32F2F', // 4.5:1 ratio on white
+  successText: '#388E3C', // 4.5:1 ratio on white
+
+  // ✅ Focus indicators
+  focusRing: '#005FCC', // High contrast focus ring
+
+  // ✅ Interactive states
+  buttonPrimaryBg: '#1976D2',
+  buttonPrimaryText: '#FFFFFF',
+  buttonDisabledBg: '#E0E0E0',
+  buttonDisabledText: '#9E9E9E',
+}
+```
+
+### Touch Target Sizes
+
+```typescript
+// src/themes/metrics.ts - Minimum touch target sizes
+export const accessibilityMetrics = {
+  // ✅ Minimum 44pt touch targets (iOS) / 48dp (Android)
+  minTouchTarget: responsiveWidth(44),
+
+  // ✅ Recommended spacing between touch targets
+  touchTargetSpacing: responsiveWidth(8),
+
+  // ✅ Focus indicator minimum size
+  focusIndicatorWidth: 2,
+}
+```
+
+## Accessibility Checklist
+
+### Implementation Checklist
+
+- [ ] All interactive elements have `accessibilityRole`
+- [ ] All interactive elements have `accessibilityLabel`
+- [ ] Complex interactions have `accessibilityHint`
+- [ ] Form inputs are properly labeled and associated
+- [ ] Error messages use `accessibilityLiveRegion`
+- [ ] Headings have proper hierarchy (`accessibilityLevel`)
+- [ ] Focus management implemented for navigation
+- [ ] Loading states announced to screen readers
+- [ ] Modals properly trap focus
+- [ ] Lists provide context about position and count
+- [ ] Images have meaningful `alt` text or are marked decorative
+- [ ] Color is not the only way to convey information
+- [ ] Touch targets meet minimum size requirements (44pt/48dp)
+- [ ] Text has sufficient color contrast (4.5:1 minimum)
+- [ ] App works with screen readers (VoiceOver/TalkBack)
+- [ ] App works with switch control
+- [ ] Accessibility testing included in test suite
+
+### Testing Methods
+
+```bash
+# ✅ Enable accessibility testing
+yarn test --setupFilesAfterEnv='<rootDir>/jest.accessibility.setup.js'
+
+# ✅ Manual testing with screen readers
+# iOS: Enable VoiceOver in Settings > Accessibility
+# Android: Enable TalkBack in Settings > Accessibility
+
+# ✅ Use accessibility inspector tools
+# iOS: Xcode Accessibility Inspector
+# Android: Android Accessibility Scanner
+```
+
+### Localization Considerations
+
+```typescript
+// src/locale/accessibility.ts
+export const accessibilityStrings = {
+  // ✅ Screen reader announcements
+  screenLoaded: 'Screen {screen} loaded',
+  modalOpened: 'Modal {title} opened',
+  changesSaved: 'Changes saved successfully',
+
+  // ✅ Interaction hints
+  tapToOpen: 'Tap to open',
+  tapToSwitchTab: 'Tap to switch to this tab',
+  currentTab: 'Currently selected tab',
+
+  // ✅ State descriptions
+  required: 'Required field',
+  invalid: 'Invalid input',
+  loading: 'Loading, please wait',
+
+  // ✅ List context
+  listItem: '{title}, item {position} of {total}',
+  itemsList: 'List with {count} items',
+}
+```
+
+description:
+globs:
+alwaysApply: false
+
+---

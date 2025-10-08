@@ -1,0 +1,238 @@
+# Interactive Text Components Implementation Guide
+
+## Overview
+
+When implementing text components with clickable links (like Terms of Service, Privacy Policy, etc.), follow these patterns for consistency and accessibility.
+
+## Core Implementation Pattern
+
+### 1. Locale String Structure
+
+Break interactive text into semantic parts for flexibility:
+
+```typescript
+// In locale files (e.g., src/locale/en.ts)
+auth: {
+  termsPrefix: 'I agree to the ',
+  termsOfServiceLink: 'Terms of Service',
+  termsMiddle: ' & ',
+  privacyPolicyLink: 'Privacy Policy',
+}
+```
+
+### 2. Interactive Text Component
+
+Create a dedicated component for complex interactive text:
+
+```tsx
+const InteractiveText: React.FC = () => {
+  const handleLinkPress = useCallback((url: string, fallbackMessage: string) => {
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Error', fallbackMessage)
+    })
+  }, [])
+
+  return (
+    <View style={styles.textContainer}>
+      <Text style={styles.normalText}>
+        {getString('prefix')}
+        <Text style={styles.linkText} onPress={() => handleLinkPress(url1, {getString('error')})}>
+          {getString('linkText1')}
+        </Text>
+        <Text style={styles.normalText}>{getString('middle')}</Text>
+        <Text style={styles.linkText} onPress={() => handleLinkPress(url2, {getString('error')})}>
+          {getString('linkText2')}
+        </Text>
+      </Text>
+    </View>
+  )
+}
+```
+
+## Internationalization (i18n) Requirements
+
+### Required import
+
+```typescript
+import { getString } from '@/locale/I18nConfig'
+```
+
+### Add all required strings in all locale files [src/locale/](mdc:src/locale)
+```typescript
+// In locale files (e.g., src/locale/en.ts)
+auth: {
+  termsPrefix: 'I agree to the ',
+  termsOfServiceLink: 'Terms of Service',
+  termsMiddle: ' & ',
+  privacyPolicyLink: 'Privacy Policy',
+}
+```
+
+### All Text Must Use getString()
+
+Every user-facing text string must use the `getString()` function for internationalization support.
+
+```typescript
+// ✅ CORRECT - Localized text
+title={getString('gift.title')}
+buttonText={getString('gift.redeemNow')}
+errorMessage={getString('errors.networkError')}
+
+// ❌ INCORRECT - Hardcoded strings
+title="Gift"
+buttonText="Redeem Now"
+errorMessage="Network error occurred"
+```
+
+### Key Structure Convention
+
+Use consistent, hierarchical key naming with dot notation:
+
+```typescript
+// ✅ CORRECT - Hierarchical structure
+getString('feature.section.item')
+getString('gift.category.all')
+getString('auth.validation.passwordRequired')
+getString('errors.api.networkTimeout')
+
+// ❌ INCORRECT - Flat or inconsistent naming
+getString('giftCategoryAll')
+getString('PASSWORD_REQUIRED')
+getString('network-timeout-error')
+```
+
+### Dynamic Content with Interpolation
+
+Use `getString()` with interpolation for dynamic content:
+
+```typescript
+// ✅ CORRECT - String interpolation
+getString('gift.pointsRequired', { points: 150 })
+getString('user.welcomeMessage', { name: user.name })
+getString('validation.minLength', { min: 8 })
+
+// Locale string examples:
+// "gift.pointsRequired": "{{points}} points required"
+// "user.welcomeMessage": "Welcome back, {{name}}!"
+// "validation.minLength": "Minimum {{min}} characters required"
+```
+
+### Interactive Text Localization
+
+For components with clickable links, localize all text parts:
+
+```typescript
+// ✅ CORRECT - Localized interactive text
+const TermsText: React.FC = () => (
+  <Text style={styles.normalText}>
+    {getString('auth.termsPrefix')}
+    <Text style={styles.linkText} onPress={openTerms}>
+      {getString('auth.termsOfServiceLink')}
+    </Text>
+    {getString('auth.termsMiddle')}
+    <Text style={styles.linkText} onPress={openPrivacy}>
+      {getString('auth.privacyPolicyLink')}
+    </Text>
+  </Text>
+)
+
+// Corresponding locale keys:
+// "auth.termsPrefix": "I agree to the "
+// "auth.termsOfServiceLink": "Terms of Service"
+// "auth.termsMiddle": " & "
+// "auth.privacyPolicyLink": "Privacy Policy"
+```
+
+### Error Messages and Feedback
+
+Localize all user feedback messages:
+
+```typescript
+// ✅ CORRECT - Localized error handling
+const handleError = (error: ApiError) => {
+  const errorMessage = error.code 
+    ? getString(`errors.api.${error.code}`)
+    : getString('errors.general.unknown')
+  
+  showToast({
+    type: TOAST_TYPE.ERROR,
+    message: errorMessage
+  })
+}
+
+// ✅ CORRECT - Localized success messages
+const handleSuccess = () => {
+  showToast({
+    type: TOAST_TYPE.SUCCESS,
+    message: getString('gift.redeemSuccess')
+  })
+}
+```
+
+### Form Validation Messages
+
+All form validation must use localized strings:
+
+```typescript
+// ✅ CORRECT - Localized validation
+const validationSchema = yup.object({
+  email: yup
+    .string()
+    .email(getString('validation.email.invalid'))
+    .required(getString('validation.email.required')),
+  password: yup
+    .string()
+    .min(8, getString('validation.password.minLength', { min: 8 }))
+    .required(getString('validation.password.required'))
+})
+```
+
+### Placeholder and Label Text
+
+Localize all input placeholders, labels, and helper text:
+
+```typescript
+// ✅ CORRECT - Localized form components
+<FormInput
+  name="email"
+  label={getString('form.email.label')}
+  placeholder={getString('form.email.placeholder')}
+  helperText={getString('form.email.helper')}
+/>
+
+<FormDatePicker
+  name="birthDate"
+  label={getString('form.birthDate.label')}
+  placeholder={getString('form.birthDate.placeholder')}
+/>
+```
+
+### Best Practices
+
+1. **No Hardcoded Strings**: Never use string literals for user-facing text
+2. **Consistent Keys**: Use `feature.section.item` naming convention
+3. **Group Related**: Group related strings under common prefixes
+4. **Interpolation**: Use parameter substitution for dynamic content
+5. **Fallbacks**: Provide fallback text for missing translations
+6. **Context**: Include context in key names when meaning could be ambiguous
+
+```typescript
+// ✅ CORRECT - Context-aware keys
+getString('button.save.document')    // Save button in document context
+getString('button.save.profile')     // Save button in profile context
+getString('status.loading.data')     // Loading status for data
+getString('status.loading.image')    // Loading status for image
+```
+
+## Example Use Cases
+
+- Terms of Service acceptance
+- Privacy Policy links
+- License agreements
+- Help and support links
+- External documentation references
+  description:
+  globs:
+  alwaysApply: false
+
+---

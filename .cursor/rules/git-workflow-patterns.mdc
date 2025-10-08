@@ -1,0 +1,316 @@
+# Git Workflow and Branch Management
+
+## Branch Naming Conventions
+
+### Feature Branches
+
+Use descriptive branch names that clearly indicate the feature being developed:
+
+```bash
+# Current example
+feature/implement_change_password_and_delete_account
+
+# Other examples
+feature/user_authentication_flow
+feature/profile_management_screen
+feature/password_reset_functionality
+feature/biometric_login_support
+```
+
+### Branch Types
+
+- **feature/**: New features and enhancements
+- **bugfix/**: Bug fixes and corrections
+- **hotfix/**: Critical production fixes
+- **refactor/**: Code refactoring without feature changes
+- **chore/**: Maintenance tasks and dependency updates
+
+## Development Workflow
+
+### Feature Development Process
+
+1. **Create Feature Branch**
+
+   ```bash
+   git checkout -b feature/descriptive_feature_name
+   ```
+
+2. **Development with Regular Commits**
+
+   ```bash
+   # Stage changes (use yarn, not npm!)
+   git add .
+   git commit -m "feat: implement FormPasswordInput component"
+   git commit -m "feat: add password validation rules display"
+   git commit -m "style: update ChangePasswordScreen layout"
+   ```
+
+3. **Keep Branch Updated**
+   ```bash
+   git fetch origin
+   git rebase origin/main
+   ```
+
+### Commit Message Conventions
+
+Follow conventional commit format for better change tracking:
+
+```bash
+# Feature additions
+git commit -m "feat: add crown icon for premium users"
+git commit -m "feat: implement change password functionality"
+
+# Bug fixes
+git commit -m "fix: resolve password validation edge case"
+git commit -m "fix: correct navigation back button behavior"
+
+# Styling changes
+git commit -m "style: update theme colors for dark mode"
+git commit -m "style: improve form layout spacing"
+
+# Refactoring
+git commit -m "refactor: extract password rules into reusable component"
+git commit -m "refactor: simplify profile screen navigation"
+
+# Documentation
+git commit -m "docs: update API integration guide"
+git commit -m "docs: add component usage examples"
+
+# Configuration
+git commit -m "config: update Expo SDK to version 53"
+git commit -m "config: add new environment variables"
+```
+
+## File Staging Best Practices
+
+### Staged vs Unstaged Files
+
+Current example shows good staging hygiene:
+
+```bash
+# Staged files (ready for commit)
+# None currently
+
+# Unstaged files (work in progress)
+modified:   src/components/form/Form.tsx
+modified:   src/components/form/index.ts
+modified:   src/constants/interface/field.ts
+modified:   src/screens/auth/SetupPasswordScreen.tsx
+modified:   src/screens/auth/constants.ts
+modified:   src/screens/profile/ChangePasswordScreen.tsx
+modified:   src/screens/profile/ProfileScreen.tsx
+modified:   src/screens/profile/constants.ts
+modified:   src/themes/images.ts
+
+# Untracked files (new additions)
+src/assets/images/crown-icon.png
+src/components/form/FormPasswordInput.tsx
+```
+
+### Staging Strategy
+
+1. **Group Related Changes**
+
+   ```bash
+   # Stage component changes together
+   git add src/components/form/FormPasswordInput.tsx
+   git add src/components/form/Form.tsx
+   git add src/components/form/index.ts
+   git commit -m "feat: add FormPasswordInput component with validation"
+
+   # Stage screen updates together
+   git add src/screens/profile/ChangePasswordScreen.tsx
+   git add src/screens/profile/ProfileScreen.tsx
+   git add src/screens/profile/constants.ts
+   git commit -m "feat: implement change password screen"
+
+   # Stage asset additions
+   git add src/assets/images/crown-icon.png
+   git add src/themes/images.ts
+   git commit -m "feat: add crown icon for premium user indicator"
+   ```
+
+2. **Review Changes Before Committing**
+
+   ```bash
+   # Review staged changes
+   git diff --cached
+
+   # Review unstaged changes
+   git diff
+
+   # Review specific file changes
+   git diff src/components/form/FormPasswordInput.tsx
+   ```
+
+## Quality Checks Before Commits
+
+### Pre-commit Checklist
+
+1. **TypeScript Compilation**
+
+   ```bash
+   yarn type-check
+   ```
+
+2. **Linting**
+
+   ```bash
+   yarn lint
+   ```
+
+3. **Testing**
+
+   ```bash
+   yarn test
+   ```
+
+4. **Expo Health Check**
+
+   ```bash
+   yarn doctor
+   ```
+
+5. **Package Dependencies**
+   ```bash
+   yarn expo install --check
+   ```
+
+### Automated Quality Gates
+
+Consider adding pre-commit hooks to automate quality checks:
+
+```bash
+# .husky/pre-commit example
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn lint
+yarn type-check
+yarn test --passWithNoTests
+```
+
+## Merge and Release Strategy
+
+### Feature Branch Completion
+
+1. **Final Testing**
+
+   ```bash
+   yarn test
+   yarn lint
+   yarn type-check
+   yarn doctor
+   ```
+
+2. **Clean Commit History**
+
+   ```bash
+   # Interactive rebase to clean up commits
+   git rebase -i HEAD~5
+
+   # Squash related commits
+   # Reword commit messages if needed
+   ```
+
+3. **Update Main Branch**
+
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout feature/your_feature_name
+   git rebase main
+   ```
+
+4. **Create Pull Request**
+   - Include clear description of changes
+   - Reference any related issues
+   - Add screenshots for UI changes
+   - Request appropriate reviewers
+
+### Branch Protection
+
+Ensure main branch is protected with:
+
+- Required status checks
+- Required reviews
+- No direct pushes
+- Force push protection
+
+## Development Environment Sync
+
+### Package Manager Consistency
+
+```bash
+# Always use yarn (never npm)
+yarn install
+yarn add package-name
+yarn add -D dev-package-name
+
+# Never use these
+# npm install ❌
+# npm add ❌
+```
+
+### Environment Variables
+
+```bash
+# Check environment setup
+cat .env.development
+cat .env.staging
+cat .env.production
+
+# Ensure sensitive data is in .gitignore
+echo ".env.local" >> .gitignore
+```
+
+## Collaboration Patterns
+
+### Code Review Guidelines
+
+1. **Review Scope**: Focus on functionality, security, performance
+2. **Style Consistency**: Check theme usage, component patterns
+3. **Testing Coverage**: Ensure adequate test coverage
+4. **Documentation**: Verify inline comments and README updates
+5. **Breaking Changes**: Identify any breaking changes
+
+### Communication
+
+- Use descriptive commit messages
+- Reference issue numbers when applicable
+- Add comments for complex logic
+- Update documentation for new patterns
+- Notify team of breaking changes
+
+## Emergency Hotfix Process
+
+For critical production issues:
+
+1. **Create Hotfix Branch**
+
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b hotfix/critical_issue_description
+   ```
+
+2. **Minimal Focused Fix**
+   - Make only necessary changes
+   - Include tests for the fix
+   - Verify fix resolves the issue
+
+3. **Fast-track Review**
+   - Expedited review process
+   - Immediate deployment after approval
+   - Monitor post-deployment
+
+4. **Backport to Development**
+   ```bash
+   git checkout develop
+   git cherry-pick hotfix-commit-hash
+   ```
+   description:
+   globs:
+   alwaysApply: false
+
+---

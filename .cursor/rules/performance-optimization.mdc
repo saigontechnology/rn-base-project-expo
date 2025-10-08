@@ -1,0 +1,290 @@
+# Performance Optimization Patterns
+
+## React Native Performance Best Practices
+
+### Component Optimization
+
+#### React.memo Usage
+
+```typescript
+import React, { memo } from 'react'
+import { StyleSheet, View } from 'react-native'
+import { ThemedText } from '@/components'
+
+interface ExpensiveComponentProps {
+  data: ComplexDataType[]
+  onPress: (id: string) => void
+}
+
+// ✅ Memoize expensive components
+export const ExpensiveComponent = memo<ExpensiveComponentProps>(({ data, onPress }) => {
+  return (
+    <View style={styles.container}>
+      {data.map(item => (
+        <ThemedText key={item.id} onPress={() => onPress(item.id)}>
+          {item.title}
+        </ThemedText>
+      ))}
+    </View>
+  )
+})
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+})
+```
+
+#### useCallback and useMemo
+
+```typescript
+import React, { useCallback, useMemo } from 'react'
+import { useSelector } from 'react-redux'
+
+export const OptimizedScreen: React.FC = () => {
+  const rawData = useSelector(selectRawData)
+
+  // ✅ Memoize expensive calculations
+  const processedData = useMemo(() => {
+    return rawData.map(item => ({
+      ...item,
+      displayName: `${item.firstName} ${item.lastName}`,
+      isActive: item.status === 'active',
+    }))
+  }, [rawData])
+
+  // ✅ Memoize callback functions
+  const handleItemPress = useCallback((id: string) => {
+    // Handle item press
+    navigation.navigate('Details', { id })
+  }, [navigation])
+
+  return (
+    <FlatList
+      data={processedData}
+      keyExtractor={item => item.id}
+      renderItem={({ item }) => (
+        <ListItem item={item} onPress={handleItemPress} />
+      )}
+    />
+  )
+}
+```
+
+### List Performance
+
+#### FlatList Optimization
+
+```typescript
+import React, { useCallback } from 'react'
+import { FlatList, ListRenderItem } from 'react-native'
+
+interface ListItemData {
+  id: string
+  title: string
+  description: string
+}
+
+export const OptimizedList: React.FC<{ data: ListItemData[] }> = ({ data }) => {
+  // ✅ Memoize render item function
+  const renderItem: ListRenderItem<ListItemData> = useCallback(({ item }) => (
+    <ListItem item={item} />
+  ), [])
+
+  // ✅ Memoize key extractor
+  const keyExtractor = useCallback((item: ListItemData) => item.id, [])
+
+  return (
+    <FlatList
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      // ✅ Performance optimizations
+      removeClippedSubviews={true}
+      maxToRenderPerBatch={10}
+      updateCellsBatchingPeriod={50}
+      initialNumToRender={10}
+      windowSize={10}
+      getItemLayout={(data, index) => ({
+        length: ITEM_HEIGHT,
+        offset: ITEM_HEIGHT * index,
+        index,
+      })}
+    />
+  )
+}
+```
+
+### Image Optimization
+
+#### Image Loading Best Practices
+
+```typescript
+import React from 'react'
+import { Image, StyleSheet } from 'react-native'
+import { Images } from '@/themes'
+
+export const OptimizedImage: React.FC<{ uri?: string; placeholder?: boolean }> = ({
+  uri,
+  placeholder = false
+}) => {
+  return (
+    <Image
+      source={uri ? { uri } : Images.placeholder}
+      // ✅ Performance optimizations
+      resizeMode="cover"
+      defaultSource={Images.placeholder}
+      loadingIndicatorSource={Images.loading}
+      // ✅ Memory optimization
+      cache="force-cache"
+    />
+  )
+}
+```
+
+### Redux Performance
+
+#### Selector Optimization
+
+```typescript
+import { createSelector } from '@reduxjs/toolkit'
+import { RootState } from '@/stores/types'
+
+// ✅ Memoized selectors prevent unnecessary re-renders
+export const selectUserDisplayName = createSelector(
+  (state: RootState) => state.user.profile,
+  profile => (profile ? `${profile.firstName} ${profile.lastName}` : 'Guest'),
+)
+
+export const selectFilteredNotifications = createSelector(
+  (state: RootState) => state.notifications.items,
+  (state: RootState) => state.notifications.filter,
+  (notifications, filter) => {
+    if (!filter) return notifications
+    return notifications.filter(notification => notification.type === filter.type)
+  },
+)
+```
+
+#### Normalized State Structure
+
+```typescript
+// ✅ Normalized state for better performance
+interface NormalizedUserState {
+  byId: Record<string, User>
+  allIds: string[]
+  selectedId: string | null
+}
+
+// ✅ Efficient updates
+const userSlice = createSlice({
+  name: 'users',
+  initialState: normalizedInitialState,
+  reducers: {
+    updateUser: (state, action: PayloadAction<User>) => {
+      const user = action.payload
+      state.byId[user.id] = user
+    },
+  },
+})
+```
+
+### Navigation Performance
+
+#### Screen Optimization
+
+```typescript
+import React, { useCallback } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+
+export const OptimizedScreen: React.FC = () => {
+  // ✅ Load data only when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      // Load screen-specific data
+      dispatch(loadScreenData())
+
+      return () => {
+        // Cleanup when leaving screen
+        dispatch(clearScreenData())
+      }
+    }, [dispatch])
+  )
+
+  return (
+    <ScreenContainer>
+      {/* Screen content */}
+    </ScreenContainer>
+  )
+}
+```
+
+### Bundle Size Optimization
+
+#### Lazy Loading
+
+```typescript
+import React, { lazy, Suspense } from 'react'
+import { ActivityIndicator } from 'react-native'
+
+// ✅ Lazy load heavy components
+const HeavyComponent = lazy(() => import('./HeavyComponent'))
+const HeavyChart = lazy(() => import('./charts/HeavyChart'))
+
+export const LazyLoadedScreen: React.FC = () => {
+  return (
+    <ScreenContainer>
+      <Suspense fallback={<ActivityIndicator />}>
+        <HeavyComponent />
+      </Suspense>
+
+      <Suspense fallback={<ActivityIndicator />}>
+        <HeavyChart />
+      </Suspense>
+    </ScreenContainer>
+  )
+}
+```
+
+### Animation Performance
+
+#### Reanimated Best Practices
+
+```typescript
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS
+} from 'react-native-reanimated'
+
+export const AnimatedComponent: React.FC = () => {
+  const scale = useSharedValue(1)
+
+  // ✅ Use worklets for better performance
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  }))
+
+  const handlePress = () => {
+    scale.value = withSpring(1.2, {}, (finished) => {
+      'worklet'
+      if (finished) {
+        scale.value = withSpring(1)
+      }
+    })
+  }
+
+  return (
+    <Animated.View style={animatedStyle}>
+      {/* Content */}
+    </Animated.View>
+  )
+}
+```
+      description:
+      globs:
+      alwaysApply: false
+
+---

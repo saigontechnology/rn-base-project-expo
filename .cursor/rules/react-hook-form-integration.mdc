@@ -1,0 +1,53 @@
+# React Hook Form Integration Patterns
+
+## Controller Component Integration
+
+When creating custom components that need to work with react-hook-form, ensure proper field integration:
+
+```tsx
+// ✅ Correct: Use Controller render function properly
+<Controller
+  control={control}
+  name="fieldName"
+  render={({ field: { onChange, value }, fieldState: { error } }) => (
+    <CustomInput onChangeText={onChange} value={value} error={error?.message} />
+  )}
+/>
+```
+
+## Custom Component Props
+
+Custom form components must accept and use the required props:
+
+```tsx
+// ✅ Correct: Component accepts and uses form props
+export const CustomInput: React.FC<{
+  value?: string
+  onChangeText?: (text: string) => void
+  error?: string
+}> = ({ value, onChangeText, error }) => (
+  <BaseInput
+    value={value}
+    onChangeText={onChangeText}
+    // ... other props
+  />
+)
+```
+
+## State Management Rules
+
+- **Never duplicate state**: Don't use both react-hook-form state AND local React state for the same field
+- **Use watch() for derived state**: Use `watch('fieldName')` to monitor field values
+- **Use setValue() for programmatic updates**: Use `setValue('fieldName', value)` to update fields programmatically
+
+## Form Validation Patterns
+
+- Use Zod schemas with `zodResolver` for validation
+- Set `mode: 'onChange'` for real-time validation
+- Access validation state through `formState.isValid`
+
+  description:
+  globs:
+  alwaysApply: false
+
+---
