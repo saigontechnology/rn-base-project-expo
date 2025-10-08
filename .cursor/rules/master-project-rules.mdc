@@ -1,0 +1,57 @@
+---
+alwaysApply: false
+---
+# Master Rules Application
+
+This rule applies all established development guidelines for the Mobile project. When invoked, it ensures adherence to all project standards across different development areas.
+
+## Core Project Guidelines
+
+### Component Development
+- [Component Development](mdc:.cursor/rules/component-development.mdc)
+- [Interactive Text Components](mdc:.cursor/rules/interactive-text-components.mdc)
+- [Import Management](mdc:.cursor/rules/import-management.mdc)
+
+### Navigation & Routing
+- [Screen and Navigation](mdc:.cursor/rules/screen-and-navigation.mdc)
+- [Navigation Routing](mdc:.cursor/rules/navigation-routing.mdc)
+
+### State Management
+- [Redux Architecture](mdc:.cursor/rules/redux-architecture.mdc)
+
+### TypeScript Development
+- [TypeScript Development](mdc:.cursor/rules/typescript-development.mdc)
+- [TypeScript and Testing](mdc:.cursor/rules/typescript-and-testing.mdc)
+
+### Form Development
+- [Form and Validation](mdc:.cursor/rules/form-and-validation.mdc)
+- [React Hook Form Integration](mdc:.cursor/rules/react-hook-form-integration.mdc)
+- [Checkbox Form Integration](mdc:.cursor/rules/checkbox-form-integration.mdc)
+
+### API & Services
+- [API Service Patterns](mdc:.cursor/rules/api-service-patterns.mdc)
+- [API Response Patterns](mdc:.cursor/rules/api-response-patterns.mdc)
+
+### Authentication
+- [Authentication Flow Patterns](mdc:.cursor/rules/authentication-flow-patterns.mdc)
+
+### Assets & Theming
+- [Assets and Theming](mdc:.cursor/rules/assets-and-theming.mdc)
+
+### Testing & Quality
+- [Error Handling Patterns](mdc:.cursor/rules/error-handling-patterns.mdc)
+
+### Performance & Optimization
+- [Performance Optimization](mdc:.cursor/rules/performance-optimization.mdc)
+
+### External Integration
+- [External Linking Patterns](mdc:.cursor/rules/external-linking-patterns.mdc)
+
+## Key Principles
+- **TypeScript Strict Mode**: Maintain type safety throughout the codebase
+- **Import Management**: Prevent dependency cycles and maintain clean import structure
+- **Component Priority**: Use local components first, then rn-base-component
+- **Redux Saga**: Use for all async operations and side effects
+- **Expo Router**: File-based routing with proper structure
+
+This master rule ensures comprehensive adherence to all established development standards.

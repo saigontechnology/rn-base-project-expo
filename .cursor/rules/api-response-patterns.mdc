@@ -1,0 +1,189 @@
+# API Response Patterns and Type Consistency
+
+## Response Type Structure
+
+All API responses must follow the consistent pattern established in [src/stores/types/api.ts](mdc:src/stores/types/api.ts):
+
+### Base Response Interface
+
+```typescript
+export interface ApiBaseResponse<T = unknown> {
+  error: AxiosErrorResponse | null
+  success: boolean
+  message?: string
+  status: number
+  timestamp?: string
+  data?: T
+}
+```
+
+### Response Type Naming Convention
+
+- Create specific response types that extend `ApiBaseResponse`
+- Use descriptive names ending with "Response" (e.g., `RegisterResponse`, `PointsBalanceResponse`)
+- Wrap the actual data in a `data` property
+
+### Example Pattern
+
+```typescript
+export interface RegisterResponse extends ApiBaseResponse {
+  data: {
+    phone: string
+    expires_in: number
+    remaining_attempts: number
+    next_step: 'verify_otp'
+    otp?: string // Only in development
+  }
+}
+```
+
+## Saga Implementation Patterns
+
+### Response Handling in Sagas
+
+Follow the pattern established in [src/stores/saga/user.ts](mdc:src/stores/saga/user.ts):
+
+```typescript
+function* exampleSaga(action: PayloadAction<RequestType>) {
+  try {
+    yield put(appActions.setShowGlobalIndicator(true))
+    const response: ResponseType = yield call(apiFunction, {
+      body: action.payload,
+    })
+
+    if (RESPONSE_CODE.success.includes(response.status)) {
+      yield put(actions.success(response.data))
+      showToast({ message: 'Success message', type: TOAST_TYPE.SUCCESS })
+    } else {
+      showToast({ message: response?.error?.message || 'Default error', type: TOAST_TYPE.ERROR })
+      yield put(actions.failure(response.message || 'Default error'))
+    }
+  } catch (error: unknown) {
+    yield put(actions.failure(error instanceof Error ? error.message : 'Default error'))
+  } finally {
+    yield put(appActions.setShowGlobalIndicator(false))
+  }
+}
+```
+
+### Data Access Patterns
+
+- Use `response.data` to access the wrapped data
+- Use `response.data!` for successful responses where data is guaranteed
+- Always provide fallback error messages: `response.message || 'Default error message'`
+
+### Error Handling Requirements
+
+1. Always handle both API errors and exceptions
+2. Use consistent error message patterns
+3. Show loading indicators for user-facing operations
+4. Clear loading indicators in `finally` blocks
+
+## Unwrapped Data Types
+
+For state management that works with actual data (not API wrappers), create unwrapped types:
+
+### Example from Scanning
+
+```typescript
+// Unwrapped data types for scanning state
+export interface ValidateQrData {
+  is_valid: boolean
+  is_scanned: boolean
+  product?: Product
+  potential_points?: number
+  will_get_first_scan_bonus?: boolean
+  scanned_at?: string
+  scanned_by?: string
+}
+```
+
+### Usage Pattern
+
+- Keep both wrapped response types and unwrapped data types
+- Use wrapped types in sagas for API calls
+- Use unwrapped types in state interfaces and action payloads
+- Extract data in sagas: `yield put(actions.success(response.data))`
+
+## API Function Patterns
+
+### Request Patterns
+
+Follow patterns in [src/services/api/user.ts](mdc:src/services/api/user.ts):
+
+- **GET requests**: Direct parameter passing
+- **POST/PUT requests**: Use `RequestWithBody<T>` pattern
+- **FormData requests**: Use `convertToFormData` helper
+
+### Example API Functions
+
+```typescript
+export const getUserProfileApi = async () =>
+  await getRequest<ApiBaseResponse<User>>({ url: USER_API.profile })
+
+export const updateUserProfileApi = async (req: RequestWithBody<UpdateProfileRequest>) =>
+  await putRequest<ApiBaseResponse<User>>({
+    url: USER_API.updateProfile,
+    body: req.body,
+  })
+```
+
+## Type Safety Requirements
+
+1. **Never use `any` types** - Always import proper types from [src/stores/types/api.ts](mdc:src/stores/types/api.ts)
+2. **Use generic ApiBaseResponse** - `ApiBaseResponse<DataType>` for typed responses
+3. **Create response-specific interfaces** - Don't reuse generic types for different endpoints
+4. **Maintain backward compatibility** - Keep original data types alongside response types
+
+## Import Patterns
+
+### Saga Imports
+
+```typescript
+import {
+  // Request types
+  RegisterRequest,
+  // Response types
+  RegisterResponse,
+  AuthResponse,
+  // Data types
+  User,
+  // Base types
+  ApiBaseResponse,
+} from '../types'
+```
+
+### API Service Imports
+
+```typescript
+import {
+  // Response types for API functions
+  RegisterResponse,
+  AuthResponse,
+  // Request types
+  RegisterRequest,
+  LoginRequest,
+} from '../../stores/types'
+```
+
+## Testing Considerations
+
+When creating new API endpoints or updating existing ones:
+
+1. Ensure response types match actual API responses
+2. Test both success and error scenarios
+3. Verify data extraction works correctly in sagas
+4. Check that state updates work with unwrapped data types
+
+## Common Pitfalls to Avoid
+
+1. **Don't mix AxiosResponse with direct response types** - Remove AxiosResponse wrappers
+2. **Don't forget error message fallbacks** - Always provide default error messages
+3. **Don't use wrapped types in state** - Use unwrapped data types for state interfaces
+4. **Don't skip loading indicators** - Always manage loading states properly
+5. **Don't hardcode success status checks** - Use `RESPONSE_CODE.success.includes(response.status)`
+   description:
+   globs:
+   alwaysApply: false
+
+---

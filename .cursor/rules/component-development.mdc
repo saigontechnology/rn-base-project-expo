@@ -1,0 +1,451 @@
+# Component Development and UI Integration
+
+## Component Architecture Overview
+
+Follows a hierarchical component structure with theme integration and accessibility support.
+
+### Component Priority System
+
+1. **Priority 1**: Local custom components from [src/components/](mdc:src/components)
+2. **Priority 2**: `rn-base-component` library for consistent UI elements
+3. **Priority 3**: React Native base components (only when necessary)
+
+### Available Local Components
+
+- **Layout**: `ScreenContainer`, `ThemedView`, `Row`
+- **Navigation**: `Header`, `HapticTab`
+- **Input**: `TextInput`, `Selection`, `ChipSelection`, `DatePicker`, `CodeInput`
+- **Form**: [src/components/form/](mdc:src/components/form) - `FormInput`, `FormPhoneInput`, `FormSelection`, etc.
+- **Feedback**: `Toast`, `IndicatorDialog`
+- **Interactive**: `Collapsible`, `Draggable`, `BottomSheet`
+- **Typography**: `ThemedText`, `IconSymbol`
+
+## Component Development Patterns
+
+### Basic Component Structure
+
+```typescript
+import React from 'react'
+import { StyleSheet, View, ViewStyle } from 'react-native'
+import { ThemedText } from '@/components/ThemedText'
+import { metrics, theme } from '@/themes'
+
+interface ComponentProps {
+  title?: string
+  onPress?: () => void
+  disabled?: boolean
+  containerStyle?: ViewStyle
+  testID?: string
+}
+
+export const CustomComponent: React.FC<ComponentProps> = ({
+  title,
+  onPress,
+  disabled = false,
+  containerStyle,
+  testID,
+}) => {
+
+  return (
+    <View
+      style={[styles.container, containerStyle]}
+      testID={testID}
+    >
+      <ThemedText type="title">{title}</ThemedText>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: metrics.medium,
+    borderRadius: metrics.borderRadius,
+    backgroundColor: theme.colors.backgroundColor
+  },
+})
+```
+
+### Screen Component Structure
+
+```typescript
+import React, { useCallback } from 'react'
+import { StyleSheet, View, Image } from 'react-native'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ButtonPrimary } from 'rn-base-component'
+
+import { ScreenContainer } from '@/components/ScreenContainer'
+import { Header } from '@/components/Header'
+import { FormInput } from '@/components/form'
+import { ThemedText } from '@/components/ThemedText'
+import { Images, metrics } from '@/themes'
+import { getString } from '@/locale/I18nConfig'
+import { useAppDispatch, useSelector } from '@/stores/store'
+
+export const ExampleScreen: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const isLoading = useSelector(selectLoading)
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm({
+    resolver: zodResolver(ValidationSchema),
+    defaultValues: { field: '' },
+    mode: 'onChange',
+  })
+
+  const onSubmit = useCallback((data: FormData) => {
+    dispatch(actions.submit(data))
+  }, [dispatch])
+
+  return (
+    <ScreenContainer style={styles.container}>
+      <Header title={getString('screen.title')} />
+
+      <View style={styles.content}>
+        <Image source={Images.logo} style={styles.logo} resizeMode="contain" />
+
+        <ThemedText type="title">{getString('screen.heading')}</ThemedText>
+
+        <FormInput
+          control={control}
+          id="field"
+          label={getString('field.label')}
+          placeholder={getString('field.placeholder')}
+        />
+
+        <ButtonPrimary
+          onPress={handleSubmit(onSubmit)}
+          disabled={!isValid || isLoading}
+        >
+          {isLoading ? getString('common.loading') : getString('common.submit')}
+        </ButtonPrimary>
+      </View>
+    </ScreenContainer>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: metrics.large,
+  },
+  logo: {
+    width: metrics.logoWidth,
+    height: metrics.logoHeight,
+    alignSelf: 'center',
+    marginBottom: metrics.large,
+  },
+})
+```
+
+## Button Component Patterns
+
+### Button Variants from rn-base-component
+
+```typescript
+import {
+  ButtonPrimary,
+  ButtonSecondary,
+  ButtonOutline,
+  ButtonTransparent
+} from 'rn-base-component'
+
+// Primary action button
+<ButtonPrimary onPress={handleSubmit}>
+  {getString('common.submit')}
+</ButtonPrimary>
+
+// Secondary action button
+<ButtonSecondary onPress={handleCancel}>
+  {getString('common.cancel')}
+</ButtonSecondary>
+
+// Outline button for less emphasis
+<ButtonOutline onPress={handleEdit}>
+  {getString('common.edit')}
+</ButtonOutline>
+
+// Transparent button for links/minimal actions
+<ButtonTransparent onPress={handleForgotPassword}>
+  {getString('auth.forgotPassword')}
+</ButtonTransparent>
+```
+
+### Button State Management
+
+```typescript
+const ExampleForm: React.FC = () => {
+  const isLoading = useSelector(selectLoading)
+  const { formState: { isValid } } = useForm()
+
+  return (
+    <ButtonPrimary
+      onPress={handleSubmit(onSubmit)}
+      disabled={!isValid || isLoading}
+      style={styles.submitButton}
+    >
+      {isLoading ? getString('common.processing') : getString('common.submit')}
+    </ButtonPrimary>
+  )
+}
+```
+
+## Input Component Patterns
+
+### Text Input with Theme Integration
+
+```typescript
+import { TextInput } from '@/components/TextInput'
+
+<TextInput
+  label={getString('field.label')}
+  placeholder={getString('field.placeholder')}
+  value={value}
+  onChangeText={onChangeText}
+  errorText={error}
+  leftComponent={<Icon name="email" />}
+  rightComponent={showPassword ? <EyeIcon /> : null}
+  secureTextEntry={!showPassword}
+  keyboardType="email-address"
+  autoComplete="email"
+  textContentType="emailAddress"
+  testID="email-input"
+/>
+```
+
+### Selection Components
+
+```typescript
+import { Selection } from '@/components/Selection'
+
+<Selection
+  data={options}
+  value={selectedValue}
+  onItemSelected={handleSelection}
+  label={getString('field.label')}
+  placeholder={getString('field.placeholder')}
+  renderItem={({ item }) => <Text>{item.label}</Text>}
+  getTitle={(item) => item.label}
+  getValue={(item) => item.value}
+  snapPoints={['50%']}
+  hasSearch={true}
+/>
+```
+
+## Layout Component Patterns
+
+### Screen Container Usage
+
+```typescript
+import { ScreenContainer } from '@/components/ScreenContainer'
+
+export const Screen: React.FC = () => {
+  return (
+    <ScreenContainer style={styles.container}>
+      {/* Screen content */}
+    </ScreenContainer>
+  )
+}
+```
+
+### Header Component
+
+```typescript
+import { Header } from '@/components/Header'
+
+<Header
+  title={getString('screen.title')}
+  hasBackButton={true}
+  onGoBack={handleGoBack}
+  rightView={<TouchableOpacity onPress={handleAction}>
+    <Icon name="settings" />
+  </TouchableOpacity>}
+  containerStyle={styles.headerContainer}
+/>
+```
+
+## Error Handling and Feedback
+
+### Toast Integration
+
+```typescript
+import { showToast, TOAST_TYPE } from '@/components/Toast'
+
+const handleAction = useCallback(async () => {
+  try {
+    await performAction()
+    showToast({
+      message: getString('success.message'),
+      type: TOAST_TYPE.SUCCESS,
+    })
+  } catch (error) {
+    showToast({
+      message: getString('error.message'),
+      type: TOAST_TYPE.ERROR,
+    })
+  }
+}, [])
+```
+
+### Loading States
+
+```typescript
+import { IndicatorDialog } from '@/components/IndicatorDialog'
+
+// Global loading indicator (managed by Redux)
+const showGlobalIndicator = useSelector(getLoadingIndicator)
+
+// Component-level loading
+const [isLoading, setIsLoading] = useState(false)
+
+{showGlobalIndicator && <IndicatorDialog />}
+```
+
+## Accessibility Patterns
+
+### Component Accessibility
+
+```typescript
+export const AccessibleComponent: React.FC = () => {
+  return (
+    <TouchableOpacity
+      onPress={handlePress}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={getString('button.accessibilityLabel')}
+      accessibilityHint={getString('button.accessibilityHint')}
+      testID="action-button"
+    >
+      <ThemedText>{getString('button.text')}</ThemedText>
+    </TouchableOpacity>
+  )
+}
+```
+
+### Form Accessibility
+
+```typescript
+<FormInput
+  control={control}
+  id="email"
+  label={getString('field.email')}
+  autoComplete="email"
+  textContentType="emailAddress"
+  keyboardType="email-address"
+  returnKeyType="next"
+  testID="email-input"
+  accessibilityLabel={getString('field.email.accessibility')}
+/>
+```
+
+## Animation and Interaction
+
+### Basic Animations
+
+```typescript
+import { Animated, useRef } from 'react'
+
+export const AnimatedComponent: React.FC = () => {
+  const fadeAnim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start()
+  }, [fadeAnim])
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Content */}
+    </Animated.View>
+  )
+}
+```
+
+### Interactive Components
+
+```typescript
+import { Draggable } from '@/components/Draggable'
+
+<Draggable
+  onDrag={handleDrag}
+  onDragRelease={handleDragRelease}
+  x={initialX}
+  y={initialY}
+>
+  <CustomContent />
+</Draggable>
+```
+
+## Modal and Bottom Sheet Patterns
+
+### Bottom Sheet Usage
+
+```typescript
+import { BottomSheet } from '@/components/BottomSheet'
+
+const [isVisible, setIsVisible] = useState(false)
+
+<BottomSheet
+  isVisible={isVisible}
+  onClose={() => setIsVisible(false)}
+  snapPoints={['25%', '50%', '90%']}
+  showSearchBox={true}
+  searchValue={searchQuery}
+  onSearchChange={handleSearchChange}
+>
+  <View style={styles.bottomSheetContent}>
+    {/* Content */}
+  </View>
+</BottomSheet>
+```
+
+## Best Practices
+
+1. **Component Hierarchy**: Use local components first, then rn-base-component, then RN base
+2. **Theme Integration**: Always use `@/themes/theme.ts` hook and theme colors
+3. **Responsive Design**: Use responsive functions for dimensions and fonts
+4. **Platform Handling**: Use `isIOS` from metrics instead of `Platform.OS`
+5. **Accessibility**: Include proper accessibility props and testIDs
+6. **Internationalization**: Use `getString()` for all text content
+7. **Type Safety**: Define proper TypeScript interfaces for all props
+8. **Error Handling**: Provide appropriate error states and feedback
+9. **Loading States**: Show loading indicators for async operations
+10. **Performance**: Use React.memo for expensive components, useCallback for functions
+11. **Consistent Styling**: Use theme metrics and colors throughout
+12. **Component Reusability**: Design components to be reusable across screens
+13. **State Management**: Connect to Redux appropriately, avoid prop drilling
+14. **Image Optimization**: Register all images in [src/themes/images.ts](mdc:src/themes/images.ts)
+15. **Form Integration**: Use form components for all user input
+
+## Common Anti-Patterns to Avoid
+
+❌ **Don't**: Use hardcoded colors or dimensions
+❌ **Don't**: Skip accessibility props and testIDs
+❌ **Don't**: Mix different UI libraries unnecessarily
+❌ **Don't**: Forget to use theme integration
+❌ **Don't**: Create components without proper TypeScript interfaces
+❌ **Don't**: Skip error states and loading indicators
+❌ **Don't**: Use React Native components directly when custom ones exist
+❌ **Don't**: Forget platform-specific considerations
+
+✅ **Do**: Follow the component priority system
+✅ **Do**: Use consistent theming throughout
+✅ **Do**: Provide comprehensive accessibility support
+✅ **Do**: Include proper loading and error states
+✅ **Do**: Use TypeScript strictly for all component props
+✅ **Do**: Follow responsive design principles
+✅ **Do**: Integrate with Redux state management appropriately
+description:
+globs:
+alwaysApply: false
+
+---

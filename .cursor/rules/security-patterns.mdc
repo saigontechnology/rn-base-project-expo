@@ -1,0 +1,700 @@
+# Security Patterns
+
+## Authentication Security
+
+### Token Management
+
+```typescript
+// src/services/auth/tokenManager.ts
+import { getData, setData, clearData } from '@/utilities/storage'
+import { TOKEN } from '@/constants'
+
+export class TokenManager {
+  // ✅ Secure token storage using encrypted storage
+  static async storeTokens(accessToken: string, refreshToken: string) {
+    try {
+      await setData(TOKEN.access_token, accessToken)
+      await setData(TOKEN.refresh_token, refreshToken)
+    } catch (error) {
+      console.error('Token storage failed:', error)
+      throw new Error('Failed to store authentication tokens')
+    }
+  }
+
+  static async getAccessToken(): Promise<string | null> {
+    try {
+      return await getData<string>(TOKEN.access_token)
+    } catch (error) {
+      console.error('Token retrieval failed:', error)
+      return null
+    }
+  }
+
+  static async getRefreshToken(): Promise<string | null> {
+    try {
+      return await getData<string>(TOKEN.refresh_token)
+    } catch (error) {
+      console.error('Refresh token retrieval failed:', error)
+      return null
+    }
+  }
+
+  static async clearTokens() {
+    try {
+      await clearData(TOKEN.access_token)
+      await clearData(TOKEN.refresh_token)
+    } catch (error) {
+      console.error('Token clearing failed:', error)
+    }
+  }
+
+  // ✅ Validate token format and expiration
+  static isValidToken(token: string): boolean {
+    try {
+      // Basic JWT format validation
+      const parts = token.split('.')
+      if (parts.length !== 3) return false
+
+      // Decode payload to check expiration
+      const payload = JSON.parse(atob(parts[1]))
+      const currentTime = Math.floor(Date.now() / 1000)
+
+      return payload.exp && payload.exp > currentTime
+    } catch {
+      return false
+    }
+  }
+}
+```
+
+### Password Security
+
+```typescript
+// src/utils/passwordSecurity.ts
+import CryptoJS from 'crypto-js'
+
+export class PasswordSecurity {
+  // ✅ Password strength validation
+  static validatePasswordStrength(password: string): {
+    isValid: boolean
+    score: number
+    feedback: string[]
+  } {
+    const feedback: string[] = []
+    let score = 0
+
+    // Length check
+    if (password.length >= 8) score += 1
+    else feedback.push('Password must be at least 8 characters long')
+
+    // Uppercase check
+    if (/[A-Z]/.test(password)) score += 1
+    else feedback.push('Password must include uppercase letters')
+
+    // Lowercase check
+    if (/[a-z]/.test(password)) score += 1
+    else feedback.push('Password must include lowercase letters')
+
+    // Number check
+    if (/[0-9]/.test(password)) score += 1
+    else feedback.push('Password must include numbers')
+
+    // Special character check
+    if (/[@#$!%*?&]/.test(password)) score += 1
+    else feedback.push('Password must include special characters')
+
+    // No whitespace
+    if (!/\s/.test(password)) score += 1
+    else feedback.push('Password should not contain whitespace')
+
+    // Common password check
+    if (!this.isCommonPassword(password)) score += 1
+    else feedback.push('Password is too common')
+
+    return {
+      isValid: score >= 6,
+      score,
+      feedback,
+    }
+  }
+
+  private static isCommonPassword(password: string): boolean {
+    const commonPasswords = [
+      'password',
+      '123456',
+      'password123',
+      'admin',
+      'qwerty',
+      '12345678',
+      '123456789',
+      'welcome',
+      'login',
+      'admin123',
+    ]
+    return commonPasswords.includes(password.toLowerCase())
+  }
+
+  // ✅ Secure password hashing (client-side pre-processing)
+  static hashPassword(password: string, salt: string): string {
+    // Note: This is for client-side pre-processing only
+    // Server should always perform the final hashing
+    return CryptoJS.PBKDF2(password, salt, {
+      keySize: 256 / 32,
+      iterations: 1000,
+    }).toString()
+  }
+}
+```
+
+## Data Protection
+
+### Sensitive Data Handling
+
+```typescript
+// src/utils/dataProtection.ts
+import { getData, setData } from '@/utilities/storage'
+
+export class DataProtection {
+  // ✅ Encrypt sensitive data before storage
+  static async storeSensitiveData(key: string, data: any) {
+    try {
+      // In a real app, use proper encryption library
+      const encryptedData = this.encrypt(JSON.stringify(data))
+      await setData(key, encryptedData)
+    } catch (error) {
+      console.error('Failed to store sensitive data:', error)
+      throw new Error('Data storage failed')
+    }
+  }
+
+  static async getSensitiveData<T>(key: string): Promise<T | null> {
+    try {
+      const encryptedData = await getData<string>(key)
+      if (!encryptedData) return null
+
+      const decryptedData = this.decrypt(encryptedData)
+      return JSON.parse(decryptedData)
+    } catch (error) {
+      console.error('Failed to retrieve sensitive data:', error)
+      return null
+    }
+  }
+
+  // ✅ Simple encryption (use proper encryption in production)
+  private static encrypt(data: string): string {
+    // This is a placeholder - use proper encryption library
+    // like react-native-crypto-js or @react-native-keychain
+    return btoa(data)
+  }
+
+  private static decrypt(encryptedData: string): string {
+    // This is a placeholder - use proper decryption
+    return atob(encryptedData)
+  }
+
+  // ✅ Data sanitization
+  static sanitizeInput(input: string): string {
+    return input
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/[<>]/g, '')
+      .trim()
+  }
+
+  // ✅ PII data masking for logs
+  static maskPII(data: any): any {
+    const masked = { ...data }
+
+    // Mask common PII fields
+    if (masked.phone) {
+      masked.phone = masked.phone.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2')
+    }
+
+    if (masked.email) {
+      masked.email = masked.email.replace(/(.{2}).*(@.*)/, '$1****$2')
+    }
+
+    if (masked.password) {
+      masked.password = '****'
+    }
+
+    return masked
+  }
+}
+```
+
+### Biometric Authentication
+
+```typescript
+// src/services/biometrics.ts
+import TouchID from 'react-native-touch-id'
+import { Alert } from 'react-native'
+
+export class BiometricAuth {
+  // ✅ Check biometric availability
+  static async isBiometricAvailable(): Promise<boolean> {
+    try {
+      const biometryType = await TouchID.isSupported()
+      return biometryType !== false
+    } catch {
+      return false
+    }
+  }
+
+  // ✅ Authenticate with biometrics
+  static async authenticate(reason: string): Promise<boolean> {
+    try {
+      await TouchID.authenticate(reason, {
+        title: getString('auth.biometric.title'),
+        subTitle: getString('auth.biometric.subtitle'),
+        description: reason,
+        fallbackLabel: getString('auth.biometric.fallback'),
+        cancelLabel: getString('common.cancel'),
+        showErrorDialog: true,
+        imageColor: '#e00606',
+        imageErrorColor: '#ff0000',
+      })
+      return true
+    } catch (error) {
+      console.error('Biometric authentication failed:', error)
+      return false
+    }
+  }
+
+  // ✅ Setup biometric authentication
+  static async setupBiometric(): Promise<boolean> {
+    const isAvailable = await this.isBiometricAvailable()
+
+    if (!isAvailable) {
+      Alert.alert(getString('auth.biometric.notAvailable'), getString('auth.biometric.setupDevice'))
+      return false
+    }
+
+    return new Promise(resolve => {
+      Alert.alert(getString('auth.biometric.setup'), getString('auth.biometric.setupDescription'), [
+        {
+          text: getString('common.cancel'),
+          onPress: () => resolve(false),
+        },
+        {
+          text: getString('auth.biometric.enable'),
+          onPress: async () => {
+            const success = await this.authenticate(getString('auth.biometric.setupReason'))
+            resolve(success)
+          },
+        },
+      ])
+    })
+  }
+}
+```
+
+## Network Security
+
+### API Security
+
+```typescript
+// src/services/networking/security.ts
+import { Platform } from 'react-native'
+
+export class NetworkSecurity {
+  // ✅ Certificate pinning configuration
+  static configureCertificatePinning() {
+    // This would typically be configured at the native level
+    // or using libraries like react-native-cert-pinner
+    console.log('Certificate pinning should be configured at native level')
+  }
+
+  // ✅ Request validation
+  static validateRequest(url: string, data: any): boolean {
+    // Validate URL format
+    if (!this.isValidURL(url)) {
+      console.error('Invalid URL format:', url)
+      return false
+    }
+
+    // Validate data size
+    if (this.getDataSize(data) > 10 * 1024 * 1024) {
+      // 10MB limit
+      console.error('Request data too large')
+      return false
+    }
+
+    return true
+  }
+
+  private static isValidURL(url: string): boolean {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private static getDataSize(data: any): number {
+    return new Blob([JSON.stringify(data)]).size
+  }
+
+  // ✅ Secure headers
+  static getSecureHeaders(token?: string): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-App-Version': '1.0.0', // App version for API compatibility
+      'X-Platform': Platform.OS,
+    }
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    return headers
+  }
+}
+```
+
+### SSL/TLS Configuration
+
+```typescript
+// src/services/networking/sslConfig.ts
+import { Platform } from 'react-native'
+
+export class SSLConfig {
+  // ✅ SSL configuration for production
+  static getSSLConfig() {
+    return {
+      // Require TLS 1.2 or higher
+      minimumTLSVersion: '1.2',
+
+      // Certificate validation
+      validateCertificate: true,
+
+      // Hostname verification
+      validateHostname: true,
+
+      // Public key pinning
+      pinnedCertificates: [
+        // Add your certificate hashes here
+      ],
+    }
+  }
+
+  // ✅ Development SSL bypass (development only)
+  static allowSelfSignedCertificates(): boolean {
+    return __DEV__ && Platform.OS === 'android'
+  }
+}
+```
+
+## Input Validation
+
+### Form Security
+
+```typescript
+// src/utils/inputValidation.ts
+import { z } from 'zod'
+
+export class InputValidation {
+  // ✅ SQL injection prevention
+  static sanitizeInput(input: string): string {
+    return input
+      .replace(/'/g, "''") // Escape single quotes
+      .replace(/;/g, '') // Remove semicolons
+      .replace(/--/g, '') // Remove SQL comments
+      .replace(/\/\*/g, '') // Remove SQL block comments start
+      .replace(/\*\//g, '') // Remove SQL block comments end
+  }
+
+  // ✅ XSS prevention
+  static sanitizeHTML(input: string): string {
+    return input
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;')
+  }
+
+  // ✅ Phone number validation
+  static validatePhoneNumber(phone: string, countryCode: string): boolean {
+    const phoneSchema = z
+      .string()
+      .min(8, 'Phone number too short')
+      .max(15, 'Phone number too long')
+      .regex(/^[0-9]+$/, 'Phone number must contain only digits')
+
+    const countryCodeSchema = z.string().regex(/^\+[1-9]\d{1,14}$/, 'Invalid country code')
+
+    try {
+      phoneSchema.parse(phone)
+      countryCodeSchema.parse(countryCode)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  // ✅ Email validation
+  static validateEmail(email: string): boolean {
+    const emailSchema = z.string().email('Invalid email format').max(254, 'Email too long') // RFC 5321 limit
+
+    try {
+      emailSchema.parse(email)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  // ✅ File upload validation
+  static validateFileUpload(file: { uri: string; type?: string; size?: number }): {
+    isValid: boolean
+    error?: string
+  } {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+    const maxSize = 5 * 1024 * 1024 // 5MB
+
+    if (file.type && !allowedTypes.includes(file.type)) {
+      return { isValid: false, error: 'File type not allowed' }
+    }
+
+    if (file.size && file.size > maxSize) {
+      return { isValid: false, error: 'File size too large' }
+    }
+
+    return { isValid: true }
+  }
+}
+```
+
+## Session Management
+
+### Session Security
+
+```typescript
+// src/services/auth/sessionManager.ts
+import { TokenManager } from './tokenManager'
+
+export class SessionManager {
+  private static sessionTimeout = 30 * 60 * 1000 // 30 minutes
+  private static lastActivity = Date.now()
+
+  // ✅ Session timeout management
+  static updateActivity() {
+    this.lastActivity = Date.now()
+  }
+
+  static isSessionExpired(): boolean {
+    return Date.now() - this.lastActivity > this.sessionTimeout
+  }
+
+  static async checkSession(): Promise<boolean> {
+    // Check if session is expired
+    if (this.isSessionExpired()) {
+      await this.endSession()
+      return false
+    }
+
+    // Check if token is valid
+    const token = await TokenManager.getAccessToken()
+    if (!token || !TokenManager.isValidToken(token)) {
+      await this.endSession()
+      return false
+    }
+
+    return true
+  }
+
+  // ✅ Secure session termination
+  static async endSession() {
+    try {
+      // Clear tokens
+      await TokenManager.clearTokens()
+
+      // Clear sensitive data
+      await this.clearSensitiveData()
+
+      // Reset activity tracking
+      this.lastActivity = 0
+
+      console.log('Session ended securely')
+    } catch (error) {
+      console.error('Error ending session:', error)
+    }
+  }
+
+  private static async clearSensitiveData() {
+    // Clear any cached sensitive data
+    // Implementation depends on your data storage strategy
+  }
+
+  // ✅ Session monitoring
+  static startSessionMonitoring() {
+    setInterval(async () => {
+      const isValid = await this.checkSession()
+      if (!isValid) {
+        // Navigate to login screen
+        // This would typically be handled by your navigation system
+        console.log('Session expired, redirecting to login')
+      }
+    }, 60000) // Check every minute
+  }
+}
+```
+
+## Debug and Development Security
+
+### Development Security
+
+```typescript
+// src/utils/debugSecurity.ts
+export class DebugSecurity {
+  // ✅ Secure logging
+  static secureLog(message: string, data?: any) {
+    if (__DEV__) {
+      if (data) {
+        const maskedData = DataProtection.maskPII(data)
+        console.log(message, maskedData)
+      } else {
+        console.log(message)
+      }
+    }
+  }
+
+  // ✅ Production log filtering
+  static productionLog(level: 'info' | 'warn' | 'error', message: string, data?: any) {
+    if (__DEV__) {
+      console[level](message, data)
+    } else {
+      // In production, only log errors and send to crash reporting
+      if (level === 'error') {
+        // Send to crash reporting service
+        console.error(message, data)
+      }
+    }
+  }
+
+  // ✅ Remove debug code in production
+  static isDebugMode(): boolean {
+    return __DEV__
+  }
+
+  // ✅ Prevent debug access in production
+  static preventDebugAccess() {
+    if (!__DEV__) {
+      // Disable debug menus, dev tools, etc.
+      console.warn = () => {}
+      console.log = () => {}
+      console.info = () => {}
+    }
+  }
+}
+```
+
+## Security Checklist
+
+### Implementation Checklist
+
+- [ ] Authentication tokens stored securely (encrypted storage)
+- [ ] Password strength validation implemented
+- [ ] Biometric authentication available where appropriate
+- [ ] Certificate pinning configured for production
+- [ ] Input validation implemented for all forms
+- [ ] SQL injection prevention measures in place
+- [ ] XSS prevention for any dynamic content
+- [ ] File upload validation and restrictions
+- [ ] Session timeout and management implemented
+- [ ] Sensitive data encrypted at rest
+- [ ] PII data masked in logs
+- [ ] HTTPS enforced for all network requests
+- [ ] Deep link validation implemented
+- [ ] Debug code removed from production builds
+- [ ] Error messages don't expose sensitive information
+- [ ] Rate limiting handled gracefully
+- [ ] Proper logout functionality implemented
+
+### Security Testing
+
+```typescript
+// __tests__/security.test.ts
+import { PasswordSecurity } from '@/utils/passwordSecurity'
+import { InputValidation } from '@/utils/inputValidation'
+
+describe('Security Tests', () => {
+  describe('Password Security', () => {
+    it('should reject weak passwords', () => {
+      const result = PasswordSecurity.validatePasswordStrength('123')
+      expect(result.isValid).toBe(false)
+      expect(result.feedback.length).toBeGreaterThan(0)
+    })
+
+    it('should accept strong passwords', () => {
+      const result = PasswordSecurity.validatePasswordStrength('MyStr0ng!Pass')
+      expect(result.isValid).toBe(true)
+      expect(result.score).toBeGreaterThan(5)
+    })
+  })
+
+  describe('Input Validation', () => {
+    it('should sanitize SQL injection attempts', () => {
+      const maliciousInput = "'; DROP TABLE users; --"
+      const sanitized = InputValidation.sanitizeInput(maliciousInput)
+      expect(sanitized).not.toContain('DROP TABLE')
+    })
+
+    it('should sanitize XSS attempts', () => {
+      const maliciousInput = '<script>alert("xss")</script>'
+      const sanitized = InputValidation.sanitizeHTML(maliciousInput)
+      expect(sanitized).not.toContain('<script>')
+    })
+  })
+})
+```
+
+### Penetration Testing Preparation
+
+```bash
+# ✅ Security testing commands
+yarn test:security              # Run security-specific tests
+yarn analyze:bundle            # Check for sensitive data in bundle
+yarn audit                     # Check for vulnerable dependencies
+yarn test:e2e:security         # Run security-focused E2E tests
+```
+
+### Production Security Monitoring
+
+```typescript
+// src/services/securityMonitoring.ts
+export class SecurityMonitoring {
+  // ✅ Monitor suspicious activities
+  static logSecurityEvent(event: string, details: any) {
+    const securityEvent = {
+      timestamp: new Date().toISOString(),
+      event,
+      details: DataProtection.maskPII(details),
+      userId: 'current-user-id',
+      sessionId: 'current-session-id',
+    }
+
+    // Send to security monitoring service
+    console.log('Security Event:', securityEvent)
+  }
+
+  // ✅ Track failed authentication attempts
+  static trackFailedAuth(attempt: { phone?: string; reason: string }) {
+    this.logSecurityEvent('FAILED_AUTH', attempt)
+  }
+
+  // ✅ Track suspicious API requests
+  static trackSuspiciousRequest(request: { url: string; data: any }) {
+    this.logSecurityEvent('SUSPICIOUS_REQUEST', request)
+  }
+}
+```
+
+description:
+globs:
+alwaysApply: false
+
+---

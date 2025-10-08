@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "Figma": {
+      "url": "http://127.0.0.1:3845/mcp"
+    },
+    "vibedev-specs": {
+      "command": "npx",
+      "args": ["vibedev-specs-mcp@latest"],
+      "env": {},
+      "disabled": false
+    }
+  }
+}

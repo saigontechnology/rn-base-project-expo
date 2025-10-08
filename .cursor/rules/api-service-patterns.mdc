@@ -1,0 +1,520 @@
+# API Service Patterns and Networking
+
+## API Architecture Overview
+
+The Mobile app uses a layered API architecture with consistent request/response patterns and comprehensive error handling.
+
+### API Service Structure
+
+```
+src/services/
+├── api/
+│   ├── api.ts              # API endpoint constants
+│   ├── index.ts            # Export definitions and types
+│   ├── user.ts             # User authentication and profile
+│   ├── premia.ts           # Premia store services
+│   ├── retailers.ts        # Retailer location services
+│   ├── vouchers.ts         # Voucher management
+│   ├── pets.ts             # Pet management
+│   ├── points.ts           # Points and transactions
+│   ├── scanning.ts         # QR code and product scanning
+│   └── notifications.ts    # Push notifications
+└── networking/
+    ├── axios.ts            # Axios instance configuration
+    └── index.ts            # HTTP method wrappers
+```
+
+## API Endpoint Organization
+
+### Endpoint Constants Structure
+
+```typescript
+// Authentication API Endpoints (12 endpoints)
+export const AUTH_API = {
+  // Registration Flow
+  register: '/auth/register',
+  verifyRegisterOtp: '/auth/verify-register-otp',
+  setupPassword: '/auth/setup-password',
+
+  // Login Flow
+  login: '/auth/login',
+
+  // Password Reset Flow
+  forgotPassword: '/auth/forgot-password',
+  verifyResetOtp: '/auth/verify-reset-otp',
+  resetPassword: '/auth/reset-password',
+
+  // Session Management
+  refreshToken: '/auth/refresh-token',
+  profile: '/auth/profile',
+  logout: '/auth/logout',
+  completeFirstLogin: '/auth/complete-first-login',
+  useReferralCode: '/auth/use-referral-code',
+}
+
+// Feature-specific API groups
+export const USER_API = {
+  /* user management */
+}
+export const PREMIA_API = {
+  /* premia store */
+}
+export const RETAILER_API = {
+  /* retailer locations */
+}
+// ... other API groups
+```
+
+## Request Pattern Types
+
+### RequestWithBody Pattern
+
+```typescript
+// Core request type for POST/PUT operations
+export type RequestWithBody<P> = {
+  body: P
+  config?: Record<string, string> // For headers like Content-Type
+}
+
+// Usage in API functions
+export const loginApi = async (req: RequestWithBody<LoginRequest>) =>
+  await postFormDataRequest<ApiBaseResponse<AuthResponse>>({
+    url: AUTH_API.login,
+    body: convertToFormData(req.body),
+    config: { 'Content-Type': 'multipart/form-data' },
+  })
+```
+
+### HTTP Method Patterns
+
+#### GET Requests (Direct Parameters)
+
+```typescript
+// Simple GET with query parameters
+export const getRetailersApi = async (params?: {
+  page?: number
+  limit?: number
+  store_type?: 'pet_shop' | 'vet' | 'grooming' | 'hotel' | 'home_delivery'
+}) =>
+  await getRequest<ApiBaseResponse<RetailersListResponse>>({
+    url: RETAILER_API.getRetailers,
+    params,
+  })
+
+// GET without parameters
+export const getPointsBalanceApi = async () =>
+  await getRequest<ApiBaseResponse<PointsBalance>>({
+    url: POINTS_API.getBalance,
+  })
+```
+
+#### POST Requests (RequestWithBody)
+
+```typescript
+// JSON POST request
+export const redeemPremiaApi = async (req: RequestWithBody<RedemptionRequest>) =>
+  await postRequest<ApiBaseResponse<PremiaRedemption>>({
+    url: PREMIA_API.redeemPremia,
+    body: req.body,
+  })
+
+// FormData POST request
+export const registerApi = async (req: RequestWithBody<RegisterRequest>) =>
+  await postFormDataRequest<ApiBaseResponse<RegisterResponse>>({
+    url: AUTH_API.register,
+    body: convertToFormData(req.body),
+    config: { 'Content-Type': 'multipart/form-data' },
+  })
+```
+
+#### PUT/DELETE Requests
+
+```typescript
+// PUT request for updates
+export const updateUserProfileApi = async (req: RequestWithBody<UpdateProfileRequest>) =>
+  await putRequest<ApiBaseResponse<User>>({
+    url: USER_API.updateProfile,
+    body: req.body,
+  })
+
+// DELETE request with ID parameter
+export const deletePetApi = async (petId: string) =>
+  await deleteRequest<ApiBaseResponse<void>>({
+    url: `${PET_API.deletePet}/${petId}`,
+  })
+```
+
+## Response Type Patterns
+
+### Base Response Interface
+
+```typescript
+export interface ApiBaseResponse<T = unknown> {
+  error: AxiosErrorResponse | null
+  success: boolean
+  message?: string
+  status: number
+  timestamp?: string
+  data?: T
+}
+
+// Error response structure
+export interface AxiosErrorResponse {
+  data: Record<string, string[]>
+  detail: unknown
+  message: string
+  requestId: string
+  responseId: string
+  success: false
+}
+```
+
+### Feature-Specific Response Types
+
+```typescript
+// Authentication responses
+export interface RegisterResponse extends ApiBaseResponse {
+  data: {
+    phone: string
+    expires_in: number
+    remaining_attempts: number
+    next_step: 'verify_otp'
+    otp?: string // Only in development
+  }
+}
+
+export interface AuthResponse extends ApiBaseResponse {
+  data: {
+    access_token: string
+    refresh_token: string
+    token_type: 'Bearer'
+    expires_in: number
+    user: User
+  }
+}
+
+// Paginated responses
+export interface PremiaListResponse extends ApiBaseResponse {
+  data: {
+    premias: Premia[]
+    pagination: {
+      current_page: number
+      per_page: number
+      total: number
+      last_page: number
+    }
+  }
+}
+```
+
+## Networking Layer Configuration
+
+### Axios Instance Setup
+
+```typescript
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import { getData, setData } from '@/utilities/storage'
+import { RESPONSE_CODE, TOKEN } from '@/constants'
+
+const instance: AxiosInstance = axios.create({
+  baseURL: process.env.EXPO_PUBLIC_API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+})
+
+// Request interceptor for auth token
+instance.interceptors.request.use(async config => {
+  const token = await getData<string>(TOKEN.token)
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// Response interceptor for token refresh
+instance.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    const originalConfig = error?.config
+    const token = await getData<string>(TOKEN.token)
+    const refreshToken = await getData<string>(TOKEN.refreshToken)
+    const isTokenExpired = token && RESPONSE_CODE.unauthorized.includes(error?.response?.status as number)
+
+    if (isTokenExpired && refreshToken) {
+      // Handle token refresh logic
+      return handleRefreshToken(refreshToken, originalConfig)
+    }
+
+    return Promise.reject(error)
+  },
+)
+```
+
+### HTTP Method Wrappers
+
+```typescript
+// GET request wrapper
+export async function getRequest<TResponse>(request: { url: string; params?: unknown }): Promise<TResponse> {
+  return axiosAPI<TResponse>({
+    url: request.url,
+    method: 'GET',
+    params: request.params,
+  })
+}
+
+// POST request wrapper
+export async function postRequest<TResponse, TRequest = unknown>(request: {
+  url: string
+  body: TRequest
+  config?: Record<string, string>
+}): Promise<TResponse> {
+  return axiosAPI<TResponse, TRequest>({
+    url: request.url,
+    method: 'POST',
+    body: request.body,
+    config: request.config,
+  })
+}
+
+// FormData POST wrapper
+export async function postFormDataRequest<TResponse>(request: {
+  url: string
+  body: FormData
+  config?: Record<string, string>
+}): Promise<TResponse> {
+  return axiosAPI<TResponse, FormData>({
+    url: request.url,
+    method: 'POST',
+    body: request.body,
+    config: { 'Content-Type': 'multipart/form-data', ...request.config },
+  })
+}
+```
+
+## FormData Conversion Patterns
+
+### Object to FormData Helper
+
+```typescript
+const convertToFormData = (data: unknown): FormData => {
+  const formData = new FormData()
+  const obj = data as Record<string, unknown>
+
+  Object.keys(obj).forEach(key => {
+    const value = obj[key]
+    if (value !== undefined && value !== null) {
+      formData.append(key, String(value))
+    }
+  })
+
+  return formData
+}
+
+// Usage in API functions
+export const registerApi = async (req: RequestWithBody<RegisterRequest>) =>
+  await postFormDataRequest<ApiBaseResponse<RegisterResponse>>({
+    url: AUTH_API.register,
+    body: convertToFormData(req.body),
+    config: { 'Content-Type': 'multipart/form-data' },
+  })
+```
+
+## Error Handling Patterns
+
+### Response Error Checking
+
+```typescript
+// Standard error checking pattern
+const response: ApiResponse = await apiCall()
+
+if (RESPONSE_CODE.success.includes(response.status)) {
+  // Handle success
+  return response.data
+} else {
+  // Handle API error response
+  const errorMessage = response?.error?.message || 'Operation failed'
+  throw new Error(errorMessage)
+}
+```
+
+### Error Response Structure
+
+```typescript
+// Validation errors (422)
+{
+  "success": false,
+  "message": "Validation failed",
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": {
+      "phone": ["Phone number is required"],
+      "password": ["Password must be at least 8 characters"]
+    }
+  },
+  "timestamp": "2025-01-15T10:00:00Z"
+}
+
+// Business logic errors
+{
+  "success": false,
+  "message": "Insufficient points for this redemption",
+  "error": {
+    "code": "INSUFFICIENT_POINTS",
+    "details": "You need 200 points but only have 150 points",
+    "required_points": 200,
+    "available_points": 150
+  },
+  "timestamp": "2025-01-15T10:00:00Z"
+}
+```
+
+## Authentication Flow Patterns
+
+### Token Management
+
+```typescript
+// Login API with token storage
+export const loginApi = async (req: RequestWithBody<LoginRequest>) => {
+  const response = await postFormDataRequest<ApiBaseResponse<AuthResponse>>({
+    url: AUTH_API.login,
+    body: convertToFormData(req.body),
+    config: { 'Content-Type': 'multipart/form-data' },
+  })
+
+  // Store tokens after successful login
+  if (RESPONSE_CODE.success.includes(response.status)) {
+    await setData('access_token', response.data.access_token)
+    await setData('refresh_token', response.data.refresh_token)
+  }
+
+  return response
+}
+
+// Token refresh handling
+const handleRefreshToken = async (refreshToken: string, originalConfig: any) => {
+  try {
+    const response = await refreshTokenApi({ body: { refresh_token: refreshToken } })
+
+    if (RESPONSE_CODE.success.includes(response.status)) {
+      await setData('access_token', response.data.access_token)
+      await setData('refresh_token', response.data.refresh_token)
+
+      // Retry original request with new token
+      originalConfig.headers.Authorization = `Bearer ${response.data.access_token}`
+      return instance(originalConfig)
+    }
+  } catch (error) {
+    // Redirect to login if refresh fails
+    await clearAllData()
+    router.push(RouteKeys.SignIn)
+  }
+}
+```
+
+## File Upload Patterns
+
+### Image/File Upload
+
+```typescript
+// Pet photo upload with FormData
+export const uploadPetPhotoApi = async (petId: string, req: RequestWithBody<{ photo: any }>) => {
+  const formData = new FormData()
+  formData.append('photo', {
+    uri: req.body.photo.uri,
+    type: req.body.photo.type,
+    name: req.body.photo.fileName || 'photo.jpg',
+  } as any)
+
+  return await postFormDataRequest<ApiBaseResponse<Pet>>({
+    url: `${PET_API.uploadPetPhoto}/${petId}/upload-photo`,
+    body: formData,
+    config: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+```
+
+## Pagination and Filtering
+
+### Query Parameter Patterns
+
+```typescript
+// Paginated list with filters
+export const getNotificationsApi = async (params?: {
+  page?: number
+  limit?: number
+  type?: 'premia_status' | 'voucher_new' | 'voucher_expired' | 'referral_success' | 'promotional'
+}) =>
+  await getRequest<
+    ApiBaseResponse<{
+      notifications: Notification[]
+      pagination: {
+        current_page: number
+        per_page: number
+        total: number
+        last_page: number
+      }
+    }>
+  >({
+    url: NOTIFICATION_API.getNotifications,
+    params,
+  })
+
+// Search with dynamic parameters
+export const searchRetailersApi = async (params: {
+  keyword?: string
+  latitude?: number
+  longitude?: number
+  radius?: number
+  store_type?: string
+}) =>
+  await getRequest<
+    ApiBaseResponse<{
+      retailers: Retailer[]
+      total: number
+    }>
+  >({
+    url: RETAILER_API.searchRetailers,
+    params,
+  })
+```
+
+## Best Practices
+
+1. **Consistent Patterns**: Use RequestWithBody for POST/PUT, direct params for GET
+2. **Type Safety**: Define specific response types for all API calls
+3. **Error Handling**: Always check response.success before processing data
+4. **Token Management**: Handle authentication and refresh tokens automatically
+5. **FormData**: Use for file uploads and when API expects multipart/form-data
+6. **Endpoint Organization**: Group related endpoints by feature
+7. **Request Timeouts**: Set appropriate timeouts for different operation types
+8. **Response Validation**: Validate response structure before using data
+9. **Error Messages**: Provide meaningful error messages for users
+10. **Loading States**: Integrate with Redux for loading indicators
+11. **Retry Logic**: Implement retry for network failures
+12. **Cache Management**: Consider caching for frequently accessed data
+
+## Common Anti-Patterns to Avoid
+
+❌ **Don't**: Mix RequestWithBody pattern with direct parameter passing inconsistently
+❌ **Don't**: Skip error response handling
+❌ **Don't**: Hard-code API endpoints instead of using constants
+❌ **Don't**: Forget to handle token refresh scenarios
+❌ **Don't**: Skip type definitions for API responses
+❌ **Don't**: Use generic error messages without context
+❌ **Don't**: Make API calls directly from components (use Redux Saga)
+
+✅ **Do**: Follow consistent request/response patterns
+✅ **Do**: Define comprehensive TypeScript types
+✅ **Do**: Handle all error scenarios appropriately
+✅ **Do**: Use centralized endpoint constants
+✅ **Do**: Implement proper authentication flows
+✅ **Do**: Provide meaningful error feedback to users
+✅ **Do**: Use Redux Saga for all API operations
+description:
+globs:
+alwaysApply: false
+
+---

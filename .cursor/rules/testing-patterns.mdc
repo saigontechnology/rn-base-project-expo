@@ -1,0 +1,878 @@
+# Testing Patterns
+
+## Testing Configuration
+
+### Jest Setup
+
+The project uses Jest with Expo configuration. Key files:
+
+- [jest.config.js](mdc:jest.config.js) - Main Jest configuration
+- [package.json](mdc:package.json) - Testing scripts and dependencies
+
+```javascript
+// jest.config.js
+module.exports = {
+  preset: 'jest-expo',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/__tests__/providers/'],
+  transformIgnorePatterns: [
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|rn-base-component|react-native-svg)',
+  ],
+  collectCoverage: true,
+  collectCoverageFrom: ['**/*.{js,jsx,ts,tsx}'],
+  coverageDirectory: 'coverage',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  verbose: true,
+}
+```
+
+### Testing Scripts
+
+```bash
+# Run all tests
+yarn test
+
+# Run tests with coverage
+yarn test:coverage
+
+# Run tests in watch mode
+yarn test --watch
+
+# Run specific test file
+yarn test Button.test.tsx
+
+# Run tests matching pattern
+yarn test --testNamePattern="should render correctly"
+
+# Type checking
+yarn type-check
+```
+
+## Component Testing
+
+### Basic Component Tests
+
+```typescript
+// __tests__/components/ThemedText.test.tsx
+import React from 'react'
+import { render } from '@testing-library/react-native'
+import { ThemedText } from '@/components/ThemedText'
+
+describe('ThemedText', () => {
+  it('renders correctly with default props', () => {
+    const { getByText } = render(
+      <ThemedText>Hello World</ThemedText>
+    )
+
+    expect(getByText('Hello World')).toBeTruthy()
+  })
+
+  it('applies custom style', () => {
+    const customStyle = { fontSize: 20 }
+    const { getByText } = render(
+      <ThemedText style={customStyle}>Styled Text</ThemedText>
+    )
+
+    const textElement = getByText('Styled Text')
+    expect(textElement.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining(customStyle)])
+    )
+  })
+
+  it('uses correct theme colors', () => {
+    const { getByText } = render(
+      <ThemedText type="title">Title Text</ThemedText>
+    )
+
+    // Test theme integration
+    expect(getByText('Title Text')).toBeTruthy()
+  })
+})
+```
+
+### Form Component Tests
+
+```typescript
+// __tests__/components/form/FormInput.test.tsx
+import React from 'react'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { useForm } from 'react-hook-form'
+import { FormInput } from '@/components/form/FormInput'
+
+const TestWrapper: React.FC<{ onSubmit: jest.Mock }> = ({ onSubmit }) => {
+  const { control, handleSubmit } = useForm({
+    defaultValues: { email: '' }
+  })
+
+  return (
+    <>
+      <FormInput
+        control={control}
+        id="email"
+        label="Email"
+        placeholder="Enter email"
+        testID="email-input"
+      />
+      <TouchableOpacity onPress={handleSubmit(onSubmit)} testID="submit-button">
+        <Text>Submit</Text>
+      </TouchableOpacity>
+    </>
+  )
+}
+
+describe('FormInput', () => {
+  const mockOnSubmit = jest.fn()
+
+  beforeEach(() => {
+    mockOnSubmit.mockClear()
+  })
+
+  it('renders with label and placeholder', () => {
+    const { getByText, getByPlaceholderText } = render(
+      <TestWrapper onSubmit={mockOnSubmit} />
+    )
+
+    expect(getByText('Email')).toBeTruthy()
+    expect(getByPlaceholderText('Enter email')).toBeTruthy()
+  })
+
+  it('handles text input correctly', async () => {
+    const { getByTestId } = render(
+      <TestWrapper onSubmit={mockOnSubmit} />
+    )
+
+    const input = getByTestId('email-input')
+    fireEvent.changeText(input, 'test@example.com')
+
+    const submitButton = getByTestId('submit-button')
+    fireEvent.press(submitButton)
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledWith({ email: 'test@example.com' })
+    })
+  })
+
+  it('displays validation errors', async () => {
+    const schema = z.object({
+      email: z.string().email('Invalid email format')
+    })
+
+    const TestWrapperWithValidation: React.FC = () => {
+      const { control, handleSubmit } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { email: '' }
+      })
+
+      return (
+        <FormInput
+          control={control}
+          id="email"
+          label="Email"
+          placeholder="Enter email"
+          testID="email-input"
+        />
+      )
+    }
+
+    const { getByTestId, getByText } = render(<TestWrapperWithValidation />)
+
+    const input = getByTestId('email-input')
+    fireEvent.changeText(input, 'invalid-email')
+    fireEvent(input, 'blur')
+
+    await waitFor(() => {
+      expect(getByText('Invalid email format')).toBeTruthy()
+    })
+  })
+})
+```
+
+### Screen Component Tests
+
+```typescript
+// __tests__/screens/auth/SignInScreen.test.tsx
+import React from 'react'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Provider } from 'react-redux'
+import { NavigationContainer } from '@react-navigation/native'
+import { createMockStore } from '../../__mocks__/store'
+import { SignInScreen } from '@/screens/auth/SignInScreen'
+
+const renderWithProviders = (component: React.ReactElement) => {
+  const store = createMockStore()
+
+  return render(
+    <Provider store={store}>
+      <NavigationContainer>
+        {component}
+      </NavigationContainer>
+    </Provider>
+  )
+}
+
+describe('SignInScreen', () => {
+  it('renders all form elements', () => {
+    const { getByTestId, getByText } = renderWithProviders(<SignInScreen />)
+
+    expect(getByTestId('phone-input')).toBeTruthy()
+    expect(getByTestId('password-input')).toBeTruthy()
+    expect(getByText('Sign In')).toBeTruthy()
+    expect(getByText('Forgot Password?')).toBeTruthy()
+  })
+
+  it('handles form submission', async () => {
+    const { getByTestId, getByText } = renderWithProviders(<SignInScreen />)
+
+    const phoneInput = getByTestId('phone-input')
+    const passwordInput = getByTestId('password-input')
+    const signInButton = getByText('Sign In')
+
+    fireEvent.changeText(phoneInput, '1234567890')
+    fireEvent.changeText(passwordInput, 'Password123!')
+    fireEvent.press(signInButton)
+
+    // Test that loading state is shown
+    await waitFor(() => {
+      expect(getByText('Signing in...')).toBeTruthy()
+    })
+  })
+
+  it('displays validation errors for invalid input', async () => {
+    const { getByTestId, getByText } = renderWithProviders(<SignInScreen />)
+
+    const phoneInput = getByTestId('phone-input')
+    const signInButton = getByText('Sign In')
+
+    fireEvent.changeText(phoneInput, '123') // Invalid phone
+    fireEvent.press(signInButton)
+
+    await waitFor(() => {
+      expect(getByText(/phone number/i)).toBeTruthy()
+    })
+  })
+})
+```
+
+## Redux Testing
+
+### Reducer Tests
+
+```typescript
+// __tests__/stores/reducers/user.test.ts
+import userReducer, { userActions } from '@/stores/reducers/user'
+import { UserState } from '@/stores/types/user'
+
+const initialState: UserState = {
+  profile: null,
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+}
+
+describe('userReducer', () => {
+  it('should return initial state', () => {
+    expect(userReducer(undefined, { type: 'unknown' })).toEqual(initialState)
+  })
+
+  it('should handle loginRequest', () => {
+    const action = userActions.loginRequest({ phone: '+84123456789', password: 'password' })
+    const state = userReducer(initialState, action)
+
+    expect(state.loading).toBe(true)
+    expect(state.error).toBeNull()
+  })
+
+  it('should handle loginSuccess', () => {
+    const mockUser = {
+      id: '1',
+      phone: '+84123456789',
+      firstName: 'John',
+      lastName: 'Doe',
+    }
+
+    const action = userActions.loginSuccess(mockUser)
+    const state = userReducer(initialState, action)
+
+    expect(state.profile).toEqual(mockUser)
+    expect(state.isAuthenticated).toBe(true)
+    expect(state.loading).toBe(false)
+    expect(state.error).toBeNull()
+  })
+
+  it('should handle loginFailure', () => {
+    const errorMessage = 'Invalid credentials'
+    const action = userActions.loginFailure(errorMessage)
+    const state = userReducer(initialState, action)
+
+    expect(state.profile).toBeNull()
+    expect(state.isAuthenticated).toBe(false)
+    expect(state.loading).toBe(false)
+    expect(state.error).toBe(errorMessage)
+  })
+})
+```
+
+### Saga Tests
+
+```typescript
+// __tests__/stores/saga/user.test.ts
+import { runSaga } from 'redux-saga'
+import { call, put } from 'redux-saga/effects'
+import { loginSaga } from '@/stores/saga/user'
+import { userActions } from '@/stores/reducers/user'
+import { loginApi } from '@/services/api/user'
+
+describe('loginSaga', () => {
+  it('should handle successful login', async () => {
+    const mockUser = {
+      id: '1',
+      phone: '+84123456789',
+      firstName: 'John',
+      lastName: 'Doe',
+    }
+
+    const mockResponse = {
+      success: true,
+      data: mockUser,
+      message: 'Login successful',
+    }
+
+    const dispatched: any[] = []
+    const saga = runSaga(
+      {
+        dispatch: action => dispatched.push(action),
+        getState: () => ({}),
+      },
+      loginSaga,
+      userActions.loginRequest({ phone: '+84123456789', password: 'password' }),
+    )
+
+    // Mock the API call
+    jest.spyOn(require('@/services/api/user'), 'loginApi').mockResolvedValue(mockResponse)
+
+    await saga.toPromise()
+
+    expect(dispatched).toContainEqual(
+      expect.objectContaining({
+        type: userActions.loginSuccess.type,
+        payload: mockUser,
+      }),
+    )
+  })
+
+  it('should handle login failure', async () => {
+    const errorMessage = 'Invalid credentials'
+    const mockResponse = {
+      success: false,
+      message: errorMessage,
+    }
+
+    const dispatched: any[] = []
+    const saga = runSaga(
+      {
+        dispatch: action => dispatched.push(action),
+        getState: () => ({}),
+      },
+      loginSaga,
+      userActions.loginRequest({ phone: '+84123456789', password: 'wrongpassword' }),
+    )
+
+    jest.spyOn(require('@/services/api/user'), 'loginApi').mockResolvedValue(mockResponse)
+
+    await saga.toPromise()
+
+    expect(dispatched).toContainEqual(
+      expect.objectContaining({
+        type: userActions.loginFailure.type,
+        payload: errorMessage,
+      }),
+    )
+  })
+
+  it('should handle network errors', async () => {
+    const networkError = new Error('Network Error')
+
+    const dispatched: any[] = []
+    const saga = runSaga(
+      {
+        dispatch: action => dispatched.push(action),
+        getState: () => ({}),
+      },
+      loginSaga,
+      userActions.loginRequest({ phone: '+84123456789', password: 'password' }),
+    )
+
+    jest.spyOn(require('@/services/api/user'), 'loginApi').mockRejectedValue(networkError)
+
+    await saga.toPromise()
+
+    expect(dispatched).toContainEqual(
+      expect.objectContaining({
+        type: userActions.loginFailure.type,
+        payload: 'Network Error',
+      }),
+    )
+  })
+})
+```
+
+### Selector Tests
+
+```typescript
+// __tests__/stores/selectors/user.test.ts
+import { selectUserInfo, selectIsAuthenticated } from '@/stores/selectors/user'
+import { RootState } from '@/stores/types'
+
+const createMockState = (userState: any): RootState =>
+  ({
+    user: userState,
+    app: {},
+    loading: {},
+    // ... other state slices
+  }) as RootState
+
+describe('user selectors', () => {
+  describe('selectUserInfo', () => {
+    it('should return user profile when authenticated', () => {
+      const mockUser = {
+        id: '1',
+        phone: '+84123456789',
+        firstName: 'John',
+        lastName: 'Doe',
+      }
+
+      const state = createMockState({
+        profile: mockUser,
+        isAuthenticated: true,
+      })
+
+      expect(selectUserInfo(state)).toEqual(mockUser)
+    })
+
+    it('should return null when not authenticated', () => {
+      const state = createMockState({
+        profile: null,
+        isAuthenticated: false,
+      })
+
+      expect(selectUserInfo(state)).toBeNull()
+    })
+  })
+
+  describe('selectIsAuthenticated', () => {
+    it('should return true when user is authenticated', () => {
+      const state = createMockState({
+        isAuthenticated: true,
+      })
+
+      expect(selectIsAuthenticated(state)).toBe(true)
+    })
+
+    it('should return false when user is not authenticated', () => {
+      const state = createMockState({
+        isAuthenticated: false,
+      })
+
+      expect(selectIsAuthenticated(state)).toBe(false)
+    })
+  })
+})
+```
+
+## API Testing
+
+### API Service Tests
+
+```typescript
+// __tests__/services/api/user.test.ts
+import { loginApi, registerApi } from '@/services/api/user'
+import { mockAxiosInstance } from '../../__mocks__/axios'
+
+jest.mock('@/services/networking/axios', () => mockAxiosInstance)
+
+describe('User API', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  describe('loginApi', () => {
+    it('should make POST request to login endpoint', async () => {
+      const mockResponse = {
+        data: {
+          success: true,
+          data: { id: '1', phone: '+84123456789' },
+          message: 'Login successful',
+        },
+      }
+
+      mockAxiosInstance.post.mockResolvedValue(mockResponse)
+
+      const result = await loginApi({
+        body: { phone: '+84123456789', password: 'password' },
+      })
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/auth/login',
+        JSON.stringify({ phone: '+84123456789', password: 'password' }),
+        expect.any(Object),
+      )
+
+      expect(result).toEqual(mockResponse.data)
+    })
+
+    it('should handle API errors', async () => {
+      const mockError = {
+        response: {
+          status: 401,
+          data: { message: 'Invalid credentials' },
+        },
+      }
+
+      mockAxiosInstance.post.mockRejectedValue(mockError)
+
+      await expect(
+        loginApi({ body: { phone: '+84123456789', password: 'wrongpassword' } }),
+      ).rejects.toMatchObject(mockError)
+    })
+  })
+
+  describe('registerApi', () => {
+    it('should make POST request to register endpoint', async () => {
+      const mockResponse = {
+        data: {
+          success: true,
+          message: 'OTP sent successfully',
+        },
+      }
+
+      mockAxiosInstance.post.mockResolvedValue(mockResponse)
+
+      const result = await registerApi({
+        body: { phone: '+84123456789' },
+      })
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/auth/register',
+        JSON.stringify({ phone: '+84123456789' }),
+        expect.any(Object),
+      )
+
+      expect(result).toEqual(mockResponse.data)
+    })
+  })
+})
+```
+
+## Integration Testing
+
+### Navigation Testing
+
+```typescript
+// __tests__/integration/navigation.test.tsx
+import React from 'react'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { NavigationContainer } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { Provider } from 'react-redux'
+import { createMockStore } from '../__mocks__/store'
+import { SignInScreen } from '@/screens/auth/SignInScreen'
+import { HomeScreen } from '@/screens/home/HomeScreen'
+
+const Stack = createNativeStackNavigator()
+
+const TestApp: React.FC = () => {
+  const store = createMockStore()
+
+  return (
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="SignIn" component={SignInScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
+  )
+}
+
+describe('Navigation Integration', () => {
+  it('should navigate to home screen after successful login', async () => {
+    const { getByTestId, getByText, queryByText } = render(<TestApp />)
+
+    // Fill in login form
+    const phoneInput = getByTestId('phone-input')
+    const passwordInput = getByTestId('password-input')
+    const signInButton = getByText('Sign In')
+
+    fireEvent.changeText(phoneInput, '1234567890')
+    fireEvent.changeText(passwordInput, 'Password123!')
+    fireEvent.press(signInButton)
+
+    // Wait for navigation to home screen
+    await waitFor(() => {
+      expect(queryByText('Welcome')).toBeTruthy() // Home screen content
+    }, { timeout: 5000 })
+  })
+})
+```
+
+### Form Integration Testing
+
+```typescript
+// __tests__/integration/formFlow.test.tsx
+import React from 'react'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Provider } from 'react-redux'
+import { createMockStore } from '../__mocks__/store'
+import { PersonalInformationScreen } from '@/screens/profile/PersonalInformationScreen'
+
+describe('Personal Information Form Flow', () => {
+  it('should complete full form submission flow', async () => {
+    const store = createMockStore({
+      user: {
+        profile: {
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          phone: '+84123456789',
+        },
+      },
+    })
+
+    const { getByTestId, getByText } = render(
+      <Provider store={store}>
+        <PersonalInformationScreen />
+      </Provider>
+    )
+
+    // Modify form fields
+    const firstNameInput = getByTestId('firstName-input')
+    fireEvent.changeText(firstNameInput, 'Jane')
+
+    const emailInput = getByTestId('email-input')
+    fireEvent.changeText(emailInput, 'jane@example.com')
+
+    // Submit form
+    const saveButton = getByText('Save')
+    fireEvent.press(saveButton)
+
+    // Verify loading state
+    await waitFor(() => {
+      expect(getByText('Saving...')).toBeTruthy()
+    })
+
+    // Verify success message
+    await waitFor(() => {
+      expect(getByText(/saved successfully/i)).toBeTruthy()
+    }, { timeout: 5000 })
+  })
+})
+```
+
+## Mock Setup
+
+### Mock Store
+
+```typescript
+// __tests__/__mocks__/store.ts
+import { configureStore } from '@reduxjs/toolkit'
+import { combineReducers } from 'redux'
+import userReducer from '@/stores/reducers/user'
+import appReducer from '@/stores/reducers/app'
+import loadingReducer from '@/stores/reducers/loading'
+
+const rootReducer = combineReducers({
+  user: userReducer,
+  app: appReducer,
+  loading: loadingReducer,
+})
+
+export const createMockStore = (preloadedState?: any) => {
+  return configureStore({
+    reducer: rootReducer,
+    preloadedState,
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware({
+        serializableCheck: false,
+        immutableCheck: false,
+      }),
+  })
+}
+```
+
+### Mock Axios
+
+```typescript
+// __tests__/__mocks__/axios.ts
+export const mockAxiosInstance = {
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn(),
+  patch: jest.fn(),
+  interceptors: {
+    request: {
+      use: jest.fn(),
+      eject: jest.fn(),
+    },
+    response: {
+      use: jest.fn(),
+      eject: jest.fn(),
+    },
+  },
+}
+
+export default mockAxiosInstance
+```
+
+### Mock Navigation
+
+```typescript
+// __tests__/__mocks__/navigation.ts
+export const mockNavigation = {
+  navigate: jest.fn(),
+  goBack: jest.fn(),
+  reset: jest.fn(),
+  setParams: jest.fn(),
+  addListener: jest.fn(),
+  removeListener: jest.fn(),
+  canGoBack: jest.fn(() => true),
+  dispatch: jest.fn(),
+}
+
+export const mockRoute = {
+  key: 'test-route',
+  name: 'TestScreen',
+  params: {},
+}
+```
+
+## Test Utilities
+
+### Custom Render Helper
+
+```typescript
+// __tests__/utils/testUtils.tsx
+import React, { ReactElement } from 'react'
+import { render, RenderOptions } from '@testing-library/react-native'
+import { Provider } from 'react-redux'
+import { NavigationContainer } from '@react-navigation/native'
+import { createMockStore } from '../__mocks__/store'
+
+interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+  preloadedState?: any
+  store?: any
+}
+
+const AllTheProviders: React.FC<{ children: React.ReactNode; store: any }> = ({
+  children,
+  store,
+}) => {
+  return (
+    <Provider store={store}>
+      <NavigationContainer>
+        {children}
+      </NavigationContainer>
+    </Provider>
+  )
+}
+
+const customRender = (
+  ui: ReactElement,
+  {
+    preloadedState,
+    store = createMockStore(preloadedState),
+    ...renderOptions
+  }: CustomRenderOptions = {}
+) => {
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <AllTheProviders store={store}>{children}</AllTheProviders>
+  )
+
+  return render(ui, { wrapper: Wrapper, ...renderOptions })
+}
+
+export * from '@testing-library/react-native'
+export { customRender as render }
+```
+
+### Test Data Factories
+
+```typescript
+// __tests__/utils/factories.ts
+export const createMockUser = (overrides: Partial<User> = {}): User => ({
+  id: '1',
+  phone: '+84123456789',
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com',
+  dateOfBirth: '1990-01-01',
+  gender: 'male',
+  ...overrides,
+})
+
+export const createMockApiResponse = <T>(
+  data: T,
+  overrides: Partial<ApiResponse<T>> = {},
+): ApiResponse<T> => ({
+  success: true,
+  data,
+  message: 'Operation successful',
+  ...overrides,
+})
+```
+
+## Testing Checklist
+
+### Unit Testing
+
+- [ ] All components have basic render tests
+- [ ] Interactive components test user interactions
+- [ ] Form components test validation and submission
+- [ ] Redux reducers test all action types
+- [ ] Redux selectors test various state conditions
+- [ ] API services test success and error cases
+- [ ] Utility functions test edge cases
+
+### Integration Testing
+
+- [ ] Navigation flows test screen transitions
+- [ ] Form flows test complete user journeys
+- [ ] Redux integration tests saga-reducer interactions
+- [ ] API integration tests mock network calls
+- [ ] Authentication flows test login/logout
+
+### Coverage Requirements
+
+- [ ] Minimum 80% code coverage
+- [ ] 100% coverage for critical paths (auth, payments)
+- [ ] All exported functions have tests
+- [ ] Error handling paths are tested
+
+### Testing Commands
+
+```bash
+# Run all tests
+yarn test
+
+# Run tests with coverage
+yarn test:coverage
+
+# Run tests in watch mode
+yarn test --watch
+
+# Run tests for specific file
+yarn test SignInScreen
+
+# Run tests matching pattern
+yarn test --testNamePattern="should handle form submission"
+
+# Debug tests
+yarn test --detectOpenHandles --forceExit
+```
+
+description:
+globs:
+alwaysApply: false
+
+---

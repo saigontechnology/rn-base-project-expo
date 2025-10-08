@@ -1,0 +1,216 @@
+# TypeScript Patterns and Testing Guidelines
+
+## TypeScript Configuration
+
+- Strict mode enabled in [tsconfig.json](mdc:tsconfig.json)
+- Use path aliases (`@/*` for `src/*`)
+- Define interfaces in appropriate type files
+- Avoid `any` type when possible
+
+## TypeScript Best Practices
+
+### Type Definitions
+
+Store type definitions in organized locations:
+
+- Component props: Define interfaces in the same file or dedicated types file
+- API types: [src/stores/types/api.ts](mdc:src/stores/types/api.ts)
+- Store types: [src/stores/types/](mdc:src/stores/types)
+- Service types: [src/constants/interface/](mdc:src/constants/interface)
+
+### Interface Naming
+
+```typescript
+// Component props
+interface ButtonProps {
+  title: string
+  onPress: () => void
+  disabled?: boolean
+}
+
+// API response types
+interface ApiResponse<T> {
+  data: T
+  message: string
+  success: boolean
+}
+
+// Redux state types
+interface UserState {
+  profile: UserProfile | null
+  isAuthenticated: boolean
+  loading: boolean
+}
+```
+
+### Generic Types
+
+Use generic types for reusable patterns:
+
+```typescript
+// API request patterns
+interface RequestWithBody<T> {
+  body: T
+  config?: AxiosRequestConfig
+}
+
+// Form field types
+interface FormField<T> {
+  value: T
+  error?: string
+  touched: boolean
+}
+```
+
+## Testing Configuration
+
+- Jest configuration: [jest.config.js](mdc:jest.config.js)
+- Uses `jest-expo` preset
+- Test files in `__tests__/` directories or `.test.tsx` files
+- React Testing Library for component testing
+
+## Testing Patterns
+
+### Component Testing
+
+```typescript
+import React from 'react'
+import { render, fireEvent } from '@testing-library/react-native'
+import { Button } from '@/components'
+
+describe('Button Component', () => {
+  it('should render correctly', () => {
+    const { getByText } = render(
+      <Button title="Test Button" onPress={() => {}} />
+    )
+
+    expect(getByText('Test Button')).toBeTruthy()
+  })
+
+  it('should handle press events', () => {
+    const mockPress = jest.fn()
+    const { getByText } = render(
+      <Button title="Test Button" onPress={mockPress} />
+    )
+
+    fireEvent.press(getByText('Test Button'))
+    expect(mockPress).toHaveBeenCalled()
+  })
+})
+```
+
+### Redux Testing
+
+```typescript
+import { store } from '@/stores/store'
+import { userActions } from '@/stores/reducers/user'
+
+describe('User Redux', () => {
+  it('should handle login action', () => {
+    const initialState = store.getState().user
+
+    store.dispatch(
+      userActions.loginRequest({
+        phone: '+1234567890',
+        password: 'password',
+      }),
+    )
+
+    const newState = store.getState().user
+    expect(newState.loading).toBe(true)
+  })
+})
+```
+
+### Screen Testing
+
+```typescript
+import React from 'react'
+import { render } from '@testing-library/react-native'
+import { Provider } from 'react-redux'
+import { store } from '@/stores/store'
+import SignInScreen from '@/screens/auth/SignInScreen'
+
+const renderWithProvider = (component: React.ReactElement) => {
+  return render(
+    <Provider store={store}>
+      {component}
+    </Provider>
+  )
+}
+
+describe('SignInScreen', () => {
+  it('should render sign in form', () => {
+    const { getByPlaceholderText } = renderWithProvider(<SignInScreen />)
+
+    expect(getByPlaceholderText('Phone Number')).toBeTruthy()
+    expect(getByPlaceholderText('Password')).toBeTruthy()
+  })
+})
+```
+
+## Code Quality Standards
+
+### ESLint Configuration
+
+- Follow Expo's ESLint rules
+- Use TypeScript ESLint for type checking
+- Enforce consistent code formatting
+
+### Prettier Configuration
+
+- Automatic code formatting on save
+- Consistent spacing and indentation
+- Import organization
+
+### Type Safety
+
+1. **Strict TypeScript**: Enable all strict mode options
+2. **No Any**: Avoid `any` type, use proper typing
+3. **Interface First**: Define interfaces before implementation
+4. **Generic Constraints**: Use proper generic constraints
+5. **Null Checks**: Handle null/undefined cases explicitly
+
+## Testing Best Practices
+
+1. **Test Structure**: Arrange, Act, Assert pattern
+2. **Isolation**: Mock external dependencies
+3. **Coverage**: Aim for high test coverage
+4. **Descriptive Names**: Use clear test descriptions
+5. **Edge Cases**: Test error conditions and edge cases
+6. **Async Testing**: Proper handling of async operations
+
+## Common Testing Commands
+
+```bash
+yarn test                 # Run all tests
+yarn test:coverage       # Run tests with coverage
+yarn test --watch        # Run tests in watch mode
+yarn test Button.test.tsx # Run specific test file
+```
+
+## Type Import/Export Patterns
+
+```typescript
+// Type-only imports
+import type { UserProfile } from '@/stores/types'
+
+// Regular imports with types
+import { useSelector, type TypedUseSelectorHook } from 'react-redux'
+
+// Export types
+export type { RootState, AppDispatch } from './store'
+```
+
+## React 19 Considerations
+
+- Project uses React 19.0.0 with React Native 0.79.5
+- Use overrides in package.json to ensure consistent React versions
+- Be aware of React 19 breaking changes and new features
+- Test thoroughly when adding new dependencies
+
+---
+
+alwaysApply: false
+
+---

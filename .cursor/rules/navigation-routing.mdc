@@ -1,0 +1,584 @@
+# Navigation and Routing with Expo Router
+
+## Navigation Architecture Overview
+
+Use Expo Router for file-based routing with grouped authentication and app routes.
+
+### Route Structure
+
+```
+app/
+├── _layout.tsx           # Root layout with providers
+├── index.tsx             # Entry point route
+├── splash-screen.tsx     # Splash screen route
+├── +not-found.tsx        # 404 error handling
+├── (auth)/               # Authentication route group
+│   ├── _layout.tsx       # Auth layout
+│   ├── sign-in.tsx       # Login screen
+│   ├── sign-up.tsx       # Registration screen
+│   ├── verify-otp.tsx    # OTP verification
+│   ├── forgot-password.tsx # Password reset
+│   ├── setup-password.tsx # Password creation
+│   ├── referral-code.tsx  # Referral code entry
+│   └── success.tsx       # Success screen
+└── (app)/                # Main app route group
+    ├── _layout.tsx       # App layout with tabs
+    ├── home.tsx          # Home screen
+    └── about.tsx         # About screen
+```
+
+## Route Group Patterns
+
+### Add route name in [src/routes/RouteKeys](mdc:src/routes/RouteKeys)
+
+```typescript
+export const RouteNames = {
+  // auth
+  SignIn: 'sign-in',
+  SignUp: 'sign-up',
+  VerifyOTP: 'verify-otp',
+  SetupPassword: 'setup-password',
+  ForgotPassword: 'forgot-password',
+  Success: 'success',
+  ReferralCode: 'referral-code',
+}
+```
+
+### Authentication Route Group
+
+```typescript
+// app/(auth)/_layout.tsx
+import React from 'react'
+import { Stack } from 'expo-router'
+import { ScreenOptions } from '@/routes/ScreenOptions'
+import { RouteNames } from '@/routes/RouteKeys'
+
+export default function AuthLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        ...ScreenOptions.authStack,
+      }}>
+      <Stack.Screen name={RouteNames.SignIn} />
+      <Stack.Screen name={RouteNames.SignUp} />
+      <Stack.Screen name={RouteNames.VerifyOTP} />
+      <Stack.Screen name={RouteNames.SetupPassword} />
+      <Stack.Screen name={RouteNames.ForgotPassword} />
+      <Stack.Screen name={RouteNames.Success} />
+      <Stack.Screen name={RouteNames.ReferralCode} />
+    </Stack>
+  )
+}
+```
+
+### App Route Group with Tabs
+
+```typescript
+// app/(app)/_layout.tsx
+import React from 'react'
+import { Tabs } from 'expo-router'
+import { HapticTab } from '@/components/HapticTab'
+import { IconSymbol } from '@/components/IconSymbol'
+import { theme } from '@/themes'
+import { RouteNames } from '@/routes/RouteKeys'
+import { getString } from '@/locale/I18nConfig'
+
+export default function AppLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.gray,
+        tabBarStyle: {
+          backgroundColor: theme.colors.white,
+          borderTopColor: theme.colors.border,
+        },
+      }}>
+      <Tabs.Screen
+        name={RouteNames.home}
+        options={{
+          title: getString('home.title'),
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name={RouteNames.about}
+        options={{
+          title:getString('about.title'),
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name={focused ? 'info' : 'info-outline'} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  )
+}
+```
+
+## Route Constants
+
+### Centralized Route Keys
+
+```typescript
+// src/routes/RouteKeys.ts
+export const RouteKeys = {
+  // Entry and Special
+  Root: '/',
+  SplashScreen: '/splash-screen',
+  NotFound: '/+not-found',
+
+  // Authentication
+  SignIn: '/(auth)/sign-in',
+  SignUp: '/(auth)/sign-up',
+  VerifyOTP: '/(auth)/verify-otp',
+  ForgotPassword: '/(auth)/forgot-password',
+  SetupPassword: '/(auth)/setup-password',
+  ReferralCode: '/(auth)/referral-code',
+  Success: '/(auth)/success',
+
+  // Main App
+  Home: '/(app)/home',
+  About: '/(app)/about',
+} as const
+
+export type RouteKey = (typeof RouteKeys)[keyof typeof RouteKeys]
+```
+
+## Navigation Patterns
+
+### Basic Navigation
+
+```typescript
+import { router } from 'expo-router'
+import { RouteKeys } from '@/routes/RouteKeys'
+
+// Simple navigation
+const navigateToHome = () => {
+  router.push(RouteKeys.Home)
+}
+
+// Replace current route (no back navigation)
+const navigateToSignIn = () => {
+  router.replace(RouteKeys.SignIn)
+}
+
+// Go back
+const goBack = () => {
+  router.back()
+}
+
+// Navigate to root and reset stack
+const resetToHome = () => {
+  router.dismissAll()
+  router.replace(RouteKeys.Home)
+}
+```
+
+### Navigation with Parameters
+
+```typescript
+// Navigate with query parameters
+const navigateToVerifyOTP = (phoneNumber: string) => {
+  router.push({
+    pathname: RouteKeys.VerifyOTP,
+    params: { phone: phoneNumber },
+  })
+}
+
+// Navigate with complex parameters
+const navigateToSetupPassword = (phone: string, token: string, flow: string) => {
+  router.push({
+    pathname: RouteKeys.SetupPassword,
+    params: {
+      phone,
+      token,
+      flow,
+    },
+  })
+}
+
+// Accessing parameters in component
+import { useLocalSearchParams } from 'expo-router'
+
+export const VerifyOTPScreen: React.FC = () => {
+  const { phone, flow } = useLocalSearchParams<{ phone?: string; flow?: string }>()
+
+  // Use parameters in component logic
+  const phoneNumber = phone as string
+  const isResetFlow = flow === FLOW_TYPE.FORGOT_PASSWORD
+
+  // Component logic...
+}
+```
+
+### Conditional Navigation
+
+```typescript
+// Navigation based on authentication state
+const handleAuthNavigation = useCallback((user: User | null) => {
+  if (user) {
+    // User is authenticated
+    router.replace(RouteKeys.Home)
+  } else {
+    // User needs to authenticate
+    router.replace(RouteKeys.SignIn)
+  }
+}, [])
+
+// Navigation based on app state
+const handleAppInitialization = useCallback(() => {
+  // Check if app needs onboarding
+  if (needsOnboarding) {
+    router.replace(RouteKeys.SignUp)
+  } else {
+    router.replace(RouteKeys.SignIn)
+  }
+}, [needsOnboarding])
+```
+
+## Screen Configuration
+
+### Screen Options
+
+```typescript
+// src/routes/ScreenOptions.ts
+import { StackNavigationOptions } from '@react-navigation/stack'
+import { theme, fonts, fontSizes, metrics } from '@/themes'
+
+export const ScreenOptions = {
+  authStack: {
+    headerShown: false,
+    gestureEnabled: true,
+    animationTypeForReplace: 'push',
+    presentation: 'card',
+  } as StackNavigationOptions,
+
+  appStack: {
+    headerStyle: {
+      backgroundColor: theme.colors.white,
+      elevation: metrics.zero,
+      shadowOpacity: metrics.zero,
+      borderBottomWidth: metrics.borderWidth,
+      borderBottomColor: theme.colors.border,
+    },
+    headerTitleStyle: {
+      fontFamily: fonts.bold,
+      fontSize: fontSizes.title,
+      color: theme.colors.black,
+    },
+    headerBackTitleVisible: false,
+    headerTintColor: theme.colors.primary,
+  } as StackNavigationOptions,
+
+  modal: {
+    presentation: 'modal',
+    gestureEnabled: true,
+    headerShown: true,
+  } as StackNavigationOptions,
+}
+```
+
+### Custom Screen Transitions
+
+```typescript
+// Custom transition for auth screens
+export const authTransition = {
+  gestureDirection: 'horizontal',
+  transitionSpec: {
+    open: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+    close: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+  },
+  cardStyleInterpolator: ({ current, layouts }) => {
+    return {
+      cardStyle: {
+        transform: [
+          {
+            translateX: current.progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [layouts.screen.width, 0],
+            }),
+          },
+        ],
+      },
+    }
+  },
+}
+```
+
+## Deep Linking and URL Handling
+
+### URL Scheme Configuration
+
+```typescript
+// app.config.ts
+export default {
+  expo: {
+    scheme: 'royalcanin',
+    web: {
+      bundler: 'metro',
+    },
+    // Deep linking configuration
+    android: {
+      intentFilters: [
+        {
+          action: 'VIEW',
+          data: [
+            {
+              scheme: 'royalcanin',
+            },
+            {
+              scheme: 'https',
+              host: 'royalcanin.com',
+              pathPrefix: '/mobile',
+            },
+          ],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
+    },
+    ios: {
+      associatedDomains: ['applinks:royalcanin.com'],
+    },
+  },
+}
+```
+
+### Deep Link Handling
+
+```typescript
+// Handle deep links in app
+import { useEffect } from 'react'
+import { Linking } from 'react-native'
+import { router } from 'expo-router'
+
+export const useDeepLinking = () => {
+  useEffect(() => {
+    const handleDeepLink = (url: string) => {
+      if (url) {
+        // Parse URL and navigate appropriately
+        const route = parseDeepLinkUrl(url)
+        if (route) {
+          router.push(route)
+        }
+      }
+    }
+
+    // Handle app launch from deep link
+    Linking.getInitialURL().then(url => {
+      if (url) {
+        handleDeepLink(url)
+      }
+    })
+
+    // Handle deep links when app is already running
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url)
+    })
+
+    return () => subscription?.remove()
+  }, [])
+}
+
+const parseDeepLinkUrl = (url: string): string | null => {
+  // royalcanin://verify-otp?phone=+1234567890
+  // https://royalcanin.com/mobile/verify-otp?phone=+1234567890
+
+  const parsedUrl = new URL(url)
+  const pathname = parsedUrl.pathname.replace('/mobile', '')
+  const searchParams = parsedUrl.searchParams
+
+  switch (pathname) {
+    case '/verify-otp':
+      return {
+        pathname: RouteKeys.VerifyOTP,
+        params: {
+          phone: searchParams.get('phone'),
+        },
+      }
+    case '/setup-password':
+      return {
+        pathname: RouteKeys.SetupPassword,
+        params: {
+          token: searchParams.get('token'),
+          phone: searchParams.get('phone'),
+        },
+      }
+    default:
+      return null
+  }
+}
+```
+
+## Navigation Guards and Middleware
+
+### Authentication Guard
+
+```typescript
+// src/routes/AppNavigation.tsx
+import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { router, Slot } from 'expo-router'
+import { selectUser } from '@/stores/selectors/user'
+import { RouteKeys } from './RouteKeys'
+
+export const AppNavigation: React.FC = () => {
+  const user = useSelector(selectUser)
+  const isAuthenticated = !!user?.access_token
+
+  useEffect(() => {
+    // Redirect unauthenticated users to sign-in
+    if (!isAuthenticated) {
+      router.replace(RouteKeys.SignIn)
+    }
+  }, [isAuthenticated])
+
+  return <Slot />
+}
+```
+
+### Route Protection
+
+```typescript
+// Higher-order component for protected routes
+export const withAuthGuard = (Component: React.ComponentType) => {
+  return (props: any) => {
+    const user = useSelector(selectUser)
+    const isAuthenticated = !!user?.access_token
+
+    useEffect(() => {
+      if (!isAuthenticated) {
+        router.replace(RouteKeys.SignIn)
+      }
+    }, [isAuthenticated])
+
+    if (!isAuthenticated) {
+      return null // or loading spinner
+    }
+
+    return <Component {...props} />
+  }
+}
+
+// Usage in screen component
+export default withAuthGuard(HomeScreen)
+```
+
+## Tab Navigation Patterns
+
+### Dynamic Tab Bar
+
+```typescript
+// Dynamic tab configuration
+const getTabBarIcon = (routeName: string, focused: boolean, color: string) => {
+  const iconMap = {
+    home: focused ? 'home' : 'home-outline',
+    profile: focused ? 'person' : 'person-outline',
+    settings: focused ? 'settings' : 'settings-outline',
+  }
+
+  return <IconSymbol name={iconMap[routeName]} color={color} size={24} />
+}
+
+// Tab with badges
+<Tabs.Screen
+  name="notifications"
+  options={{
+    title: 'Notifications',
+    tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+    tabBarIcon: ({ color, focused }) => (
+      <IconSymbol name={focused ? 'notifications' : 'notifications-outline'} color={color} />
+    ),
+  }}
+/>
+```
+
+### Conditional Tab Visibility
+
+```typescript
+// Hide tab based on user role or state
+<Tabs.Screen
+  name="admin"
+  options={{
+    href: user?.role === 'admin' ? '/(app)/admin' : null,
+    title: 'Admin',
+    tabBarIcon: ({ color }) => <IconSymbol name="shield" color={color} />,
+  }}
+/>
+```
+
+## Error Handling and 404
+
+### Custom 404 Page
+
+```typescript
+// app/+not-found.tsx
+import React from 'react'
+import { StyleSheet } from 'react-native'
+import { Link } from 'expo-router'
+import { ThemedText, ScreenContainer } from '@/components'
+import { ButtonPrimary } from 'rn-base-component'
+import { getString } from '@/locale/I18nConfig'
+import { RouteKeys } from '@/routes/RouteKeys'
+import { metrics } from '@/themes'
+
+export default function NotFoundScreen() {
+  return (
+    <ScreenContainer style={styles.container}>
+      <ThemedText type="title">{getString('error.pageNotFound')}</ThemedText>
+      <ThemedText type="span">{getString('error.pageNotFoundMessage')}</ThemedText>
+
+      <Link href={RouteKeys.Home} asChild>
+        <ButtonPrimary>{getString('common.goHome')}</ButtonPrimary>
+      </Link>
+    </ScreenContainer>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: metrics.medium,
+  },
+})
+```
+
+## Best Practices
+
+1. **Route Organization**: Use route groups for logical separation
+2. **Route Constants**: Centralize all route paths in RouteKeys
+3. **Type Safety**: Use typed parameters with useLocalSearchParams
+4. **Navigation Guards**: Implement authentication checks
+5. **Deep Linking**: Support deep links for important flows
+6. **Screen Options**: Use consistent screen configurations
+7. **Error Handling**: Provide proper 404 and error screens
+8. **Tab Navigation**: Use appropriate icons and badges
+9. **Performance**: Lazy load screens when possible
+10. **Accessibility**: Include proper screen titles and navigation hints
+11. **State Management**: Coordinate navigation with Redux state
+12. **Transitions**: Use appropriate animations for user flows
+13. **Back Handling**: Handle Android back button appropriately
+14. **Loading States**: Show loading screens for route transitions
+15. **Orientation**: Handle orientation changes in navigation
+
+description:
+globs:
+alwaysApply: false
+
+---

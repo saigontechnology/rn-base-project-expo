@@ -1,0 +1,294 @@
+# Redux Architecture and State Management
+
+## Redux Store Structure
+
+The Mobile app uses Redux Toolkit with Redux Saga for state management. Store configuration is in [src/stores/store.ts](mdc:src/stores/store.ts).
+
+### Core Structure
+
+```
+src/stores/
+├── store.ts              # Store configuration with redux-persist
+├── initialState.ts       # Initial state definitions
+├── reducers/            # Redux Toolkit slices
+│   ├── index.ts        # Combined reducers
+│   ├── app.ts          # App-wide state (loading, indicators)
+│   ├── user.ts         # User authentication and profile
+│   └── ...             # Feature-specific reducers
+├── saga/                # Redux Saga for async operations
+│   ├── index.ts        # Root saga
+│   ├── user.ts         # User-related sagas
+│   └── ...             # Feature-specific sagas
+├── selectors/           # Reusable state selectors
+│   ├── index.ts        # Combined selectors
+│   ├── user.ts         # User state selectors
+│   └── ...             # Feature-specific selectors
+└── types/               # TypeScript type definitions
+    ├── index.ts        # Type exports
+    ├── api.ts          # API response types
+    ├── user.ts         # User-related types
+    └── ...             # Feature-specific types
+```
+
+## Redux Toolkit Slice Patterns
+
+### Standard Slice Structure
+
+```typescript
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
+interface FeatureState {
+  data: DataType[]
+  loading: boolean
+  error: string | null
+}
+
+const initialState: FeatureState = {
+  data: [],
+  loading: false,
+  error: null,
+}
+
+const featureSlice = createSlice({
+  name: 'feature',
+  initialState,
+  reducers: {
+    // Request actions
+    requestAction: state => {
+      state.loading = true
+      state.error = null
+    },
+    // Success actions
+    requestSuccess: (state, action: PayloadAction<DataType[]>) => {
+      state.loading = false
+      state.data = action.payload
+      state.error = null
+    },
+    // Failure actions
+    requestFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false
+      state.error = action.payload
+    },
+    // Reset actions
+    resetState: state => {
+      Object.assign(state, initialState)
+    },
+  },
+})
+
+export const featureActions = featureSlice.actions
+export default featureSlice.reducer
+```
+
+## Redux Saga Patterns
+
+### Standard Saga Structure
+
+```typescript
+import { call, put, takeEvery } from 'redux-saga/effects'
+import { PayloadAction } from '@reduxjs/toolkit'
+import { actions } from '../reducers/feature'
+import { apiFunction } from '../../services/api'
+import { showToast, TOAST_TYPE } from '../../components/Toast'
+import { RESPONSE_CODE } from '../../constants'
+
+function* featureSaga(action: PayloadAction<RequestType>) {
+  try {
+    yield put(appActions.setShowGlobalIndicator(true))
+
+    const response: ResponseType = yield call(apiFunction, {
+      body: action.payload,
+    })
+
+    if (RESPONSE_CODE.success.includes(response.status)) {
+      yield put(actions.requestSuccess(response.data))
+      showToast({
+        message: 'Operation successful!',
+        type: TOAST_TYPE.SUCCESS,
+      })
+    } else {
+      const errorMessage = response?.error?.message || 'Operation failed'
+      showToast({
+        message: errorMessage,
+        type: TOAST_TYPE.ERROR,
+      })
+      yield put(actions.requestFailure(errorMessage))
+    }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed'
+    yield put(actions.requestFailure(errorMessage))
+  } finally {
+    yield put(appActions.setShowGlobalIndicator(false))
+  }
+}
+
+// Watcher saga
+export default [takeEvery(actions.requestAction.type, featureSaga)]
+```
+
+### API Call Patterns in Sagas
+
+#### GET Requests (Direct Parameters)
+
+```typescript
+// Simple GET with query parameters
+const response: ResponseType = yield call(getApiFunction, params)
+
+// GET without parameters
+const response: ResponseType = yield call(getApiFunction)
+```
+
+#### POST/PUT Requests (RequestWithBody Pattern)
+
+```typescript
+// POST/PUT with JSON body
+const response: ResponseType = yield call(postApiFunction, {
+  body: action.payload,
+})
+
+// FormData requests
+const response: ResponseType = yield call(postFormDataApiFunction, {
+  body: convertToFormData(action.payload),
+  config: { 'Content-Type': 'multipart/form-data' },
+})
+```
+
+## State Selector Patterns
+
+### Basic Selectors
+
+```typescript
+import { RootState } from '../store'
+
+// Simple state selectors
+export const selectFeatureData = (state: RootState) => state.feature.data
+export const selectFeatureLoading = (state: RootState) => state.feature.loading
+export const selectFeatureError = (state: RootState) => state.feature.error
+
+// Computed selectors
+export const selectFeatureById = (id: string) => (state: RootState) =>
+  state.feature.data.find(item => item.id === id)
+
+// Loading state selectors
+export const selectUserLoading = (state: RootState) => state.loading.user
+export const selectAnyLoading = (state: RootState) => Object.values(state.loading).some(Boolean)
+```
+
+## Component Integration Patterns
+
+### Hook Usage
+
+```typescript
+import { useAppDispatch, useSelector } from '@/stores/store'
+import { featureActions } from '@/stores/reducers/feature'
+import { selectFeatureData, selectFeatureLoading } from '@/stores/selectors/feature'
+
+export const FeatureComponent: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const data = useSelector(selectFeatureData)
+  const isLoading = useSelector(selectFeatureLoading)
+
+  const handleAction = useCallback(() => {
+    dispatch(featureActions.requestAction({ param: 'value' }))
+  }, [dispatch])
+
+  // Component JSX...
+}
+```
+
+## Error Handling Standards
+
+### Three-Level Error Handling
+
+1. **API Response Errors**: Check `RESPONSE_CODE.success.includes(response.status)`
+2. **Network/Exception Errors**: Handle in saga catch blocks
+3. **Fallback Errors**: Always provide default error messages
+
+### Error Message Priority
+
+```typescript
+// Priority order for error messages:
+1. response?.error?.message (specific API error)
+2. response.message (general response message)
+3. error.message (exception message)
+4. 'Default error message' (fallback)
+```
+
+## Redux Persist Configuration
+
+### Persisted State
+
+```typescript
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['user', 'app'], // Only persist these reducers
+  blacklist: ['loading'], // Never persist loading states
+}
+```
+
+## TypeScript Integration
+
+### Typed Hooks
+
+```typescript
+// Use pre-typed hooks from store configuration
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+
+// Instead of generic hooks
+import { useDispatch, useSelector } from 'react-redux'
+```
+
+### Action Payload Types
+
+```typescript
+// Define payload types for actions
+interface LoginRequest {
+  phone: string
+  password: string
+}
+
+// Use with PayloadAction in sagas
+function* loginSaga(action: PayloadAction<LoginRequest>) {
+  // action.payload is properly typed
+}
+```
+
+## Best Practices
+
+1. **Saga Organization**: One saga file per feature, export watcher array
+2. **Loading States**: Use global loading for UI indicators, local for component state
+3. **Error Handling**: Always handle both API errors and exceptions
+4. **State Shape**: Keep state normalized and flat when possible
+5. **Selectors**: Create reusable selectors for complex state queries
+6. **Action Naming**: Use consistent patterns (request/success/failure)
+7. **Type Safety**: Define interfaces for all state shapes and action payloads
+8. **Persistence**: Only persist necessary state, exclude loading/temporary data
+9. **Toast Integration**: Show user feedback for all async operations
+10. **Global Indicators**: Use app-level loading indicators for full-screen operations
+
+## Loading State Management
+
+### Global Loading (App-wide indicators)
+
+```typescript
+// For full-screen loading indicators
+yield put(appActions.setShowGlobalIndicator(true))
+// ... async operation
+yield put(appActions.setShowGlobalIndicator(false))
+```
+
+### Feature Loading (Component-specific)
+
+```typescript
+// For component-specific loading states
+yield put(featureActions.setLoading(true))
+// ... async operation
+yield put(featureActions.setLoading(false))
+```
+
+description:
+globs:
+alwaysApply: false
+
+---

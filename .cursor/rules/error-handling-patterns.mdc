@@ -1,0 +1,644 @@
+# Error Handling Patterns
+
+## Error Handling Architecture
+
+### Error Boundary Implementation
+
+```typescript
+import React, { Component, ReactNode } from 'react'
+import { View, Text } from 'react-native'
+import { ButtonPrimary } from 'rn-base-component'
+import { ScreenContainer } from '@/components'
+import { getString } from '@/locale/I18nConfig'
+import { theme, metrics, fontSizes } from '@/themes'
+
+interface ErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+}
+
+interface ErrorBoundaryProps {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error Boundary caught an error:', error, errorInfo)
+    // Log to crash reporting service
+    // CrashReporting.recordError(error, errorInfo)
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, error: null })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
+
+      return (
+        <ScreenContainer>
+          <View style={styles.container}>
+            <Text style={styles.description}>
+              {getString('common.error.somethingWentWrong')}
+            </Text>
+            <Text style={styles.error}>
+              {getString('common.error.tryAgain')}
+            </Text>
+            <ButtonPrimary onPress={this.handleReset}>
+              {getString('common.retry')}
+            </ButtonPrimary>
+          </View>
+        </ScreenContainer>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: metrics.small
+  },
+  description: {
+    fontSize: fonSizes.large, 
+    marginBottom: metrics.small,
+  },
+  text: {
+    marginBottom: metrics.large,
+    textAlign: 'center',
+  }
+})
+```
+
+### Global Error Handler
+
+```typescript
+// src/services/errorHandler.ts
+import { Alert } from 'react-native'
+import { getString } from '@/locale/I18nConfig'
+import { showToast, TOAST_TYPE } from '@/components/Toast'
+
+export interface AppError {
+  message: string
+  code?: string
+  context?: string
+  originalError?: Error
+}
+
+export class ErrorHandler {
+  static handleError(error: AppError | Error | string, context?: string) {
+    let errorMessage: string
+    let errorCode: string | undefined
+
+    if (typeof error === 'string') {
+      errorMessage = error
+    } else if (error instanceof Error) {
+      errorMessage = error.message
+    } else {
+      errorMessage = error.message
+      errorCode = error.code
+    }
+
+    // Log error for debugging
+    console.error(`[${context || 'Unknown'}] Error:`, {
+      message: errorMessage,
+      code: errorCode,
+      context,
+      originalError: error,
+    })
+
+    // Show user-friendly error message
+    this.showUserError(errorMessage, errorCode)
+
+    // Report to crash analytics
+    // CrashReporting.recordError(error, { context })
+  }
+
+  static showUserError(message: string, code?: string) {
+    const userMessage = this.getUserFriendlyMessage(message, code)
+
+    showToast({
+      type: TOAST_TYPE.error,
+      message: userMessage,
+      duration: 4000,
+    })
+  }
+
+  static getUserFriendlyMessage(message: string, code?: string): string {
+    // Map technical errors to user-friendly messages
+    const errorMap: Record<string, string> = {
+      'Network Error': getString('common.error.networkError'),
+      'Request timeout': getString('common.error.timeoutError'),
+      'Invalid credentials': getString('auth.error.invalidCredentials'),
+      'Account not found': getString('auth.error.accountNotFound'),
+      'Invalid OTP': getString('auth.error.invalidOTP'),
+      'OTP expired': getString('auth.error.otpExpired'),
+    }
+
+    return errorMap[message] || errorMap[code || ''] || getString('common.error.generic')
+  }
+
+  static handleNetworkError(error: any) {
+    if (!error.response) {
+      // Network error (no internet, server down)
+      this.handleError({
+        message: 'Network Error',
+        context: 'Network',
+        originalError: error,
+      })
+    } else {
+      // HTTP error response
+      const status = error.response.status
+      const message = error.response.data?.message || error.message
+
+      this.handleError({
+        message,
+        code: status.toString(),
+        context: 'HTTP',
+        originalError: error,
+      })
+    }
+  }
+}
+```
+
+## Redux Saga Error Handling
+
+### Standard Saga Error Pattern
+
+```typescript
+import { call, put, takeEvery } from 'redux-saga/effects'
+import { PayloadAction } from '@reduxjs/toolkit'
+import { AxiosError } from 'axios'
+import { ErrorHandler } from '@/services/errorHandler'
+import { userActions } from '@/stores/reducers/user'
+import { setLoading } from '@/stores/reducers/loading'
+
+function* loginSaga(action: PayloadAction<{ phone: string; password: string }>) {
+  try {
+    // Set loading state
+    yield put(setLoading({ key: 'login', loading: true }))
+
+    // Make API call
+    const response: ApiResponse<LoginResponse> = yield call(loginApi, { body: action.payload })
+
+    if (response.success) {
+      yield put(userActions.loginSuccess(response.data))
+      // Show success message
+      showToast({
+        type: TOAST_TYPE.success,
+        message: getString('auth.loginSuccess'),
+      })
+    } else {
+      // Handle API-level errors
+      yield put(userActions.loginFailure(response.message))
+      ErrorHandler.handleError(response.message, 'Login API')
+    }
+  } catch (error) {
+    // Handle network/system errors
+    console.error('Login Saga Error:', error)
+
+    const errorMessage =
+      error instanceof AxiosError
+        ? error.response?.data?.message || error.message
+        : 'An unexpected error occurred'
+
+    yield put(userActions.loginFailure(errorMessage))
+
+    if (error instanceof AxiosError) {
+      ErrorHandler.handleNetworkError(error)
+    } else {
+      ErrorHandler.handleError(error as Error, 'Login Saga')
+    }
+  } finally {
+    // Always clear loading state
+    yield put(setLoading({ key: 'login', loading: false }))
+  }
+}
+```
+
+### Saga Error Types
+
+```typescript
+// Define specific error types for better handling
+export interface SagaError {
+  type: 'NETWORK' | 'VALIDATION' | 'AUTHENTICATION' | 'AUTHORIZATION' | 'SERVER' | 'UNKNOWN'
+  message: string
+  code?: string
+  retryable?: boolean
+}
+
+function* handleSagaError(error: any, context: string): Generator<any, SagaError, any> {
+  if (error instanceof AxiosError) {
+    const status = error.response?.status
+    const message = error.response?.data?.message || error.message
+
+    switch (status) {
+      case 400:
+        return {
+          type: 'VALIDATION',
+          message,
+          retryable: false,
+        }
+      case 401:
+        return {
+          type: 'AUTHENTICATION',
+          message: message || 'Authentication failed',
+          retryable: false,
+        }
+      case 403:
+        return {
+          type: 'AUTHORIZATION',
+          message: message || 'Access denied',
+          retryable: false,
+        }
+      case 500:
+      case 502:
+      case 503:
+        return {
+          type: 'SERVER',
+          message: message || 'Server error',
+          retryable: true,
+        }
+      default:
+        return {
+          type: 'NETWORK',
+          message: message || 'Network error',
+          retryable: true,
+        }
+    }
+  }
+
+  return {
+    type: 'UNKNOWN',
+    message: error.message || 'An unexpected error occurred',
+    retryable: false,
+  }
+}
+```
+
+## Component Error Handling
+
+### Hook-based Error Handling
+
+```typescript
+import { useState, useCallback } from 'react'
+import { ErrorHandler } from '@/services/errorHandler'
+
+interface UseErrorHandlerReturn {
+  error: string | null
+  setError: (error: string | null) => void
+  handleError: (error: Error | string) => void
+  clearError: () => void
+}
+
+export const useErrorHandler = (): UseErrorHandlerReturn => {
+  const [error, setError] = useState<string | null>(null)
+
+  const handleError = useCallback((error: Error | string) => {
+    const errorMessage = typeof error === 'string' ? error : error.message
+    setError(errorMessage)
+    ErrorHandler.handleError(error)
+  }, [])
+
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  return {
+    error,
+    setError,
+    handleError,
+    clearError,
+  }
+}
+```
+
+### Async Operation Error Handling
+
+```typescript
+import { useState, useCallback } from 'react'
+import { useErrorHandler } from './useErrorHandler'
+
+interface UseAsyncOperationReturn<T> {
+  data: T | null
+  loading: boolean
+  error: string | null
+  execute: (...args: any[]) => Promise<T | void>
+  reset: () => void
+}
+
+export const useAsyncOperation = <T>(
+  asyncFunction: (...args: any[]) => Promise<T>,
+): UseAsyncOperationReturn<T> => {
+  const [data, setData] = useState<T | null>(null)
+  const [loading, setLoading] = useState(false)
+  const { error, handleError, clearError } = useErrorHandler()
+
+  const execute = useCallback(
+    async (...args: any[]) => {
+      try {
+        setLoading(true)
+        clearError()
+
+        const result = await asyncFunction(...args)
+        setData(result)
+        return result
+      } catch (error) {
+        handleError(error as Error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [asyncFunction, handleError, clearError],
+  )
+
+  const reset = useCallback(() => {
+    setData(null)
+    setLoading(false)
+    clearError()
+  }, [clearError])
+
+  return {
+    data,
+    loading,
+    error,
+    execute,
+    reset,
+  }
+}
+```
+
+## Form Error Handling
+
+### React Hook Form Error Integration
+
+```typescript
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
+
+export const FormWithErrorHandling: React.FC = () => {
+  const { handleError } = useErrorHandler()
+
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: 'onChange',
+  })
+
+  const onSubmit = useCallback(async (data: FormData) => {
+    try {
+      await submitForm(data)
+      // Handle success
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        // Set field-specific errors
+        error.fieldErrors.forEach(({ field, message }) => {
+          setError(field as any, { message })
+        })
+      } else {
+        // Handle general errors
+        handleError(error as Error)
+      }
+    }
+  }, [handleError, setError])
+
+  return (
+    <Form control={control} fields={formFields} />
+  )
+}
+```
+
+## API Error Handling
+
+### Axios Response Interceptor
+
+```typescript
+// src/services/networking/axios.ts
+import { ErrorHandler } from '@/services/errorHandler'
+
+instance.interceptors.response.use(
+  response => response,
+  (error: AxiosError) => {
+    // Global error handling
+    if (error.response) {
+      const { status, data } = error.response
+
+      switch (status) {
+        case 401:
+          // Handle token expiration
+          handleTokenExpiration()
+          break
+        case 403:
+          // Handle authorization errors
+          ErrorHandler.handleError('Access denied', '403')
+          break
+        case 500:
+          // Handle server errors
+          ErrorHandler.handleError('Server error', '500')
+          break
+        default:
+          ErrorHandler.handleNetworkError(error)
+      }
+    } else if (error.request) {
+      // Network error
+      ErrorHandler.handleError('Network Error', 'Network')
+    } else {
+      // Other errors
+      ErrorHandler.handleError(error.message, 'Request Setup')
+    }
+
+    return Promise.reject(error)
+  },
+)
+```
+
+## Error Recovery Patterns
+
+### Retry Mechanism
+
+```typescript
+import { useCallback, useState } from 'react'
+
+interface UseRetryReturn {
+  retry: () => Promise<void>
+  retryCount: number
+  canRetry: boolean
+}
+
+export const useRetry = (
+  operation: () => Promise<any>,
+  maxRetries: number = 3,
+  delay: number = 1000,
+): UseRetryReturn => {
+  const [retryCount, setRetryCount] = useState(0)
+
+  const retry = useCallback(async () => {
+    if (retryCount >= maxRetries) {
+      throw new Error('Maximum retry attempts reached')
+    }
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, delay * retryCount))
+      await operation()
+      setRetryCount(0) // Reset on success
+    } catch (error) {
+      setRetryCount(prev => prev + 1)
+      throw error
+    }
+  }, [operation, retryCount, maxRetries, delay])
+
+  return {
+    retry,
+    retryCount,
+    canRetry: retryCount < maxRetries,
+  }
+}
+```
+
+### Offline Error Handling
+
+```typescript
+import NetInfo from '@react-native-async-storage/async-storage'
+
+export const useOfflineErrorHandling = () => {
+  const [isOffline, setIsOffline] = useState(false)
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsOffline(!state.isConnected)
+    })
+
+    return unsubscribe
+  }, [])
+
+  const handleOfflineError = useCallback(
+    (error: any) => {
+      if (isOffline) {
+        showToast({
+          type: TOAST_TYPE.warning,
+          message: getString('common.error.offline'),
+          duration: 5000,
+        })
+        return true // Error was handled
+      }
+      return false // Error not handled
+    },
+    [isOffline],
+  )
+
+  return { isOffline, handleOfflineError }
+}
+```
+
+## Error Logging and Reporting
+
+### Production Error Reporting
+
+```typescript
+// src/services/crashReporting.ts
+import crashlytics from '@react-native-firebase/crashlytics'
+
+export class CrashReporting {
+  static recordError(error: Error, context?: Record<string, any>) {
+    if (__DEV__) {
+      console.error('Development Error:', error, context)
+      return
+    }
+
+    // Set context attributes
+    if (context) {
+      Object.entries(context).forEach(([key, value]) => {
+        crashlytics().setAttribute(key, String(value))
+      })
+    }
+
+    // Record the error
+    crashlytics().recordError(error)
+  }
+
+  static log(message: string) {
+    if (__DEV__) {
+      console.log('Development Log:', message)
+      return
+    }
+
+    crashlytics().log(message)
+  }
+
+  static setUserId(userId: string) {
+    crashlytics().setUserId(userId)
+  }
+}
+```
+
+## Error Testing
+
+### Error Simulation for Testing
+
+```typescript
+// src/utils/errorSimulation.ts (development only)
+export const simulateError = (type: 'network' | 'server' | 'validation') => {
+  if (!__DEV__) return
+
+  switch (type) {
+    case 'network':
+      throw new Error('Simulated network error')
+    case 'server':
+      throw new Error('Simulated server error')
+    case 'validation':
+      throw new Error('Simulated validation error')
+  }
+}
+
+// Usage in development
+const onTest = () => {
+  if (__DEV__) {
+    simulateError('network')
+  }
+}
+```
+
+## Error Handling Checklist
+
+### Implementation Checklist
+
+- [ ] Error boundaries implemented for all major screen sections
+- [ ] Global error handler configured
+- [ ] Saga error handling follows standard pattern
+- [ ] Form validation errors are user-friendly
+- [ ] Network errors are handled gracefully
+- [ ] Offline scenarios are handled
+- [ ] Retry mechanisms for transient errors
+- [ ] Error logging/reporting configured
+- [ ] User-friendly error messages implemented
+- [ ] Error recovery mechanisms in place
+- [ ] Loading states managed properly during errors
+- [ ] Error testing scenarios covered
+      description:
+      globs:
+      alwaysApply: false
+
+---

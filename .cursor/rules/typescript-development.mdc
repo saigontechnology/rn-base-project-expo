@@ -1,0 +1,659 @@
+# TypeScript Development Best Practices
+
+## TypeScript Configuration
+
+The Mobile app uses strict TypeScript configuration for maximum type safety and code quality.
+
+### TypeScript Config
+
+```json
+// tsconfig.json
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+}
+```
+
+### Path Aliases
+
+```typescript
+// Use path aliases for clean imports
+import { components } from '@/components' // ✅ Correct
+import { components } from '../../../components' // ❌ Avoid relative paths
+
+// Path alias configuration
+"paths": {
+  "@/*": ["src/*"]
+}
+```
+
+## Interface and Type Definitions
+
+### Component Props Interfaces
+
+```typescript
+// Define comprehensive interfaces for component props
+interface ComponentProps {
+  title: string
+  subtitle?: string
+  onPress?: () => void
+  disabled?: boolean
+  loading?: boolean
+  style?: StyleProp<ViewStyle>
+  testID?: string
+  children?: React.ReactNode
+}
+
+// Use descriptive interface names
+interface AuthFormData {
+  email: string
+  password: string
+  confirmPassword?: string
+}
+
+// Extend base interfaces when appropriate
+interface ExtendedButtonProps extends ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline'
+  size?: 'small' | 'medium' | 'large'
+}
+```
+
+### Array Type Definitions
+
+Always use `T[]` syntax instead of `Array<T>` for better readability and ESLint compliance.
+
+```typescript
+// ✅ CORRECT - Use T[] syntax
+interface User {
+  id: string
+  name: string
+  hobbies: string[]
+  permissions: Permission[]
+  addresses: Address[]
+}
+
+// ✅ CORRECT - Complex array types
+interface ApiResponse {
+  users: User[]
+  errors: ValidationError[]
+  metadata: { key: string; value: unknown }[]
+}
+
+// ✅ CORRECT - Nested arrays
+interface Category {
+  items: Item[]
+  subcategories: Category[]
+}
+
+// ❌ INCORRECT - Array<T> syntax (ESLint error)
+interface BadUser {
+  hobbies: Array<string>
+  permissions: Array<Permission>
+  addresses: Array<Address>
+}
+
+// ✅ CORRECT - Utility types with arrays
+interface Gift {
+  categories: Exclude<GiftCategory, 'all'>[]
+  timeline: TimelineEvent[]
+  tags: readonly string[]
+}
+```
+
+### API Type Definitions
+
+```typescript
+// Request/Response type patterns
+export interface LoginRequest {
+  phone: string
+  password: string
+}
+
+export interface LoginResponse extends ApiBaseResponse {
+  data: {
+    access_token: string
+    refresh_token: string
+    user: User
+    expires_in: number
+  }
+}
+
+// Use generic types for reusable patterns
+export interface PaginatedResponse<T> {
+  data: T[]
+  pagination: {
+    current_page: number
+    per_page: number
+    total: number
+    last_page: number
+  }
+}
+
+// Use const assertions for immutable data
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+  },
+  USER: {
+    PROFILE: '/user/profile',
+  },
+} as const
+
+type ApiEndpoint = (typeof API_ENDPOINTS)[keyof typeof API_ENDPOINTS]
+```
+
+### Redux Type Definitions
+
+```typescript
+// State interfaces
+export interface UserState {
+  data: User | null
+  loading: boolean
+  error: string | null
+  isAuthenticated: boolean
+}
+
+// Action payload types
+export interface LoginRequestPayload {
+  phone: string
+  password: string
+}
+
+export interface UpdateProfilePayload {
+  full_name?: string
+  email?: string
+  date_of_birth?: string
+}
+
+// Selector return types
+export type UserSelector = (state: RootState) => User | null
+export type LoadingSelector = (state: RootState) => boolean
+```
+
+## Generic Types and Utility Types
+
+### Form Component Generics
+
+```typescript
+// Generic form component with type constraints
+interface FormComponentProps<T extends FieldValues> {
+  control: Control<T>
+  name: Path<T>
+  rules?: RegisterOptions<T>
+}
+
+export const FormInput = <T extends FieldValues>({
+  control,
+  name,
+  rules,
+  ...props
+}: FormComponentProps<T> & TextInputProps) => {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      rules={rules}
+      render={({ field, fieldState }) => (
+        <TextInput
+          {...props}
+          value={field.value}
+          onChangeText={field.onChange}
+          errorText={fieldState.error?.message}
+        />
+      )}
+    />
+  )
+}
+```
+
+### Utility Types
+
+```typescript
+// Extract specific properties
+type UserProfile = Pick<User, 'id' | 'full_name' | 'email' | 'phone'>
+
+// Make all properties optional
+type PartialUser = Partial<User>
+
+// Make specific properties required
+type RequiredUserFields = Required<Pick<User, 'id' | 'phone'>>
+
+// Create variations of existing types
+type CreateUserRequest = Omit<User, 'id' | 'created_at' | 'updated_at'>
+
+// Conditional types
+type ApiResponse<T> = T extends string ? { message: T } : { data: T }
+
+// Template literal types
+type EventName = `on${Capitalize<string>}`
+type ButtonEvent = `button:${string}:clicked`
+```
+
+## Enum and Union Types
+
+### Const Assertions vs Enums
+
+```typescript
+// ✅ Preferred: Const assertions (more tree-shakeable)
+export const TOAST_TYPE = {
+  SUCCESS: 'success',
+  ERROR: 'error',
+  WARNING: 'warning',
+  INFO: 'info',
+} as const
+
+export type ToastType = (typeof TOAST_TYPE)[keyof typeof TOAST_TYPE]
+
+// ✅ Use for discriminated unions
+export const FLOW_TYPE = {
+  REGISTRATION: 'registration',
+  FORGOT_PASSWORD: 'forgot_password',
+} as const
+
+export type FlowType = (typeof FLOW_TYPE)[keyof typeof FLOW_TYPE]
+
+// ❌ Avoid regular enums unless absolutely necessary
+enum Status {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+}
+```
+
+### Type Reuse and Code Organization
+
+Effective type reuse prevents duplication and maintains consistency across the codebase.
+
+#### Search Before Creating
+
+Always search the codebase for existing types before creating new ones.
+
+```typescript
+// ✅ CORRECT - Search and reuse existing types
+import { TOAST_TYPE } from '@/components/Toast'
+import { ApiBaseResponse } from '@/stores/types/api'
+
+// ✅ CORRECT - Check common locations first
+// @/components/ - UI component types
+// @/stores/types/ - Redux and API types  
+// @/screens/[feature]/constants.ts - Feature-specific constants
+```
+
+#### Import vs Re-export Patterns
+
+Use direct imports for single-file usage, re-exports only for shared APIs.
+
+```typescript
+// ✅ CORRECT - Direct import where needed
+// In GiftScreen.tsx
+import { TOAST_TYPE } from '@/components/Toast'
+
+// ✅ CORRECT - Re-export only for shared API (index files)
+// In src/screens/home/index.ts
+export { GIFT_CATEGORY } from './constants'
+
+// ❌ INCORRECT - Unnecessary re-export in constants file
+// In src/screens/home/constants.ts  
+export { TOAST_TYPE } from '@/components/Toast' // Import directly where used
+
+// ❌ INCORRECT - Creating duplicate without checking existing codebase
+export const MY_TOAST_TYPE = { SUCCESS: 'success' } as const
+```
+
+#### Common Type Locations
+
+| Location | Purpose | When to Use |
+|----------|---------|-------------|
+| `@/components/` | UI component types | Button types, Toast types, Modal types |
+| `@/stores/types/` | Redux & API types | State interfaces, API request/response |
+| `@/screens/[feature]/constants.ts` | Feature constants | Screen-specific enums, categories |
+| `@/themes/` | Theme & styling types | Color types, spacing, font sizes |
+| `@/utilities/types.ts` | Utility types | Helper types, common interfaces |
+
+#### Type Organization Best Practices
+
+```typescript
+// ✅ CORRECT - Consistent naming and organization
+export const GIFT_CATEGORY = {
+  ALL: 'all',
+  DOG: 'dog', 
+  CAT: 'cat',
+} as const
+
+export type GiftCategory = (typeof GIFT_CATEGORY)[keyof typeof GIFT_CATEGORY]
+
+// ✅ CORRECT - Group related constants
+export const GIFT_STATUS = {
+  AVAILABLE: 'available',
+  LOW_STOCK: 'low_stock',
+  OUT_OF_STOCK: 'out_of_stock',
+} as const
+
+// ✅ CORRECT - Use absolute imports consistently
+import { Colors } from '@/themes/colors'
+import { FIELD_TYPES } from '@/constants/interface/field'
+
+// ❌ INCORRECT - Mixed import styles
+import { Colors } from '../../../themes/colors' // Use @/ alias instead
+```
+
+### Discriminated Unions
+
+```typescript
+// Use discriminated unions for complex state
+type ApiState<T> =
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: string }
+
+// Implementation
+const handleApiState = <T>(state: ApiState<T>) => {
+  switch (state.status) {
+    case 'loading':
+      return <LoadingSpinner />
+    case 'success':
+      return <DataDisplay data={state.data} />
+    case 'error':
+      return <ErrorMessage error={state.error} />
+  }
+}
+```
+
+## Function Type Definitions
+
+### Event Handlers
+
+```typescript
+// Define specific event handler types
+type ButtonPressHandler = () => void
+type TextChangeHandler = (text: string) => void
+type FormSubmitHandler<T> = (data: T) => void | Promise<void>
+
+// Use in component interfaces
+interface FormProps<T extends FieldValues> {
+  onSubmit: FormSubmitHandler<T>
+  onCancel?: ButtonPressHandler
+  onFieldChange?: TextChangeHandler
+}
+```
+
+### Async Function Types
+
+```typescript
+// API function types
+type ApiFunction<TRequest, TResponse> = (request: TRequest) => Promise<ApiBaseResponse<TResponse>>
+
+// Saga function types
+type SagaFunction<TAction = AnyAction> = (action: PayloadAction<TAction>) => Generator<any, void, any>
+
+// Hook return types
+type UseApiHook<T> = () => {
+  data: T | null
+  loading: boolean
+  error: string | null
+  refetch: () => void
+}
+```
+
+## Error Handling Types
+
+### Error Type Definitions
+
+```typescript
+// API error types
+export interface ApiError {
+  code: string
+  message: string
+  details?: Record<string, string[]>
+  field?: string
+}
+
+// Custom error classes
+export class ValidationError extends Error {
+  constructor(
+    public field: string,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+
+export class NetworkError extends Error {
+  constructor(
+    public statusCode: number,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'NetworkError'
+  }
+}
+
+// Error result types
+type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E }
+```
+
+### Type Guards
+
+```typescript
+// Type guard functions
+export const isApiError = (error: unknown): error is ApiError => {
+  return typeof error === 'object' && error !== null && 'code' in error && 'message' in error
+}
+
+export const isValidationError = (error: unknown): error is ValidationError => {
+  return error instanceof ValidationError
+}
+
+// Use type guards for safe error handling
+const handleError = (error: unknown) => {
+  if (isApiError(error)) {
+    showToast({ message: error.message, type: TOAST_TYPE.ERROR })
+  } else if (isValidationError(error)) {
+    highlightField(error.field, error.message)
+  } else {
+    showToast({ message: 'An unexpected error occurred', type: TOAST_TYPE.ERROR })
+  }
+}
+```
+
+## React Component Typing
+
+### Functional Component Patterns
+
+```typescript
+// Basic functional component
+export const SimpleComponent: React.FC = () => {
+  return <View />
+}
+
+// Component with props
+interface Props {
+  title: string
+  onPress: () => void
+}
+
+export const ComponentWithProps: React.FC<Props> = ({ title, onPress }) => {
+  return <TouchableOpacity onPress={onPress}><Text>{title}</Text></TouchableOpacity>
+}
+
+// Component with children
+interface PropsWithChildren {
+  variant?: 'primary' | 'secondary'
+  children: React.ReactNode
+}
+
+export const Container: React.FC<PropsWithChildren> = ({ variant = 'primary', children }) => {
+  return <View style={styles[variant]}>{children}</View>
+}
+```
+
+### Hook Typing
+
+```typescript
+// Custom hook with proper return typing
+export const useApiData = <T>(url: string): UseApiDataReturn<T> => {
+  const [data, setData] = useState<T | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await apiCall<T>(url)
+      setData(response.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }, [url])
+
+  return { data, loading, error, refetch: fetchData }
+}
+
+interface UseApiDataReturn<T> {
+  data: T | null
+  loading: boolean
+  error: string | null
+  refetch: () => void
+}
+```
+
+## React Native Specific Types
+
+### Style Typing
+
+```typescript
+// Use React Native's built-in style types
+import { StyleProp, ViewStyle, TextStyle, ImageStyle } from 'react-native'
+
+interface StyledComponentProps {
+  containerStyle?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
+  imageStyle?: StyleProp<ImageStyle>
+}
+
+// Create reusable style type definitions
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'transparent'
+type ButtonSize = 'small' | 'medium' | 'large'
+
+interface ButtonStyles {
+  container: ViewStyle
+  text: TextStyle
+  disabled: ViewStyle
+}
+
+type ButtonStyleMap = Record<ButtonVariant, Record<ButtonSize, ButtonStyles>>
+```
+
+### Navigation Typing
+
+```typescript
+// Define navigation prop types
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+
+type AuthStackParamList = {
+  SignIn: undefined
+  SignUp: undefined
+  VerifyOTP: { phone: string; flow?: string }
+  SetupPassword: { phone: string; token: string; flow?: string }
+}
+
+type SignInScreenProps = NativeStackScreenProps<AuthStackParamList, 'SignIn'>
+type VerifyOTPScreenProps = NativeStackScreenProps<AuthStackParamList, 'VerifyOTP'>
+
+// Use in components
+export const SignInScreen: React.FC<SignInScreenProps> = ({ navigation, route }) => {
+  // Component implementation
+}
+```
+
+## Development Environment Types
+
+### Environment Configuration
+
+```typescript
+// Type environment variables
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      EXPO_PUBLIC_API_BASE_URL: string
+      EXPO_PUBLIC_APP_ENV: 'development' | 'staging' | 'production'
+      EXPO_PUBLIC_SENTRY_DSN?: string
+    }
+  }
+}
+
+// Create typed config object
+export const config = {
+  apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
+  appEnv: process.env.EXPO_PUBLIC_APP_ENV,
+  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+} as const
+
+type AppConfig = typeof config
+```
+
+### Module Declarations
+
+```typescript
+// Declare module types for third-party libraries
+declare module 'react-native-svg-transformer' {
+  import { SvgProps } from 'react-native-svg'
+  const content: React.FC<SvgProps>
+  export default content
+}
+
+declare module '*.svg' {
+  import React from 'react'
+  import { SvgProps } from 'react-native-svg'
+  const content: React.FC<SvgProps>
+  export default content
+}
+
+declare module 'react-native-country-picker-modal' {
+  export interface Country {
+    cca2: string
+    name: string
+    callingCode: string[]
+  }
+  // Add other interface definitions as needed
+}
+```
+
+## Best Practices
+
+1. **Strict Mode**: Always use TypeScript strict mode for maximum type safety
+2. **Interface Naming**: Use descriptive names with appropriate suffixes (Props, State, Response)
+3. **Path Aliases**: Use `@/` path aliases instead of relative imports
+4. **Type Guards**: Implement type guards for runtime type checking
+5. **Generic Constraints**: Use appropriate generic constraints for type safety
+6. **Union Types**: Prefer union types over enums for better tree-shaking
+7. **Const Assertions**: Use `as const` for immutable data structures
+8. **Error Typing**: Define specific error types for better error handling
+9. **Component Props**: Always define interfaces for component props
+10. **API Typing**: Create comprehensive types for all API operations
+11. **Utility Types**: Leverage TypeScript utility types for code reuse
+12. **Type Reuse**: Search codebase for existing types before creating new ones
+13. **Import Patterns**: Use direct imports instead of unnecessary re-exports
+14. **Type Exports**: Export types from appropriate modules for reuse
+15. **Module Declarations**: Declare types for third-party modules when needed
+16. **Environment Types**: Type environment variables and configuration
+17. **Documentation**: Use JSDoc comments for complex type definitions
+description:
+globs:
+alwaysApply: false
+
+---
