@@ -33,14 +33,14 @@ export const EmptyList: React.FC<EmptyListProps> = ({
   descriptionStyle,
 }) => (
   <View style={[styles.container, style]}>
-    {icon && (
+    {!!icon && (
       <Image
         source={icon}
         style={[styles.icon, { tintColor: iconColor, width: iconSize, height: iconSize }]}
       />
     )}
-    {title && <Text style={[styles.title, titleStyle]}>{title}</Text>}
-    {description && <Text style={[styles.description, descriptionStyle]}>{description}</Text>}
+    {!!title && <Text style={[styles.title, titleStyle]}>{title}</Text>}
+    {!!description && <Text style={[styles.description, descriptionStyle]}>{description}</Text>}
   </View>
 )
 
