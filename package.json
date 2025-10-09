@@ -10,10 +10,7 @@
     "test": "jest",
     "test:coverage": "yarn test -- --coverage",
     "lint": "expo lint",
-    "build": "bash ./scripts/build-app.sh",
     "upload": "bash ./scripts/upload-app.sh",
-    "push:env": "bash ./scripts/push-env-eas.sh",
-    "pull:env": "bash ./scripts/push-env-eas.sh",
     "doctor": "npx expo-doctor",
     "review-lib": "npx expo install --check",
     "pretty": "prettier --write \"./**/*.{ts,tsx,js,jsx,json}\""

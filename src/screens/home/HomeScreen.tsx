@@ -1,15 +1,13 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
 
-import { ThemedText, ThemedView } from '@/components'
 import { metrics } from '@/themes'
 import { getString } from '@/locale/I18nConfig'
+import { ScreenContainer } from '@/components'
 
 export const HomeScreen: React.FC = () => (
   <>
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">{getString('home.title')}</ThemedText>
-    </ThemedView>
+    <ScreenContainer style={styles.container} title={getString('home.title')}></ScreenContainer>
   </>
 )
 
@@ -17,9 +15,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: metrics.medium,
-  },
-  link: {
-    marginTop: metrics.small,
-    paddingVertical: metrics.small,
   },
 })

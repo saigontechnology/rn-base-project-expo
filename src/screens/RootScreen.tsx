@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react'
 import { Redirect } from 'expo-router'
-import { ActivityIndicator, StyleSheet } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 
-import { ThemedText, ThemedView } from '@/components'
 import { RouteKeys } from '@/routes/RouteKeys'
-import { metrics } from '@/themes'
+import { fonts, fontSizes, metrics } from '@/themes'
 import { getString } from '@/locale/I18nConfig'
 
 export const RootScreen: React.FC = () => {
@@ -22,10 +21,10 @@ export const RootScreen: React.FC = () => {
 
   return (
     <>
-      <ThemedView style={styles.container}>
-        <ThemedText type="subtitle">{getString('auth.authenticate')}</ThemedText>
+      <View style={styles.container}>
+        <Text style={styles.text}>{getString('auth.authenticate')}</Text>
         {isMockVerify && <ActivityIndicator size="large" style={styles.spacingTop} />}
-      </ThemedView>
+      </View>
     </>
   )
 }
@@ -36,6 +35,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: metrics.medium,
+  },
+  text: {
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.large,
   },
   spacingTop: {
     marginTop: metrics.small,
