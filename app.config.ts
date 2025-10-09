@@ -21,11 +21,11 @@ export default ({ config }: { config: ExpoConfig }) => ({
       },
     ],
     'expo-font',
+    'expo-web-browser',
   ],
   experiments: {
     typedRoutes: true,
   },
-  owner: process.env.EAS_PROJECT_OWNER,
   ios: {
     ...config.ios,
     bundleIdentifier: process.env.APP_ID,
@@ -46,9 +46,6 @@ export default ({ config }: { config: ExpoConfig }) => ({
     APP_NAME: process.env.APP_NAME,
     APP_SCHEME: process.env.APP_SCHEME,
     PROJECT_NAME: process.env.PROJECT_NAME,
-    eas: {
-      projectId: process.env.EAS_PROJECT_ID,
-    },
   },
   runtimeVersion: process.env.EXPO_RUNTIME_VERSION || '1.0.0',
 })

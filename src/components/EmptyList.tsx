@@ -1,7 +1,15 @@
 import React from 'react'
-import { View, StyleSheet, StyleProp, ViewStyle, TextStyle, Image, ImageSourcePropType } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+  Image,
+  ImageSourcePropType,
+  Text,
+} from 'react-native'
 import { metrics } from '@/themes'
-import { ThemedText } from './ThemedText'
 
 interface EmptyListProps {
   icon?: ImageSourcePropType
@@ -25,22 +33,14 @@ export const EmptyList: React.FC<EmptyListProps> = ({
   descriptionStyle,
 }) => (
   <View style={[styles.container, style]}>
-    {icon && (
+    {!!icon && (
       <Image
         source={icon}
         style={[styles.icon, { tintColor: iconColor, width: iconSize, height: iconSize }]}
       />
     )}
-    {title && (
-      <ThemedText type="smallMedium" style={[styles.title, titleStyle]}>
-        {title}
-      </ThemedText>
-    )}
-    {description && (
-      <ThemedText type="small" style={[styles.description, descriptionStyle]}>
-        {description}
-      </ThemedText>
-    )}
+    {!!title && <Text style={[styles.title, titleStyle]}>{title}</Text>}
+    {!!description && <Text style={[styles.description, descriptionStyle]}>{description}</Text>}
   </View>
 )
 

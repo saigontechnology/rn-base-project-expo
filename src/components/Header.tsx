@@ -5,13 +5,13 @@ import {
   ImageStyle,
   StyleProp,
   StyleSheet,
+  Text,
   TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
 } from 'react-native'
-import { Images, metrics } from '../themes'
-import { ThemedText } from './ThemedText'
+import { fonts, fontSizes, Images, metrics } from '../themes'
 import { Row } from './Row'
 import { router } from 'expo-router'
 
@@ -65,9 +65,9 @@ export const Header: React.FC<IHeaderProp> = ({
     {leftView && <View style={[styles.componentView, leftStyle]}>{leftView}</View>}
 
     {!!title && (
-      <ThemedText type="label" numberOfLines={1} style={[styles.titleText, titleStyle]}>
+      <Text numberOfLines={1} style={[styles.titleText, titleStyle]}>
         {title}
-      </ThemedText>
+      </Text>
     )}
     {centerView && <View style={[styles.componentView, centerStyle]}>{rightView}</View>}
     {rightView && <View style={[styles.componentView, rightStyle]}>{rightView}</View>}
@@ -106,5 +106,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     textAlign: 'center',
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.label,
   },
 })

@@ -29,6 +29,7 @@ module.exports = {
         'react/no-unescaped-entities': 'off',
         'react/prop-types': 'off',
         '@typescript-eslint/no-empty-object-type': 'off',
+        'expo/use-dom-exports': 'off',
       },
     },
   ],

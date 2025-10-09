@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react'
 import { Image, Keyboard, StyleSheet } from 'react-native'
 
-import { ThemedText } from '@/components/ThemedText'
-import { ThemedView } from '@/components/ThemedView'
-import { Images, metrics } from '@/themes'
+import { fonts, fontSizes, Images, metrics } from '@/themes'
 import { getString } from '@/locale/I18nConfig'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -14,6 +12,7 @@ import { useAppDispatch } from '@/stores/store'
 import { userActions } from '@/stores/reducers'
 import { IUserSignInPayload } from '@/stores/types'
 import { SignInSchema } from './signin.schema'
+import { ScreenContainer } from '@/components'
 
 export const SignInScreen: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -31,14 +30,11 @@ export const SignInScreen: React.FC = () => {
     [dispatch],
   )
   return (
-    <ThemedView style={styles.container}>
+    <ScreenContainer style={styles.container} title={getString('auth.title')}>
       <Image source={Images.sts} style={styles.logo} />
-      <ThemedText type="title" style={styles.title}>
-        {getString('auth.title')}
-      </ThemedText>
       <Form<IUserSignInPayload> fields={SIGNIN_FIELDS} control={control} />
       <ButtonPrimary onPress={() => handleSubmit(onSubmit)()}>{getString('auth.signIn')}</ButtonPrimary>
-    </ThemedView>
+    </ScreenContainer>
   )
 }
 
@@ -52,6 +48,8 @@ const styles = StyleSheet.create({
   title: {
     marginTop: metrics.small,
     marginBottom: metrics.large,
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.title,
   },
   logo: {
     width: metrics.logoHeight,

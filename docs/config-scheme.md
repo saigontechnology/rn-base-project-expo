@@ -20,21 +20,6 @@ eas login
 
 ![Finish created EAS project](images/finish-created-eas-project.png)
 
-3. Update EAS values to .env file
-
-```bash
-# .env.development .env.staging .env.production
-
-# example from step 2: 942adb10-294e-4c5e-bdcd-89df492e1ba3
-EAS_PROJECT_ID=your_eas_project_id
-
-# format URL: https://u.expo.dev/your_eas_project_id
-EAS_PROJECT_URL=your_eas_project_url
-
-# your account name
-EAS_PROJECT_OWNER=your_eas_project_owner
-```
-
 > Notes:
 > Refer documentation for more information: https://docs.expo.dev/build/setup/
 
@@ -51,9 +36,6 @@ If you want to add more env variables, here is steps to create new variables ins
     "APP_SCHEME": "$APP_SCHEME",
     "APP_NAME": "$APP_NAME",
     "APP_ID": "$APP_ID",
-    "EAS_PROJECT_ID": "$EAS_PROJECT_ID",
-    "EAS_PROJECT_URL": "$EAS_PROJECT_URL",
-    "EAS_PROJECT_OWNER": "$EAS_PROJECT_OWNER",
     "API_URL": "$API_URL"
 }
 ...
@@ -68,9 +50,6 @@ If you want to add more env variables, here is steps to create new variables ins
     "APP_SCHEME": "$APP_SCHEME",
     "APP_NAME": "$APP_NAME",
     "APP_ID": "$APP_ID",
-    "EAS_PROJECT_ID": "$EAS_PROJECT_ID",
-    "EAS_PROJECT_URL": "$EAS_PROJECT_URL",
-    "EAS_PROJECT_OWNER": "$EAS_PROJECT_OWNER",
     "API_URL": "$API_URL",
     "NEW_VARIABLE": "$NEW_VARIABLE", // new added variable
 }
@@ -111,9 +90,6 @@ extra: {
     PROJECT_NAME: process.env.PROJECT_NAME,
     # new variable here
     NEW_VARIABLE: process.env.NEW_VARIABLE
-    eas: {
-      projectId: process.env.EAS_PROJECT_ID,
-    }
   }
 ...
 ```

@@ -1,19 +1,18 @@
 import React from 'react'
 import { Link } from 'expo-router'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
 
-import { ThemedText, ThemedView } from '@/components'
-import { metrics } from '@/themes'
+import { colors, fontSizes, metrics } from '@/themes'
 import { RouteKeys } from '@/routes/RouteKeys'
+import { ScreenContainer } from '@/components'
 
 export const AboutScreen: React.FC = () => (
   <>
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">About</ThemedText>
+    <ScreenContainer style={styles.container} title={'About'}>
       <Link href={RouteKeys.SignIn} style={styles.link}>
-        <ThemedText type="link">Sign out</ThemedText>
+        <Text style={styles.linkText}>Sign out</Text>
       </Link>
-    </ThemedView>
+    </ScreenContainer>
   </>
 )
 
@@ -27,5 +26,10 @@ const styles = StyleSheet.create({
   link: {
     marginTop: metrics.small,
     paddingVertical: metrics.small,
+  },
+  linkText: {
+    fontSize: fontSizes.body,
+    color: colors.info,
+    marginTop: metrics.small,
   },
 })

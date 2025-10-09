@@ -24,8 +24,6 @@ APP_ENV=development
 API_URL=https://api.yourapp.com
 
 # Expo Configuration
-EAS_PROJECT_OWNER=your-eas-owner
-EAS_PROJECT_ID=your-eas-project-id
 EXPO_RUNTIME_VERSION=1.0.0
 
 # iOS Configuration (for Fastlane)
@@ -62,8 +60,6 @@ BITBUCKET_BUILD_NUMBER=1
 
 ### Expo Configuration
 
-- `EAS_PROJECT_OWNER`: Your Expo Application Services (EAS) account owner
-- `EAS_PROJECT_ID`: Your EAS project ID
 - `EXPO_RUNTIME_VERSION`: Runtime version for updates (used for OTA updates)
 
 ### iOS Configuration (Fastlane)
