@@ -37,6 +37,10 @@ pipelines:
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env development
             - npx expo prebuild --platform android --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env development
+          after-script:
+            - if [ "$BITBUCKET_EXIT_CODE" -ne 0 ]; then cp -r ~/Library/Logs/gym build-logs 2>/dev/null || true; fi
+          artifacts:
+            - build-logs/**
     staging:
       - step:
           name: 'Build'
@@ -51,6 +55,10 @@ pipelines:
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env staging
             - npx expo prebuild --platform android --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env staging
+          after-script:
+            - if [ "$BITBUCKET_EXIT_CODE" -ne 0 ]; then cp -r ~/Library/Logs/gym build-logs 2>/dev/null || true; fi
+          artifacts:
+            - build-logs/**
     production:
       - step:
           name: 'Build'
@@ -65,6 +73,10 @@ pipelines:
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env production
             - npx expo prebuild --platform android --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env production
+          after-script:
+            - if [ "$BITBUCKET_EXIT_CODE" -ne 0 ]; then cp -r ~/Library/Logs/gym build-logs 2>/dev/null || true; fi
+          artifacts:
+            - build-logs/**
   custom:
     buildDev:
       - step:
@@ -80,6 +92,10 @@ pipelines:
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env development
             - npx expo prebuild --platform android --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env development
+          after-script:
+            - if [ "$BITBUCKET_EXIT_CODE" -ne 0 ]; then cp -r ~/Library/Logs/gym build-logs 2>/dev/null || true; fi
+          artifacts:
+            - build-logs/**
     buildStaging:
       - step:
           name: 'Build - Staging'
@@ -94,6 +110,10 @@ pipelines:
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env staging
             - npx expo prebuild --platform android --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env staging
+          after-script:
+            - if [ "$BITBUCKET_EXIT_CODE" -ne 0 ]; then cp -r ~/Library/Logs/gym build-logs 2>/dev/null || true; fi
+          artifacts:
+            - build-logs/**
     buildProduction:
       - step:
           name: 'Build - Production'
@@ -108,3 +128,7 @@ pipelines:
             - fastlane ios build type:build ci:true buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env production
             - npx expo prebuild --platform android --clean
             - fastlane android build type:build buildNumber:$BITBUCKET_BUILD_NUMBER changelog:"$COMMIT_MESSAGE" --env production
+          after-script:
+            - if [ "$BITBUCKET_EXIT_CODE" -ne 0 ]; then cp -r ~/Library/Logs/gym build-logs 2>/dev/null || true; fi
+          artifacts:
+            - build-logs/**
